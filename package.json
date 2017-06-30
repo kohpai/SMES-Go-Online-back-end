@@ -1,0 +1,43 @@
+{
+  "name": "smesgoonline",
+  "version": "1.0.0",
+  "description": "back-end for SMEs go online project",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "npm run build && node dist/server.js",
+    "build": "babel ./src --out-dir=./dist",
+    "dev": "nodemon src/server.js --exec babel-node",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kohpai/SMEs-go-online.git"
+  },
+  "keywords": [
+    "smesgoonline",
+    "smegoonline"
+  ],
+  "author": "krittanon.w",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kohpai/SMEs-go-online.git"
+  },
+  "homepage": "https://github.com/kohpai/SMEs-go-online#readme",
+  "dependencies": {
+    "ajv": "^5.1.5",
+    "babel-plugin-minify-mangle-names": "^0.1.3",
+    "babel-preset-babili": "^0.1.3",
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "geolib": "^2.0.22",
+    "http-status-codes": "^1.1.6"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-es2016": "^6.24.1",
+    "babel-preset-es2017": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "nodemon": "^1.11.0"
+  }
+}
