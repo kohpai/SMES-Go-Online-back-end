@@ -1,45 +1,56 @@
 'use strict'
 
 // import
-import { MongoClient } from 'mongodb'
+var MySql = require('mysql');
 
 // using
 import Config from './config.js'
 
 var state = {
-  db: null,
+    db: null,
 }
 
-const connect = (done) =>  {
-  if (state.db) return done()
+const connection = MySql.createConnection(Config.mysql);
 
-  MongoClient.connect(Config.mongodb.url, Config.mongodb.options,(err, db) => {
-    if (err) {
-      console.log("Mongodb can't connect to "+Config.mongodb.url)
-      return done(err)
-    }
-    state.db = db
-    console.log('MongoDb Conected on', Config.mongodb.url)
-    done()
-  })
+const connect = (done) =>  {
+    if (state.db)
+        return done()
+
+    connection.connect(function(err) {
+        if (err) {
+            console.log('db.js: Attemtion to connect with MySQL server failed: ', err);
+            return done(err);
+        } else {
+            console.log('db.js: Attemtion to connect with MySQL server successful');
+            state.db = connection;
+            return done();
+        }
+    });
 }
 
 const get = () => {
-  return state.db
+    return state.db
 }
 
 const close = (done) => {
-  if (state.db) {
-    state.db.close((err, result) => {
-      state.db = null
-      state.mode = null
-      done(err)
-    })
-  }
+    if (state.db) {
+        connection.end(function(err) {
+            if (err) {
+                console.log('db.js: Attemtion to terminate connection with MySQL server failed: ', err);
+                return done(err);
+            } else {
+                console.log('db.js: Attemtion to terminate connection with MySQL server successful');
+                state.db = null;
+                return done();
+            }
+        });
+    } else {
+        return done();
+    }
 }
 
 export default {
-  connect,
-  get,
-  close
+    connect,
+    get,
+    close
 }

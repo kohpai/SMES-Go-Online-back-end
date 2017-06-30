@@ -1,0 +1,161 @@
+{
+	"variables": [],
+	"info": {
+		"name": "ez-att",
+		"_postman_id": "0837e6ab-63c2-2820-7a8b-727364748071",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "auth__login",
+			"request": {
+				"url": "{{host}}:8000/api/v1.1/auth/login",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json; charset=utf-8",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"admin\",\n\t\"password\": \"admin\",\n\t\"acc_token\": \"xxx\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "events__checkin",
+			"request": {
+				"url": "{{host}}:8000/api/v1.1/events/checkin",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json; charset=utf-8",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"user_id\": \"59319e0541f22f05a0543176\",\n\t\"area_type\": \"office\",\n\t\"location\":{\n\t\t\"lat\": 13.729189,\n\t\t\"lng\": 100.775539\n\t},\n\t\"note\": \"\",\n\t\"acc_token\": \"xxx\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "users__company",
+			"request": {
+				"url": "{{host}}:8000/api/v1.1/users/company",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json; charset=utf-8",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"user_id\": \"59319e0541f22f05a0543176\",\n\t\"acc_token\": \"xxx\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "users__history",
+			"request": {
+				"url": "{{host}}:8000/api/v1.1/users/history",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json; charset=utf-8",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"user_id\": \"59319e0541f22f05a0543176\",\n\t\"time_month\": 6,\n\t\"time_year\": 2017,\n\t\"acc_token\": \"xxx\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "users__status",
+			"request": {
+				"url": "{{host}}:8000/api/v1.1/users/status",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json; charset=utf-8",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"user_id\": \"59319e0541f22f05a0543176\",\n\t\"acc_token\": \"xxx\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "events__checkout",
+			"request": {
+				"url": "{{host}}:8000/api/v1.1/events/checkout",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json; charset=utf-8",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"user_id\": \"59319e0541f22f05a0543176\",\n\t\"area_type\": \"office\",\n\t\"location\":{\n\t\t\"lat\": 13.729189,\n\t\t\"lng\": 100.775539\n\t},\n\t\"note\": \"\",\n\t\"acc_token\": \"xxx\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
