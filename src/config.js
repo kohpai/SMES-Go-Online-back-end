@@ -6,7 +6,8 @@ const server = {
 };
 
 const mysql = {
-    host     : '172.17.0.2',
+    host     : 'localhost',
+    port     : 4000,
     user     : 'root',
     password : 'root',
     database : 'sme',
