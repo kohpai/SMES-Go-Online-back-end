@@ -8,6 +8,7 @@ import Config from './config.js'
 // express middleware
 import BodyParser from 'body-parser'
 import Routes from './routes.js'
+import Cors from 'cors'
 
 // app setup
 var app = Express()
@@ -18,6 +19,7 @@ app.set('port', Config.server.port)
 // use middleware
 app.use(BodyParser.urlencoded({ extended: false }))
 app.use(BodyParser.json())
+app.use(Cors())
 
 // use routes middleware
 app.use(Routes)
