@@ -19,7 +19,7 @@ router.route('/*').all((req, res, next) => {
     // console.log(req.path)g
     // console.log(req.body)
     // const token = req.body.acc_token
-    delete req.body.acc_token
+    // delete req.body.acc_token
 
     // if(token != 'xxx') return HttpStatus.send(res, 'UNAUTHORIZED', { message: 'The token is invalid.' })
     return next()
@@ -49,19 +49,19 @@ router.route('/auth/login').post((req, res, next) => {
         info: {}
     };
 
-    UsersModel.getUserByUsernameAndPassword(data.username, data.password, (user) => {
-        console.log('user: ', user.ent_id);
+    UsersModel.authenUser(data.username, data.password, (user) => {
         if (user == null) {
-            send.status = Enum.res_type.FAILURE
             send.message = 'Incorrect username or password.'
-            send.info = {}
+            return res.json(send)
+        } else if (user instanceof Error) {
+            send.message = 'User query failed';
+            send.hint = user.sqlMessage;
             return res.json(send)
         }
 
         send.status = Enum.res_type.SUCCESS
-        send.info = Object.assign(send.info, user)
-        // delete send.info.ent_id
-        // send.info.acc_token = 'xxx'
+        send.info = user;
+
         return res.json(send)
     })
     // }

@@ -22,7 +22,7 @@ const getUserById = (id, done) => {
         'SELECT * FROM `ent_ecom_needed_help` WHERE `ent_id` = ?;' +
         'SELECT * FROM `ent_intended_sme_proj` WHERE `ent_id` = ?;' +
         'SELECT * FROM `ent_participated_sme_proj` WHERE `ent_id` = ?;',
-        timeout: timeout, // 40s
+        timeout: timeout, // 20s
         // values: [tableEnt, DB.get().escape(id)],
         values: [id, id, id, id],
     };
@@ -55,7 +55,7 @@ const addUser = (userInfo, done) => {
         'know_estda, house_no, village_no, alley, village_title,' +
         'road, province, district, subdistrict, postal_code, scholar)' +
         'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
-        timeout: timeout, // 40s
+        timeout: timeout, // 20s
         // values: [tableEnt, DB.get().escape(id)],
         values: [
             userInfo.sme_id, userInfo.first_name, userInfo.last_name,
@@ -109,51 +109,24 @@ const addUser = (userInfo, done) => {
     });
 }
 
-const getAdminById = (id, done) => {
+const authenUser = (username, password, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM `administrator` WHERE `admin_id` = ?',
-        timeout: timeout, // 40s
-        // values: [tableEnt, DB.get().escape(id)],
-        values: [id],
-    };
-
-    DB.get().query(queryOption, function(error, results, fields) {
-        if (error)
-            return done(error);
-        else
-            return done(results[0]);
-    });
-}
-
-const getUserByUsernameAndPassword = (username, password, done) => {
-    var queryOption = {
-        sql: 'SELECT * FROM `account` WHERE `username` = ? AND `password` = ?',
-        timeout: timeout, // 40s
+        sql: 'SELECT `user_id` FROM `user` WHERE `username` = ? AND `password` = ?',
+        timeout: timeout, // 20s
         values: [username, password],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
-        console.log('getUserByUsernameAndPassword results: ', results);
         if (error) {
             return done(error);
-        } else if (results[0]) {
-            if (results[0].role === 'user') {
-                getUserById(results[0].user_id, function(results) {
-                    return done(results);
-                });
-            } else {
-                getAdminById(results[0].user_id, function(results) {
-                    return done(results);
-                });
-            }
         } else {
-            return done(results);
+            results[0].id = results[0].user_id;
+            delete results[0].user_id;
+            return done(results[0]);
         }
     });
 }
 
 export default {
-    getUserByUsernameAndPassword,
-    getUserById,
-    addUser,
+   authenUser
 }
