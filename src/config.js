@@ -9,8 +9,8 @@ const mysql = {
     host     : 'localhost',
     port     : 4000,
     user     : 'root',
-    password : 'root',
-    database : 'sme',
+    password : 'rootAuthP4ss',
+    database : 'smesgoonline',
     multipleStatements: true,
 };
 
