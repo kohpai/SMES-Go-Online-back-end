@@ -6,7 +6,7 @@ const server = {
 };
 
 const mysql = {
-    host     : '0.0.0.0',
+    host     : '172.17.0.1',
     port     : 4000,
     user     : 'root',
     password : 'rootAuthP4ss',
