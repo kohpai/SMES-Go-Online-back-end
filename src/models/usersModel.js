@@ -50,50 +50,36 @@ const getUserById = (id, done) => {
 
 const addUser = (input, done) => {
     var hashids = new Hashids(input.phone_no);
-    var userInfo = {username: hashids.encode(1)};
+    var userInfo = {
+        user_id: hashids.encode(1, 2, 3, 4, 5),
+        username: input.phone_no,
+        password: hashids.encode(6, 7, 8),
+        first_name: input.first_name,
+        last_name: input.last_name,
+        role: 'user'
+    };
     var queryOption = {
-        // sql: 'INSERT INTO entrepreneur (' +
-        //         'registration_type, enterprise_name, name, id_no, house_no, village_no,' +
-        //         'alley, village_title, road, subdistrict, district, province,' +
-        //         'postal_code, phone_no, enterprise_type, needed_help) ' +
-        //      'VALUES (' +
-        //         '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        sql: 'INSERT INTO enterprise SET ?',
+        sql: 'INSERT INTO user SET ?',
         timeout: timeout, // 20s
-        // values: [tableEnt, DB.get().escape(id)],
-        values: [],
+        values: [userInfo],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
-        console.log('inserted: ', results.insertId);
         if (error) {
             return done(error);
         } else {
-            var tmp = [[], [], []];
+            input = Object.assign(input, input.enterprise_type);
+            input = Object.assign(input, input.needed_help);
+            input.user_id = results.insertId;
 
-            userInfo.needed_help.forEach(function(value) {
-                tmp[0].push([results.insertId, value]);
-            });
-            userInfo.intended_sme_proj.forEach(function(value) {
-                tmp[1].push([results.insertId, value]);
-            });
-            userInfo.participated_sme_proj.forEach(function(value) {
-                tmp[1].push([results.insertId, value]);
-            });
+            delete input.first_name;
+            delete input.last_name;
+            delete input.phone_no;
+            delete input.enterprise_type;
+            delete input.needed_help;
 
-            queryOption.sql = '';
-            queryOption.sql += (tmp[0].length ?
-                'INSERT INTO `ent_ecom_needed_help` (ent_id, needed_help) VALUES ?;' :
-                '');
-            queryOption.sql += (tmp[1].length ?
-                'INSERT INTO `ent_intended_sme_proj` (ent_id, intended_sme_proj) VALUES ?;' :
-                '');
-            queryOption.sql += (tmp[2].length ?
-                'INSERT INTO `ent_participated_sme_proj` (ent_id, participated_sme_proj) VALUES ?;' :
-                '');
-            queryOption.values = [tmp[0], tmp[1], tmp[2]];
-
-            console.log('userInfo: ', queryOption.values);
+            queryOption.sql = 'INSERT INTO enterprise SET ?';
+            queryOption.values = [input];
 
             DB.get().query(queryOption, function(error, results, fields) {
                 if (error)
@@ -126,5 +112,6 @@ const authenUser = (username, password, done) => {
 }
 
 export default {
-    authenUser
+    authenUser,
+    addUser,
 }

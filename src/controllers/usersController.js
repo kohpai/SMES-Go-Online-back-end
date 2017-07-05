@@ -19,13 +19,13 @@ router.route('/info').post((req, res, next) => {
     // try {
     var data = req.body
     var schema = {
-        "additionalProperties": false,
-        "properties": {
-            "user_id": {
-                "type": "string"
+        'additionalProperties': false,
+        'properties': {
+            'user_id': {
+                'type': 'string'
             }
         },
-        "required": [ "user_id" ]
+        'required': [ 'user_id' ]
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
@@ -55,129 +55,150 @@ router.route('/info').post((req, res, next) => {
     // }
 })
 
-router.route('/add').post((req, res, next) => {
+router.route('/').post((req, res, next) => {
     // try {
     var data = req.body
     var schema = {
-        "additionalProperties": false,
-        "properties": {
-            "sme_id": {
-                "type": "string"
+        'additionalProperties': false,
+        'properties': {
+            'registration_type': {
+                'type': 'string'
             },
-            "first_name": {
-                "type": "string"
+            'enterprise_name': {
+                'type': 'string'
             },
-            "last_name": {
-                "type": "string"
+            'first_name': {
+                'type': 'string'
             },
-            "citizen_id": {
-                "type": "string"
+            'last_name': {
+                'type': 'string'
             },
-            "phone_no": {
-                "type": "string"
+            'id_no': {
+                'type': 'string'
             },
-            "email": {
-                "type": "string"
+            'house_no': {
+                'type': 'string'
             },
-            "job": {
-                "type": "string"
+            'village_no': {
+                'type': 'string'
             },
-            "ecom_do_own": {
-                "type": "number"
+            'alley': {
+                'type': 'string'
             },
-            "ecom_category": {
-                "type": "string"
+            'village_title': {
+                'type': 'string'
             },
-            "know_estda": {
-                "type": "number"
+            'road': {
+                'type': 'string'
             },
-            "house_no": {
-                "type": "string"
+            'subdistrict': {
+                'type': 'string'
             },
-            "village_no": {
-                "type": "string"
+            'district': {
+                'type': 'string'
             },
-            "alley": {
-                "type": "string"
+            'province': {
+                'type': 'string'
             },
-            "village_title": {
-                "type": "string"
+            'postal_code': {
+                'type': 'string'
             },
-            "road": {
-                "type": "string"
+            'phone_no': {
+                'type': 'string'
             },
-            "province": {
-                "type": "string"
+            'email': {
+                'type': 'string'
             },
-            "district": {
-                "type": "string"
+            'line_id': {
+                'type': 'string'
             },
-            "subdistrict": {
-                "type": "string"
+            'facebook': {
+                'type': 'string'
             },
-            "postal_code": {
-                "type": "string"
+            'enterprise_type': {
+                'type': 'object',
+                'minProperties': 1,
+                'maxProperties': 5,
+                'properties': {
+                    'agricultural_product': {
+                        'type': 'string'
+                    },
+                    'industrial_product': {
+                        'type': 'string'
+                    },
+                    'selling': {
+                        'type': 'string'
+                    },
+                    'service': {
+                        'type': 'string'
+                    },
+                    'other': {
+                        'type': 'string'
+                    }
+                }
             },
-            "scholar": {
-                "type": "number"
+            'sme_member_no': {
+                'type': 'array'
             },
-            "needed_help": {
-                "type": "array"
+            'needed_help': {
+                'type': 'object',
+                'minProperties': 1,
+                'maxProperties': 7,
+                'properties': {
+                    'needed_help_ecommerce': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_investor': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_supplier': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_payment': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_logistics': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_online_marketing': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_tax': {
+                        'type': 'boolean'
+                    }
+                }
             },
-            "intended_sme_proj": {
-                "type": "array"
-            },
-            "participated_sme_proj": {
-                "type": "array"
-            },
+            'on_ecommerce': {
+                'type': 'boolean'
+            }
         },
-        "required": [
-            "first_name", "last_name", "citizen_id", "phone_no",
-            "house_no", "province", "district", "subdistrict", "postal_code"
+        'required': [
+            'registration_type', 'enterprise_name', 'first_name', 'last_name',
+            'id_no', 'house_no', 'village_no', 'subdistrict', 'district', 'province',
+            'postal_code', 'phone_no', 'enterprise_type', 'needed_help'
         ]
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
         return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
 
-    // var query = {
-    //     sme_id: data.sme_id,
-    //     first_name: data.first_name,
-    //     last_name: data.last_name,
-    //     citizen_id: data.citizen_id,
-    //     phone_no: data.phone_no,
-    //     email: data.email,
-    //     job: data.job,
-    //     ecom_do_own: data.ecom_do_own,
-    //     ecom_category: data.ecom_category,
-    //     know_estda: data.know_estda,
-    //     house_no: data.house_no,
-    //     village_no: data.village_no,
-    //     alley: data.alley,
-    //     village_title: data.village_title,
-    //     road: data.road,
-    //     province: data.province,
-    //     district: data.district,
-    //     subdistrict: data.subdistrict,
-    //     postal_code: data.postal_code,
-    //     scholar: data.scholar
-    // };
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
     }
 
     UsersModel.addUser(data, (result) => {
-        if (result.code) {
-            console.log('add user error: ',result);
+        if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = 'cannot add user'+ data.user_id;
-            send.hint = 'MySQL error: '+ result.code;
+            send.message = 'Failed adding an user';
+            send.hint = 'MySQL error: '+ result.sqlMessage;
+            console.log('The SQL stattement')
+            console.log(result.sql);
             return res.json(send);
         }
 
         send.status = Enum.res_type.SUCCESS
-        send.info = Object.assign({}, result)
+        send.info = {id: result};
         return res.json(send)
     });
 })
@@ -186,13 +207,13 @@ router.route('/status').post((req, res, next) => {
     // try {
     var data = req.body
     var schema = {
-        "additionalProperties": false,
-        "properties": {
-            "user_id": {
-                "type": "string"
+        'additionalProperties': false,
+        'properties': {
+            'user_id': {
+                'type': 'string'
             }
         },
-        "required": [ "user_id" ]
+        'required': [ 'user_id' ]
     }
     var valid = ajv.validate(schema, data)
     if (!valid) return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
@@ -204,7 +225,7 @@ router.route('/status').post((req, res, next) => {
     EventStatusModel.getEventStatusByUserId(data.user_id, (event) => {
         if(event == null){
             send.status = Enum.res_type.SUCCESS
-            send.message = "First time"
+            send.message = 'First time'
             send.info = {}
             return res.json(send)
         }
