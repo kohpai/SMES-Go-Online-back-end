@@ -13,7 +13,7 @@ import { Util, Enum } from '../helper'
 /* further work
    - catch error
    */
-router.route('/').post((req, res, next) => {
+router.route('/').get((req, res, next) => {
     // try {
     var send = {
         status: Enum.res_type.FAILURE,
