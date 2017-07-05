@@ -72,6 +72,10 @@ const addUser = (input, done) => {
         if (error) {
             return done(error);
         } else {
+            Object.keys(input.enterprise_type).forEach(function(value) {
+                input['is_' + value] = true;
+            });
+
             input = Object.assign(input, input.enterprise_type);
             input = Object.assign(input, input.needed_help);
             input.user_id = userInfo.user_id;
