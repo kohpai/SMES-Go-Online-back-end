@@ -4,18 +4,9 @@
 // import
 import DB from '../db.js';
 import Hashids from 'hashids';
+import EnterpriseModel from './enterpriseModel.js';
 
 const timeout = 20000;
-
-const mergeMultivalued = (array, key) => {
-    var output = [];
-
-    array.forEach(function(value) {
-        output.push(value[key]);
-    });
-
-    return output;
-}
 
 const getUserById = (id, done) => {
     var queryOption = {
@@ -85,15 +76,29 @@ const addUser = (input, done) => {
             delete input.enterprise_type;
             delete input.needed_help;
 
-            queryOption.sql = 'INSERT INTO enterprise SET ?';
-            queryOption.values = [input];
+            if (input.contact_info) {
+                EnterpriseModel.addContact(input.contact_info, function(insertId) {
+                    if (insertId instanceof Error)
+                        return done(insertId);
 
-            DB.get().query(queryOption, function(error, results, fields) {
-                if (error)
-                    return done(error);
-                else
-                    return done(results.insertId);
-            });
+                    input.contact_id = insertId;
+                    delete input.contact_info;
+
+                    EnterpriseModel.addEnterprise(input, function(insertId) {
+                        if (insertId instanceof Error)
+                            return done(insertId);
+                        else
+                            return done(userInfo.user_id);
+                    });
+                });
+            } else {
+                EnterpriseModel.addEnterprise(input, function(insertId) {
+                    if (insertId instanceof Error)
+                        return done(insertId);
+                    else
+                        return done(userInfo.user_id);
+                });
+            }
         }
     });
 }

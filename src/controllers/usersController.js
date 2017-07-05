@@ -133,6 +133,48 @@ router.route('/').post((req, res, next) => {
             'postal_code': {
                 'type': 'string'
             },
+            'contact_info': {
+                'type': 'object',
+                'properties': {
+                    'full_name': {
+                        'type': 'string'
+                    },
+                    'id_no': {
+                        'type': 'string'
+                    },
+                    'house_no': {
+                        'type': 'string'
+                    },
+                    'village_no': {
+                        'type': 'string'
+                    },
+                    'alley': {
+                        'type': 'string'
+                    },
+                    'village_title': {
+                        'type': 'string'
+                    },
+                    'road': {
+                        'type': 'string'
+                    },
+                    'subdistrict': {
+                        'type': 'string'
+                    },
+                    'district': {
+                        'type': 'string'
+                    },
+                    'province': {
+                        'type': 'string'
+                    },
+                    'postal_code': {
+                        'type': 'string'
+                    },
+                },
+                'required': [
+                    'full_name', 'id_no', 'house_no', 'village_no',
+                    'subdistrict', 'district', 'province', 'postal_code'
+                ]
+            },
             'phone_no': {
                 'type': 'string'
             },
@@ -264,11 +306,7 @@ router.route('/status').post((req, res, next) => {
         delete event.user_id
         send.info = Object.assign({}, event)
         return res.json(send)
-    })
-    // }
-    // catch(error){
-    //   return HttpStatus.send(res, 'INTERNAL_SERVER_ERROR')
-    // }
-})
+    });
+});
 
 export default router
