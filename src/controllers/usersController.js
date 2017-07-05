@@ -67,10 +67,7 @@ router.route('/').post((req, res, next) => {
             'enterprise_name': {
                 'type': 'string'
             },
-            'first_name': {
-                'type': 'string'
-            },
-            'last_name': {
+            'full_name': {
                 'type': 'string'
             },
             'id_no': {
@@ -173,8 +170,8 @@ router.route('/').post((req, res, next) => {
             }
         },
         'required': [
-            'registration_type', 'enterprise_name', 'first_name', 'last_name',
-            'id_no', 'house_no', 'village_no', 'subdistrict', 'district', 'province',
+            'registration_type', 'enterprise_name', 'full_name', 'id_no',
+            'house_no', 'village_no', 'subdistrict', 'district', 'province',
             'postal_code', 'phone_no', 'enterprise_type', 'needed_help'
         ]
     }

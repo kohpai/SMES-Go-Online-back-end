@@ -54,8 +54,7 @@ const addUser = (input, done) => {
         user_id: hashids.encode(1, 2, 3, 4, 5),
         username: input.phone_no,
         password: hashids.encode(6, 7, 8),
-        first_name: input.first_name,
-        last_name: input.last_name,
+        full_name: input.full_name,
         role: 'user'
     };
     var queryOption = {
@@ -70,10 +69,9 @@ const addUser = (input, done) => {
         } else {
             input = Object.assign(input, input.enterprise_type);
             input = Object.assign(input, input.needed_help);
-            input.user_id = results.insertId;
+            input.user_id = userInfo.user_id;
 
-            delete input.first_name;
-            delete input.last_name;
+            delete input.full_name;
             delete input.phone_no;
             delete input.enterprise_type;
             delete input.needed_help;
