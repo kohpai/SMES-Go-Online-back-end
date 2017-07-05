@@ -49,6 +49,23 @@ const close = (done) => {
     }
 }
 
+const reconnect = () => {
+    console.log('Attempting to reconnect with MySQL server');
+    connect(function(err) {
+        if (err)
+            setTimeout(reconnect, 5000);
+    });
+}
+
+connection.on('error', function(err) {
+    console.log('DB error with no pending callbacks, code: ', err.code);
+
+    if (err.code === 'PROTOCOL_CONNECTION_LOST')
+        reconnect();
+    else
+        process.exit(1);
+});
+
 export default {
     connect,
     get,
