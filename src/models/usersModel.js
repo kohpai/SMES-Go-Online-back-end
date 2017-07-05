@@ -2,7 +2,8 @@
 
 
 // import
-import DB from '../db.js'
+import DB from '../db.js';
+import Hashids from 'hashids';
 
 const timeout = 20000;
 
@@ -47,25 +48,20 @@ const getUserById = (id, done) => {
     });
 }
 
-const addUser = (userInfo, done) => {
+const addUser = (input, done) => {
+    var hashids = new Hashids(input.phone_no);
+    var userInfo = {username: hashids.encode(1)};
     var queryOption = {
-        sql: 'INSERT INTO entrepreneur (' +
-        'sme_id, first_name, last_name, citizen_id,' +
-        'phone_no, email, job, ecom_do_own, ecom_category,' +
-        'know_estda, house_no, village_no, alley, village_title,' +
-        'road, province, district, subdistrict, postal_code, scholar)' +
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
+        // sql: 'INSERT INTO entrepreneur (' +
+        //         'registration_type, enterprise_name, name, id_no, house_no, village_no,' +
+        //         'alley, village_title, road, subdistrict, district, province,' +
+        //         'postal_code, phone_no, enterprise_type, needed_help) ' +
+        //      'VALUES (' +
+        //         '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        sql: 'INSERT INTO enterprise SET ?',
         timeout: timeout, // 20s
         // values: [tableEnt, DB.get().escape(id)],
-        values: [
-            userInfo.sme_id, userInfo.first_name, userInfo.last_name,
-            userInfo.citizen_id, userInfo.phone_no, userInfo.email,
-            userInfo.job, userInfo.ecom_do_own, userInfo.ecom_category,
-            userInfo.know_estda, userInfo.house_no, userInfo.village_no,
-            userInfo.alley, userInfo.village_title, userInfo.road,
-            userInfo.province, userInfo.district, userInfo.subdistrict,
-            userInfo.postal_code, userInfo.scholar
-        ],
+        values: [],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
@@ -119,14 +115,16 @@ const authenUser = (username, password, done) => {
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
-        } else {
+        } else if (results.length) {
             results[0].id = results[0].user_id;
             delete results[0].user_id;
             return done(results[0]);
+        } else {
+            return done(results);
         }
     });
 }
 
 export default {
-   authenUser
+    authenUser
 }
