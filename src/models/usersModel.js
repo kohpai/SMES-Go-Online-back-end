@@ -19,32 +19,37 @@ const mergeMultivalued = (array, key) => {
 
 const getUserById = (id, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM `entrepreneur` WHERE `ent_id` = ?;' +
-        'SELECT * FROM `ent_ecom_needed_help` WHERE `ent_id` = ?;' +
-        'SELECT * FROM `ent_intended_sme_proj` WHERE `ent_id` = ?;' +
-        'SELECT * FROM `ent_participated_sme_proj` WHERE `ent_id` = ?;',
+        sql: 'SELECT * FROM `user` WHERE `user_id` = ?;',
         timeout: timeout, // 20s
-        // values: [tableEnt, DB.get().escape(id)],
-        values: [id, id, id, id],
+        values: [id],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
-            console.log('error');
             return done(error);
-        } else {
-            var user = results[0][0];
-            var helps = results[1];
-            var intProjs = results[2];
-            var partProjs = results[3];
-
-            user.needed_help = mergeMultivalued(helps, 'needed_help');
-            user.intended_sme_proj = mergeMultivalued(intProjs, 'intended_sme_proj');
-            user.participated_sme_proj = mergeMultivalued(partProjs, 'participated_sme_proj');
-
-            return done(user);
-
+        } else if (results.length) {
+            delete results[0].password;
+            return done(results[0]);
         }
+
+        return done(null);
+    });
+}
+
+const getEnterpriseByUserId = (id, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM `enterprise` WHERE `user_id` = ?;',
+        timeout: timeout, // 20s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error)
+            return done(error);
+        else if (results.length)
+            return done(results[0]);
+
+        return done(null);
     });
 }
 
@@ -112,4 +117,6 @@ const authenUser = (username, password, done) => {
 export default {
     authenUser,
     addUser,
+    getUserById,
+    getEnterpriseByUserId,
 }

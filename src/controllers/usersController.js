@@ -15,9 +15,8 @@ import { Util, Enum } from '../helper'
 /* further work
    - catch error
    */
-router.route('/info').post((req, res, next) => {
-    // try {
-    var data = req.body
+router.route('/:id').get((req, res, next) => {
+    var data = {user_id: req.params.id};
     var schema = {
         'additionalProperties': false,
         'properties': {
@@ -26,7 +25,8 @@ router.route('/info').post((req, res, next) => {
             }
         },
         'required': [ 'user_id' ]
-    }
+    };
+
     var valid = ajv.validate(schema, data)
     if (!valid)
         return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
@@ -37,26 +37,59 @@ router.route('/info').post((req, res, next) => {
     }
 
     UsersModel.getUserById(data.user_id, (user) => {
-        if (user == null){
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'unknow user_id '+data.user_id;
+        if (user == null) {
+            send.message = 'Unknown user_id ' + data.user_id;
+            return res.json(send);
+        } else if (user instanceof Error) {
+            send.message = 'Cannot get user ' + data.user_id;
+            send.hint = user.sqlMessage;
             return res.json(send);
         }
 
         send.status = Enum.res_type.SUCCESS;
         send.info = Object.assign({}, user);
-
         return res.json(send);
+    });
+});
 
-    })
-    // }
-    // catch(error){
-    //   return HttpStatus.send(res, 'INTERNAL_SERVER_ERROR')
-    // }
-})
+router.route('/:id/enterprise').get((req, res, next) => {
+    var data = {user_id: req.params.id};
+    var schema = {
+        'additionalProperties': false,
+        'properties': {
+            'user_id': {
+                'type': 'string'
+            }
+        },
+        'required': [ 'user_id' ]
+    };
+
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    UsersModel.getEnterpriseByUserId(data.user_id, (user) => {
+        if (user == null) {
+            send.message = 'Unknown user_id ' + data.user_id;
+            return res.json(send);
+        } else if (user instanceof Error) {
+            send.message = 'Cannot get user ' + data.user_id;
+            send.hint = user.sqlMessage;
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS;
+        send.info = Object.assign({}, user);
+        return res.json(send);
+    });
+});
 
 router.route('/').post((req, res, next) => {
-    // try {
     var data = req.body
     var schema = {
         'additionalProperties': false,
@@ -198,7 +231,7 @@ router.route('/').post((req, res, next) => {
         send.info = {id: result};
         return res.json(send)
     });
-})
+});
 
 router.route('/status').post((req, res, next) => {
     // try {
