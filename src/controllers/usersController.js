@@ -164,11 +164,11 @@ router.route('/').post((req, res, next) => {
                     },
                     'other': {
                         'type': 'string'
-                    }
+                    },
                 }
             },
             'sme_member_no': {
-                'type': 'array'
+                'type': 'string'
             },
             'needed_help': {
                 'type': 'object',
