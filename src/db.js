@@ -10,7 +10,7 @@ var state = {
     db: null,
 }
 
-const connection = MySql.createConnection(Config.mysql);
+var connection = MySql.createConnection(Config.mysql);
 
 const connect = (done) =>  {
     if (state.db)
@@ -51,6 +51,8 @@ const close = (done) => {
 
 const reconnect = () => {
     console.log('Attempting to reconnect with MySQL server');
+    connection = MySql.createConnection(Config.mysql);
+
     connect(function(err) {
         if (err)
             setTimeout(reconnect, 5000);
@@ -60,10 +62,12 @@ const reconnect = () => {
 connection.on('error', function(err) {
     console.log('DB error with no pending callbacks, code: ', err.code);
 
-    if (err.code === 'PROTOCOL_CONNECTION_LOST')
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+        state.db = null;
         reconnect();
-    else
+    } else {
         process.exit(1);
+    }
 });
 
 export default {
