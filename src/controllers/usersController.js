@@ -6,11 +6,12 @@ const router = new Router()
 import Ajv from 'ajv'
 const ajv = new Ajv()
 
+var request = require("request")
+
 // using
 import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
 import { Util, Enum } from '../helper'
-
 
 /* further work
    - catch error
@@ -308,5 +309,55 @@ router.route('/status').post((req, res, next) => {
         return res.json(send)
     });
 });
+
+router.route('/send_sms').post((req, res, next) => {
+    var data = req.body
+    console.log(req.body)
+    var schema = {
+        'additionalProperties': false,
+        'properties': {
+            'phone_number': {
+                'type': 'string'
+            },
+            'message': {
+                'type': 'string'
+            }
+        },
+        'required': [ 'phone_number', 'message' ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid) return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+
+    var message = data.message.toString("utf8")
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    var options = {
+        method: 'POST',
+        url: 'http://corpsms.dtac.co.th/servlet/com.iess.socket.SmsCorplink',
+        headers: { 'cache-control': 'no-cache' },
+        body: 'RefNo=10000000'+'&Msn='+data.phone_number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEs Go'
+
+    };
+
+    console.log(options)
+
+    request(options, function (error, response, body) {
+        if (error){
+            send.status = Enum.res_type.FAILURE
+            send.message = error
+            return res.json(send)
+        }
+        send.status = Enum.res_type.SUCCESS
+        send.message = response.body
+        return res.json(send)
+    });
+
+    //body: 'RefNo=10000000'+'&Msn='+data.phone_number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEs Go'
+
+})
 
 export default router

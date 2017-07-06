@@ -2,16 +2,21 @@
 
 const server = {
     host: process.env.HOST || 'localhost',
-    port: process.env.HOST_PORT || 8000
+    port: process.env.HOST_PORT || 5000
 };
 
 const mysql = {
-    host     : 'localhost',
-    port     : 3306,
+    host     : 'smeregister.gsoftbiz.com',
+    port     : 4000,
     user     : 'root',
     password : 'rootAuthP4ss',
     database : 'smesgoonline',
     multipleStatements: true,
+};
+
+const seaweedfs = {
+    host    : 'smeregister.gsoftbiz.com',
+    port    : 9333,
 };
 
 const ajv = {
@@ -21,5 +26,6 @@ const ajv = {
 export default {
     server,
     mysql,
-    ajv
+    seaweedfs,
+    ajv,
 };
