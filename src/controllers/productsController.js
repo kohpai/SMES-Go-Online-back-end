@@ -6,8 +6,6 @@ const router = new Router()
 import Ajv from 'ajv'
 const ajv = new Ajv()
 
-var request = require("request")
-
 // using
 import HttpStatus from './../helper/http_status.js'
 import ProductsModel from '../models/productsModel.js'
@@ -76,76 +74,220 @@ router.route('/').post((req, res, next) => {
         }
 
         send.status = Enum.res_type.SUCCESS
-        send.info = {id: result};
+        send.info = result;
         return res.json(send)
     });
 });
 
-router.route('/send_sms').post((req, res, next) => {
+router.route('/:id').put((req, res, next) => {
+    var id = req.params.id
     var data = req.body
-    console.log(req.body)
     var schema = {
         'additionalProperties': false,
         'properties': {
-            'phone_number': {
+            'title': {
                 'type': 'string'
             },
-            'message': {
+            'sku': {
                 'type': 'string'
-            }
+            },
+            'unspsc': {
+                'type': 'string'
+            },
+            'category': {
+                'type': 'string'
+            },
+            'no_of_pieces': {
+                'type': 'string'
+            },
+            'price': {
+                'type': 'string'
+            },
+            'barcode': {
+                'type': 'string'
+            },
+            'description': {
+                'type': 'string'
+            },
         },
-        'required': [ 'phone_number', 'message' ]
+        'required': [
+            // 'title', 'sku', 'category', 'price'
+        ]
     }
     var valid = ajv.validate(schema, data)
-    if (!valid) return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
-
-    var message = data.message.toString("utf8")
+    if (!valid)
+        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
 
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
     }
 
-    var options = {
-        method: 'POST',
-        url: 'http://corpsms.dtac.co.th/servlet/com.iess.socket.SmsCorplink',
-        headers: { 'cache-control': 'no-cache' },
-        body: 'RefNo=10000000'+'&Msn='+data.phone_number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEs Go'
-
-    };
-
-    console.log(options)
-
-    request(options, function (error, response, body) {
-        if (error){
-            send.status = Enum.res_type.FAILURE
-            send.message = error
-            return res.json(send)
+    ProductsModel.updateProduct(id, data, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed update an product';
+            send.hint = 'MySQL error: '+ result.sqlMessage;
+            console.log('The SQL stattement')
+            console.log(result.sql);
+            return res.json(send);
         }
+
         send.status = Enum.res_type.SUCCESS
-        send.message = response.body
+        send.info = result;
         return res.json(send)
     });
+});
 
-    //body: 'RefNo=10000000'+'&Msn='+data.phone_number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEs Go'
-
-})
-
-router.route('/upload_file').post((req, res, next) => {
+router.route('/:id').get((req, res, next) => {
+    var id = req.params.id
 
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
     }
 
-    FileModel.saveFile(req.files.file, (result) => {
+    ProductsModel.detailProduct(id, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed update an product';
+            send.hint = 'MySQL error: '+ result.sqlMessage;
+            console.log('The SQL stattement')
+            console.log(result.sql);
+            return res.json(send);
+        }
+
+        ProductsModel.getImages(id, (result_images) => {
+            if (result instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = result_images
+                return res.json(send);
+            }
+
+            result.images = result_images
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result;
+            return res.json(send)
+        })
+    });
+});
+
+router.route('/:id').delete((req, res, next) => {
+    var id = req.params.id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    ProductsModel.deleteProduct(id, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = result;
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result;
+        return res.json(send)
+    });
+});
+
+var search = (req, res, next) => {
+    var search = ''
+    if(req.params.search){
+        search = req.params.search
+    }
+    var page = parseInt(req.query.page, 0)
+    var limit = parseInt(req.query.limit, 0)
+    console.log(page +":"+limit)
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    ProductsModel.searchProduct(search, page*limit, limit, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed search an product';
+            send.hint = 'MySQL error: '+ result.sqlMessage;
+            console.log('The SQL stattement')
+            console.log(result.sql);
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result;
+        return res.json(send)
+    });
+};
+
+router.route('/list/:search').get(search);
+router.route('/list/').get(search);
+
+router.route('/:id/image').post((req, res, next) => {
+    var id = req.params.id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    FileModel.saveFile(req.files.image, (result) => {
         if(result == null){
-            send.status = 'fail'
+            send.status = Enum.res_type.FAILURE
             send.message = 'file not found'
             return res.json(send)
         }
+
+        ProductsModel.addImage(id, result.fid, 0, (result) => {
+            if(result == null){
+                send.status = Enum.res_type.FAILURE
+                send.message = 'file not found'
+                return res.json(send)
+            }else if(result instanceof Error){
+                send.status = Enum.res_type.FAILURE
+                send.message = result
+                return res.json(send)
+            }
+            send.status = 'success'
+            send.info = result
+            return res.json(send)
+        })
+    })
+})
+
+router.route('/:id/image/:image_id').delete((req, res, next) => {
+    var id = req.params.id
+    var image_id = req.params.image_id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    // FileModel.deleteFile(image_id, (result) => {
+    //     if(result == null){
+    //         send.status = Enum.res_type.FAILURE
+    //         send.message = 'file not found'
+    //         return res.json(send)
+    //     }
+    // })
+
+    ProductsModel.deleteImage(id, image_id, (result) => {
+        if(result == null){
+            send.status = Enum.res_type.FAILURE
+            send.message = 'file not found'
+            return res.json(send)
+        }else if(result instanceof Error){
+            send.status = Enum.res_type.FAILURE
+            send.message = result
+            return res.json(send)
+        }
         send.status = 'success'
-        send.message = result
+        send.info = result
         return res.json(send)
     })
 })

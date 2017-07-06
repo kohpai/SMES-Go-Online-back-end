@@ -43,6 +43,17 @@ const saveFile = (file, done) => {
     })
 }
 
+const deleteFile = (id, done) => {
+    seaweedfs.remove(id).then(function (fileInfo) {
+        return done(fileInfo)
+    }).then(function (Buffer) {
+    }).catch(function (err) {
+        console.log(err)
+        return done(err)
+    })
+}
+
 export default {
     saveFile,
+    deleteFile
 }
