@@ -20,6 +20,108 @@ router.use(fileUpload())
 /* further work
    - catch error
    */
+var search = (req, res, next) => {
+    var search = ''
+    if(req.params.search){
+        search = req.params.search
+    }
+    var page = parseInt(req.query.page, 0)
+    var limit = parseInt(req.query.limit, 0)
+    console.log(page +":"+limit)
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    ProductsModel.searchProduct(search, page*limit, limit, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed search an product';
+            send.hint = 'MySQL error: '+ result.sqlMessage;
+            console.log('The SQL stattement')
+            console.log(result.sql);
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result;
+        return res.json(send)
+    });
+};
+
+router.route('/list/:search').get(search);
+router.route('/list/').get(search);
+
+router.route('/:id/image/:image_id').delete((req, res, next) => {
+    var id = req.params.id
+    var image_id = req.params.image_id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    console.log("/:id/image/:image_id")
+
+    // FileModel.deleteFile(image_id, (result) => {
+    //     if(result == null){
+    //         send.status = Enum.res_type.FAILURE
+    //         send.message = 'file not found'
+    //         return res.json(send)
+    //     }
+    // })
+
+    ProductsModel.deleteImage(id, image_id, (result) => {
+        if(result == null){
+            send.status = Enum.res_type.FAILURE
+            send.message = 'file not found'
+            return res.json(send)
+        }else if(result instanceof Error){
+            send.status = Enum.res_type.FAILURE
+            send.message = result
+            return res.json(send)
+        }
+        send.status = 'success'
+        send.info = result
+        return res.json(send)
+    })
+})
+
+router.route('/:id/image').post((req, res, next) => {
+    var id = req.params.id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    console.log("/:id/image")
+
+    FileModel.saveFile(req.files.image, (result) => {
+        if(result == null){
+            send.status = Enum.res_type.FAILURE
+            send.message = 'file not found'
+            return res.json(send)
+        }
+
+        ProductsModel.addImage(id, result.fid, 0, (result) => {
+            if(result == null){
+                send.status = Enum.res_type.FAILURE
+                send.message = 'file not found'
+                return res.json(send)
+            }else if(result instanceof Error){
+                send.status = Enum.res_type.FAILURE
+                send.message = result
+                return res.json(send)
+            }
+            send.status = 'success'
+            send.info = result
+            return res.json(send)
+        })
+    })
+})
+
 router.route('/').post((req, res, next) => {
     var data = req.body
     var schema = {
@@ -147,6 +249,8 @@ router.route('/:id').get((req, res, next) => {
         info: {}
     }
 
+    console.log("/products/:id")
+
     ProductsModel.detailProduct(id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
@@ -158,13 +262,17 @@ router.route('/:id').get((req, res, next) => {
         }
 
         ProductsModel.getImages(id, (result_images) => {
-            if (result instanceof Error) {
+            if  (result == null){
+                send.status = Enum.res_type.FAILURE;
+                send.message = "not found"
+                return res.json(send);
+            }else if (result instanceof Error) {
                 send.status = Enum.res_type.FAILURE;
                 send.message = result_images
                 return res.json(send);
             }
 
-            result.images = result_images
+            result.images = result_images;
 
             send.status = Enum.res_type.SUCCESS
             send.info = result;
@@ -193,103 +301,5 @@ router.route('/:id').delete((req, res, next) => {
         return res.json(send)
     });
 });
-
-var search = (req, res, next) => {
-    var search = ''
-    if(req.params.search){
-        search = req.params.search
-    }
-    var page = parseInt(req.query.page, 0)
-    var limit = parseInt(req.query.limit, 0)
-    console.log(page +":"+limit)
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    ProductsModel.searchProduct(search, page*limit, limit, (result) => {
-        if (result instanceof Error) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'Failed search an product';
-            send.hint = 'MySQL error: '+ result.sqlMessage;
-            console.log('The SQL stattement')
-            console.log(result.sql);
-            return res.json(send);
-        }
-
-        send.status = Enum.res_type.SUCCESS
-        send.info = result;
-        return res.json(send)
-    });
-};
-
-router.route('/list/:search').get(search);
-router.route('/list/').get(search);
-
-router.route('/:id/image').post((req, res, next) => {
-    var id = req.params.id
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    FileModel.saveFile(req.files.image, (result) => {
-        if(result == null){
-            send.status = Enum.res_type.FAILURE
-            send.message = 'file not found'
-            return res.json(send)
-        }
-
-        ProductsModel.addImage(id, result.fid, 0, (result) => {
-            if(result == null){
-                send.status = Enum.res_type.FAILURE
-                send.message = 'file not found'
-                return res.json(send)
-            }else if(result instanceof Error){
-                send.status = Enum.res_type.FAILURE
-                send.message = result
-                return res.json(send)
-            }
-            send.status = 'success'
-            send.info = result
-            return res.json(send)
-        })
-    })
-})
-
-router.route('/:id/image/:image_id').delete((req, res, next) => {
-    var id = req.params.id
-    var image_id = req.params.image_id
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    // FileModel.deleteFile(image_id, (result) => {
-    //     if(result == null){
-    //         send.status = Enum.res_type.FAILURE
-    //         send.message = 'file not found'
-    //         return res.json(send)
-    //     }
-    // })
-
-    ProductsModel.deleteImage(id, image_id, (result) => {
-        if(result == null){
-            send.status = Enum.res_type.FAILURE
-            send.message = 'file not found'
-            return res.json(send)
-        }else if(result instanceof Error){
-            send.status = Enum.res_type.FAILURE
-            send.message = result
-            return res.json(send)
-        }
-        send.status = 'success'
-        send.info = result
-        return res.json(send)
-    })
-})
 
 export default router

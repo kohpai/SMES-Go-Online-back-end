@@ -84,6 +84,9 @@ const getImages = (id, done) => {
         values: [id],
     };
 
+    console.log(queryOption)
+    console.log(id)
+
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
