@@ -6,8 +6,8 @@ const server = {
 };
 
 const mysql = {
-    host     : 'localhost',
-    port     : 3306,
+    host     : 'smeregister.gsoftbiz.com',
+    port     : 4000,
     user     : 'root',
     password : 'rootAuthP4ss',
     database : 'smesgoonline',

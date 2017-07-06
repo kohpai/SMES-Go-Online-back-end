@@ -6,7 +6,7 @@ const router = new Router()
 
 // using
 import HttpStatus from './../helper/http_status.js'
-import NewsModel from '../models/newsModel.js'
+import FaqModel from '../models/faqModel.js'
 import { Util, Enum } from '../helper'
 
 
@@ -20,16 +20,16 @@ router.route('/').get((req, res, next) => {
         info: {}
     };
 
-    NewsModel.getNews((news) => {
-        if (news instanceof Error) {
-            send.message = 'Error getting news';
-            send.hint = news.sqlMessage;
+    FaqModel.getFaq((faq) => {
+        if (faq instanceof Error) {
+            send.message = 'Error getting faq';
+            send.hint = faq.sqlMessage;
 
             return res.json(send);
         }
 
         send.status = Enum.res_type.SUCCESS;
-        send.info = news;
+        send.info = faq;
 
         return res.json(send);
 
