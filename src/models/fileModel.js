@@ -3,6 +3,7 @@
 import Config from '../config.js'
 
 var fs = require('fs')
+var path = require("path")
 var weedClient = require('node-seaweedfs')
 
 const timeout = 20000;
@@ -43,6 +44,19 @@ const saveFile = (file, done) => {
     })
 }
 
+const readFile = (id, name, done) => {
+
+    if (!fs.existsSync('./temp/')){
+        fs.mkdirSync('./temp/')
+    }
+
+    seaweedfs.read(id, fs.createWriteStream('./temp/'+name))
+
+    var file_path = path.resolve('./temp/')
+
+    return done({path: file_path, file:name})
+}
+
 const deleteFile = (id, done) => {
     seaweedfs.remove(id).then(function (fileInfo) {
         return done(fileInfo)
@@ -55,5 +69,6 @@ const deleteFile = (id, done) => {
 
 export default {
     saveFile,
-    deleteFile
+    deleteFile,
+    readFile,
 }

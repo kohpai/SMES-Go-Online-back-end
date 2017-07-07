@@ -88,6 +88,39 @@ router.route('/:id/image/:image_id').delete((req, res, next) => {
     })
 })
 
+router.route('/:id/image/:image_id').get((req, res, next) => {
+    var id = req.params.id
+    var image_id = req.params.image_id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    ProductsModel.findImage(id, image_id, (result) => {
+        if(result instanceof Error){
+            send.status = Enum.res_type.FAILURE
+            send.message = result
+            return res.json(send)
+
+        }else if(result.length){
+
+            FileModel.readFile(result[0].image, result[0].name, (result_image) => {
+                console.log(result_image)
+                //return res.sendFile(result_image.path+"/"+result_image.file)
+                send.status = Enum.res_type.SUCCESS
+                send.message = result_image.path+"/"+result_image.file
+                return res.json(send)
+            })
+        }else{
+            send.status = Enum.res_type.FAILURE
+            send.message = 'file not found'
+            return res.json(send)
+        }
+    })
+
+})
+
 router.route('/:id/image').post((req, res, next) => {
     var id = req.params.id
 
@@ -96,8 +129,6 @@ router.route('/:id/image').post((req, res, next) => {
         info: {}
     }
 
-    console.log("/:id/image")
-
     FileModel.saveFile(req.files.image, (result) => {
         if(result == null){
             send.status = Enum.res_type.FAILURE
@@ -105,7 +136,7 @@ router.route('/:id/image').post((req, res, next) => {
             return res.json(send)
         }
 
-        ProductsModel.addImage(id, result.fid, 0, (result) => {
+        ProductsModel.addImage(id, result.fid, req.files.image.name, 0, (result) => {
             if(result == null){
                 send.status = Enum.res_type.FAILURE
                 send.message = 'file not found'
@@ -331,24 +362,19 @@ router.route('/:id').get((req, res, next) => {
         info: {}
     }
 
-    console.log("/products/:id")
-
     ProductsModel.detailProduct(id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = 'Failed update an product';
-            send.hint = 'MySQL error: '+ result.sqlMessage;
-            console.log('The SQL stattement')
-            console.log(result.sql);
+            send.message = result;
             return res.json(send);
         }
 
         ProductsModel.getImages(id, (result_images) => {
-            if  (result == null){
+            if  (result_images == null){
                 send.status = Enum.res_type.FAILURE;
                 send.message = "not found"
                 return res.json(send);
-            }else if (result instanceof Error) {
+            }else if (result_images instanceof Error) {
                 send.status = Enum.res_type.FAILURE;
                 send.message = result_images
                 return res.json(send);
@@ -356,9 +382,19 @@ router.route('/:id').get((req, res, next) => {
 
             result.images = result_images;
 
-            send.status = Enum.res_type.SUCCESS
-            send.info = result;
-            return res.json(send)
+            ProductsModel.getEmarket(id, (result_emarket) => {
+                if (result_emarket instanceof Error) {
+                    send.status = Enum.res_type.FAILURE;
+                    send.message = result_emarket
+                    return res.json(send);
+                }
+
+                result.using_platforms = result_emarket
+
+                send.status = Enum.res_type.SUCCESS
+                send.info = result;
+                return res.json(send)
+            })
         })
     });
 });

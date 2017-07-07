@@ -100,9 +100,6 @@ const getImages = (id, done) => {
         values: [id],
     };
 
-    console.log(queryOption)
-    console.log(id)
-
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
@@ -157,10 +154,27 @@ const searchProduct = (search, offset, limit, done) => {
     });
 }
 
-const addImage = (id, id_image, weight, done) => {
+const findImage = (id, image_id, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM prod_image WHERE prod_id = ? AND image = ? AND status = 1;',
+        timeout: timeout, // 20s
+        values: [id, image_id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(results);
+        }
+    });
+}
+
+const addImage = (id, id_image, name, weight, done) => {
     var productImageInfo = {
         prod_id: id,
         image: id_image,
+        name: name,
         weight: weight,
     };
     var queryOption = {
@@ -239,6 +253,23 @@ const deleteEmarket = (id, done) => {
     });
 }
 
+const getEmarket = (id, done) => {
+
+    var queryOption = {
+        sql: 'SELECT * FROM prod_emarket WHERE prod_id = ?',
+        timeout: timeout, // 20s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(results);
+        }
+    });
+}
+
 export default {
     addProduct,
     updateProduct,
@@ -250,4 +281,6 @@ export default {
     deleteImage,
     addEmarket,
     deleteEmarket,
+    getEmarket,
+    findImage,
 }
