@@ -1,7 +1,7 @@
 'use strict'
 
 const server = {
-    host: process.env.HOST || 'localhost',
+    host: process.env.HOST || '0.0.0.0',
     port: process.env.HOST_PORT || 5000
 };
 
