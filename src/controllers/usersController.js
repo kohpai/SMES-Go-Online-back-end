@@ -6,8 +6,6 @@ const router = new Router()
 import Ajv from 'ajv'
 const ajv = new Ajv()
 
-var request = require("request")
-
 // using
 import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
