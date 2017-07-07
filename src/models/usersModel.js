@@ -8,6 +8,40 @@ import EnterpriseModel from './enterpriseModel.js';
 
 const timeout = 20000;
 
+const deleteUser = (id, done) => {
+
+    var queryOption = {
+        sql: 'DELETE FROM user WHERE user_id = ?',
+        timeout: timeout, // 20s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(results);
+        }
+    });
+}
+
+const deleteContact = (id, done) => {
+
+    var queryOption = {
+        sql: 'DELETE FROM contact WHERE contact_id = ?',
+        timeout: timeout, // 20s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(results);
+        }
+    });
+}
+
 const getUserById = (id, done) => {
     var queryOption = {
         sql: 'SELECT * FROM `user` WHERE `user_id` = ?;',
@@ -46,6 +80,13 @@ const getEnterpriseByUserId = (id, done) => {
 
 const addUser = (input, done) => {
     var hashids = new Hashids(input.phone_no);
+
+    if(input.phone_no.startsWith('66')){
+        input.phone_no = '0'+input.phone_no.slice(2)
+    }else if(input.phone_no.startsWith('+66')){
+        input.phone_no = '0'+input.phone_no.slice(3)
+    }
+
     var userInfo = {
         //user_id: hashids.encode(1, 2, 3, 4, 5),
         username: input.phone_no,
@@ -65,7 +106,6 @@ const addUser = (input, done) => {
         } else {
 
             input.user_id = results.insertId;
-            input.enterprise_name = input.title+' '+input.name+' '+input.lastname;
 
             if(input.enterprise_type.agricultural_product.length){
                 input.is_agricultural_product = true
@@ -112,9 +152,10 @@ const addUser = (input, done) => {
             input.needed_help_online_marketing = input.needed_help.needed_help_online_marketing
             input.needed_help_tax = input.needed_help.needed_help_tax
 
-            var sub_year = parseInt(input.age)
             var date = new Date();
-            date.setYear(date.getYear() - sub_year)
+            date.setFullYear(date.getFullYear() - input.age)
+            date.setMonth(0)
+            date.setDate(1)
             input.birthyear = date.toISOString().split('T')[0];
 
             delete input.phone_no;
@@ -122,27 +163,42 @@ const addUser = (input, done) => {
             delete input.needed_help;
             delete input.age;
 
-            if (input.contact_info) {
-                EnterpriseModel.addContact(input.contact_info, function(insertId) {
-                    if (insertId instanceof Error)
-                        return done(insertId);
+            if (input.contact_info && input.registration_type == 3) {
 
+                input.contact_info.full_name = input.contact_info.title+' '+input.contact_info.name+' '+input.contact_info.lastname
+
+                EnterpriseModel.addContact(input.contact_info, function(insertId) {
+                    if (insertId instanceof Error) {
+                        // delete user
+                        deleteUser(input.user_id, (r) => { })
+                        return done(insertId);
+                    }
                     input.contact_id = insertId;
                     delete input.contact_info;
 
                     EnterpriseModel.addEnterprise(input, function(insertId) {
-                        if (insertId instanceof Error)
-                            return done(insertId);
-                        else
-                            return done(input.user_id);
+                        if (insertId instanceof Error) {
+                            // delete user & contact
+                            deleteUser(input.user_id, (r) => { })
+                            deleteContact(insertId, (r) => { })
+                            return done(insertId)
+                        }else {
+                            return done(input.user_id)
+                        }
                     });
                 });
             } else {
+
+                delete input.contact_info;
+
                 EnterpriseModel.addEnterprise(input, function(insertId) {
-                    if (insertId instanceof Error)
-                        return done(insertId);
-                    else
-                        return done(input.user_id);
+                    if (insertId instanceof Error) {
+                        // delete user
+                        deleteUser(input.user_id, (r) => { })
+                        return done(insertId)
+                    }else {
+                        return done(input.user_id)
+                    }
                 });
             }
         }
