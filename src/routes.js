@@ -9,6 +9,7 @@ import UsersController from './controllers/usersController.js'
 import ProductsController from './controllers/productsController.js'
 import NewsController from './controllers/newsController.js'
 import CountryController from './controllers/countryController.js'
+import FaqController from './controllers/faqController.js'
 
 // create router path
 var router = new Router();
@@ -19,6 +20,7 @@ router.use(api_version, AuthController);
 router.use(api_version+'/users', UsersController);
 router.use(api_version+'/news', NewsController);
 router.use(api_version+'/country', CountryController);
+router.use(api_version+'/faq', FaqController);
 router.use(api_version+'/products', ProductsController);
 
 export default router;
