@@ -18,6 +18,14 @@ const addProduct = (input, done) => {
         price: input.price,
         barcode: input.barcode,
         description: input.description,
+        amount: input.amount,
+        cert_q: input.cert_q,
+        cert_food_and_drug: input.cert_food_and_drug,
+        cert_iso: input.cert_iso,
+        cert_halan: input.cert_halan,
+        cert_organic: input.cert_organic,
+        cert_safefood: input.cert_safefood,
+        cert_other: input.cert_other,
     };
     var queryOption = {
         sql: 'INSERT INTO product SET ?',
@@ -44,6 +52,14 @@ const updateProduct = (id, input, done) => {
         price: input.price,
         barcode: input.barcode,
         description: input.description,
+        amount: input.amount,
+        cert_q: input.cert_q,
+        cert_food_and_drug: input.cert_food_and_drug,
+        cert_iso: input.cert_iso,
+        cert_halan: input.cert_halan,
+        cert_organic: input.cert_organic,
+        cert_safefood: input.cert_safefood,
+        cert_other: input.cert_other,
     };
     var queryOption = {
         sql: 'UPDATE product SET ? WHERE prod_id = ?',
@@ -181,6 +197,48 @@ const deleteImage = (id, id_image, done) => {
     });
 }
 
+const addEmarket = (id, emarkets, done) => {
+
+    emarkets.forEach(function(item, index) {
+        var emarketInfo = {
+            prod_id: id,
+            emarket: item,
+        };
+        var queryOption = {
+            sql: 'INSERT INTO prod_emarket SET ?',
+            timeout: timeout, // 20s
+            values: [emarketInfo],
+        };
+
+        DB.get().query(queryOption, function(error, results, fields) {
+            if(index == emarkets.length - 1){
+                if (error) {
+                    return done(error);
+                } else {
+                    return done(results);
+                }
+            }
+        });
+    });
+}
+
+const deleteEmarket = (id, done) => {
+
+    var queryOption = {
+        sql: 'DELETE FROM prod_emarket WHERE prod_id = ?',
+        timeout: timeout, // 20s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(results);
+        }
+    });
+}
+
 export default {
     addProduct,
     updateProduct,
@@ -190,4 +248,6 @@ export default {
     searchProduct,
     addImage,
     deleteImage,
+    addEmarket,
+    deleteEmarket,
 }

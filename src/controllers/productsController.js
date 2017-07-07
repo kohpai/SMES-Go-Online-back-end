@@ -143,7 +143,7 @@ router.route('/').post((req, res, next) => {
                 'type': 'string'
             },
             'price': {
-                'type': 'string'
+                'type': 'number'
             },
             'barcode': {
                 'type': 'string'
@@ -151,11 +151,41 @@ router.route('/').post((req, res, next) => {
             'description': {
                 'type': 'string'
             },
+            'amount': {
+                'type': 'number'
+            },
+            'cert_q': {
+                'type': 'string'
+            },
+            'cert_food_and_drug': {
+                'type': 'string'
+            },
+            'cert_iso': {
+                'type': 'string'
+            },
+            'cert_halan': {
+                'type': 'string'
+            },
+            'cert_organic': {
+                'type': 'string'
+            },
+            'cert_safefood': {
+                'type': 'string'
+            },
+            'cert_other': {
+                'type': 'string'
+            },
+            'using_platforms': {
+                "items": {
+                    "type": "string"
+                }
+            }
         },
         'required': [
             'title', 'sku', 'category', 'price'
         ]
     }
+
     var valid = ajv.validate(schema, data)
     if (!valid)
         return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
@@ -168,16 +198,23 @@ router.route('/').post((req, res, next) => {
     ProductsModel.addProduct(data, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = 'Failed adding an product';
-            send.hint = 'MySQL error: '+ result.sqlMessage;
-            console.log('The SQL stattement')
-            console.log(result.sql);
+            send.message = result;
             return res.json(send);
         }
 
-        send.status = Enum.res_type.SUCCESS
-        send.info = result;
-        return res.json(send)
+        ProductsModel.addEmarket(result.insertId, data.using_platforms, (result) => {
+
+            if (result instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = result;
+                return res.json(send);
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result;
+            return res.json(send)
+
+        })
     });
 });
 
@@ -203,7 +240,7 @@ router.route('/:id').put((req, res, next) => {
                 'type': 'string'
             },
             'price': {
-                'type': 'string'
+                'type': 'number'
             },
             'barcode': {
                 'type': 'string'
@@ -211,6 +248,35 @@ router.route('/:id').put((req, res, next) => {
             'description': {
                 'type': 'string'
             },
+            'amount': {
+                'type': 'number'
+            },
+            'cert_q': {
+                'type': 'string'
+            },
+            'cert_food_and_drug': {
+                'type': 'string'
+            },
+            'cert_iso': {
+                'type': 'string'
+            },
+            'cert_halan': {
+                'type': 'string'
+            },
+            'cert_organic': {
+                'type': 'string'
+            },
+            'cert_safefood': {
+                'type': 'string'
+            },
+            'cert_other': {
+                'type': 'string'
+            },
+            'using_platforms': {
+                "items": {
+                    "type": "string"
+                }
+            }
         },
         'required': [
             // 'title', 'sku', 'category', 'price'
@@ -235,9 +301,25 @@ router.route('/:id').put((req, res, next) => {
             return res.json(send);
         }
 
-        send.status = Enum.res_type.SUCCESS
-        send.info = result;
-        return res.json(send)
+        ProductsModel.deleteEmarket(id, (result_delete) => {
+            if (result instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = result;
+                return res.json(send);
+            }
+
+            ProductsModel.addEmarket(id, data.using_platforms, (result) => {
+                if (result instanceof Error) {
+                    send.status = Enum.res_type.FAILURE;
+                    send.message = result;
+                    return res.json(send);
+                }
+
+                send.status = Enum.res_type.SUCCESS
+                send.info = result;
+                return res.json(send)
+            })
+        })
     });
 });
 
