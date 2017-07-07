@@ -47,10 +47,10 @@ const getEnterpriseByUserId = (id, done) => {
 const addUser = (input, done) => {
     var hashids = new Hashids(input.phone_no);
     var userInfo = {
-        user_id: hashids.encode(1, 2, 3, 4, 5),
+        //user_id: hashids.encode(1, 2, 3, 4, 5),
         username: input.phone_no,
-        password: hashids.encode(6, 7, 8),
-        full_name: input.full_name,
+        //password: hashids.encode(6, 7, 8),
+        full_name: input.title+" "+input.name+" "+input.lastname,
         role: 'user'
     };
     var queryOption = {
@@ -63,18 +63,64 @@ const addUser = (input, done) => {
         if (error) {
             return done(error);
         } else {
-            Object.keys(input.enterprise_type).forEach(function(value) {
-                input['is_' + value] = true;
-            });
 
-            input = Object.assign(input, input.enterprise_type);
-            input = Object.assign(input, input.needed_help);
-            input.user_id = userInfo.user_id;
+            input.user_id = results.insertId;
+            input.enterprise_name = input.title+' '+input.name+' '+input.lastname;
 
-            delete input.full_name;
+            if(input.enterprise_type.agricultural_product.length){
+                input.is_agricultural_product = true
+            }else{
+                input.is_agricultural_product = false
+            }
+            input.agricultural_product = input.enterprise_type.agricultural_product
+
+            if(input.enterprise_type.industrial_product.length){
+                input.is_industrial_product = true
+            }else{
+                input.is_industrial_product = false
+            }
+            input.industrial_product = input.enterprise_type.industrial_product
+
+            if(input.enterprise_type.selling.length){
+                input.is_selling = true
+            }else{
+                input.is_selling = false
+            }
+            input.selling = input.enterprise_type.selling
+
+            if(input.enterprise_type.service.length){
+                input.is_service = true
+            }else{
+                input.is_service = false
+            }
+            input.service = input.enterprise_type.service
+
+            if(input.enterprise_type.other.length){
+                input.is_other = true
+            }else{
+                input.is_other = false
+            }
+            input.other = input.enterprise_type.other
+
+
+            input.needed_help_ecommerce = input.needed_help.needed_help_ecommerce
+            input.needed_help_investor = input.needed_help.needed_help_investor
+            input.needed_help_supplier = input.needed_help.needed_help_supplier
+            input.needed_help_payment = input.needed_help.needed_help_payment
+            input.needed_help_logistics = input.needed_help.needed_help_logistics
+            input.needed_help_brand = input.needed_help.needed_help_brand
+            input.needed_help_online_marketing = input.needed_help.needed_help_online_marketing
+            input.needed_help_tax = input.needed_help.needed_help_tax
+
+            var sub_year = parseInt(input.age)
+            var date = new Date();
+            date.setYear(date.getYear() - sub_year)
+            input.birthyear = date.toISOString().split('T')[0];
+
             delete input.phone_no;
             delete input.enterprise_type;
             delete input.needed_help;
+            delete input.age;
 
             if (input.contact_info) {
                 EnterpriseModel.addContact(input.contact_info, function(insertId) {
@@ -88,7 +134,7 @@ const addUser = (input, done) => {
                         if (insertId instanceof Error)
                             return done(insertId);
                         else
-                            return done(userInfo.user_id);
+                            return done(input.user_id);
                     });
                 });
             } else {
@@ -96,7 +142,7 @@ const addUser = (input, done) => {
                     if (insertId instanceof Error)
                         return done(insertId);
                     else
-                        return done(userInfo.user_id);
+                        return done(input.user_id);
                 });
             }
         }

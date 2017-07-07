@@ -96,13 +96,22 @@ router.route('/').post((req, res, next) => {
         'additionalProperties': false,
         'properties': {
             'registration_type': {
-                'type': 'string'
+                'type': 'number'
             },
             'enterprise_name': {
                 'type': 'string'
             },
-            'full_name': {
+            'title': {
                 'type': 'string'
+            },
+            'name': {
+                'type': 'string'
+            },
+            'lastname': {
+                'type': 'string'
+            },
+            'age': {
+                'type': 'number'
             },
             'id_no': {
                 'type': 'string'
@@ -122,6 +131,9 @@ router.route('/').post((req, res, next) => {
             'road': {
                 'type': 'string'
             },
+            'subdistrict_code': {
+                'type': 'number'
+            },
             'subdistrict': {
                 'type': 'string'
             },
@@ -137,7 +149,13 @@ router.route('/').post((req, res, next) => {
             'contact_info': {
                 'type': 'object',
                 'properties': {
-                    'full_name': {
+                    'title': {
+                        'type': 'string'
+                    },
+                    'name': {
+                        'type': 'string'
+                    },
+                    'lastname': {
                         'type': 'string'
                     },
                     'id_no': {
@@ -158,6 +176,9 @@ router.route('/').post((req, res, next) => {
                     'road': {
                         'type': 'string'
                     },
+                    'subdistrict_code': {
+                        'type': 'number'
+                    },
                     'subdistrict': {
                         'type': 'string'
                     },
@@ -172,7 +193,7 @@ router.route('/').post((req, res, next) => {
                     },
                 },
                 'required': [
-                    'full_name', 'id_no', 'house_no', 'village_no',
+                    'title', 'name', 'lastname', 'id_no', 'house_no', 'village_no',
                     'subdistrict', 'district', 'province', 'postal_code'
                 ]
             },
@@ -213,10 +234,13 @@ router.route('/').post((req, res, next) => {
             'sme_member_no': {
                 'type': 'string'
             },
+            'is_otop_product': {
+                'type': 'boolean'
+            },
             'needed_help': {
                 'type': 'object',
                 'minProperties': 1,
-                'maxProperties': 7,
+                'maxProperties': 8,
                 'properties': {
                     'needed_help_ecommerce': {
                         'type': 'boolean'
@@ -233,6 +257,9 @@ router.route('/').post((req, res, next) => {
                     'needed_help_logistics': {
                         'type': 'boolean'
                     },
+                    'needed_help_brand': {
+                        'type': 'boolean'
+                    },
                     'needed_help_online_marketing': {
                         'type': 'boolean'
                     },
@@ -246,7 +273,7 @@ router.route('/').post((req, res, next) => {
             }
         },
         'required': [
-            'registration_type', 'enterprise_name', 'full_name', 'id_no',
+            'registration_type', 'enterprise_name', 'title', 'name', 'lastname', 'id_no',
             'house_no', 'village_no', 'subdistrict', 'district', 'province',
             'postal_code', 'phone_no', 'enterprise_type', 'needed_help'
         ]
@@ -263,15 +290,13 @@ router.route('/').post((req, res, next) => {
     UsersModel.addUser(data, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = 'Failed adding an user';
-            send.hint = 'MySQL error: '+ result.sqlMessage;
-            console.log('The SQL stattement')
-            console.log(result.sql);
+            send.message = result;
+
             return res.json(send);
         }
 
         send.status = Enum.res_type.SUCCESS
-        send.info = {id: result};
+        send.info = result;
         return res.json(send)
     });
 });
