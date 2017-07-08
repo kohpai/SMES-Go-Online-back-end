@@ -353,7 +353,7 @@ router.route('/send_sms').post((req, res, next) => {
     var valid = ajv.validate(schema, data)
     if (!valid) return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
 
-    var message = data.message.toString("utf8")
+    var message = data.message.toString("utf-8")
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -361,10 +361,12 @@ router.route('/send_sms').post((req, res, next) => {
     }
 
     var options = {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
         method: 'POST',
         url: 'http://corpsms.dtac.co.th/servlet/com.iess.socket.SmsCorplink',
-        headers: { 'cache-control': 'no-cache' },
-        body: 'RefNo=10000000'+'&Msn='+data.phone_number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEs Go'
+        body: 'RefNo=100000'+'&Msn='+data.phone_number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEsGoONL'
 
     };
 
