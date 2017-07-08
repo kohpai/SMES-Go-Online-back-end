@@ -184,7 +184,7 @@ const addUser = (input, done) => {
                             // delete user & contact
                             deleteUser(input.user_id, (r) => { })
                             deleteContact(insertId, (r) => { })
-                            return done('เลขที่จดทะเบียนนิติบุคคล / เลขที่บัตรประชาชน / เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
+                            return done('เลขที่จดทะเบียนนิติบุคคล หรือ เลขที่บัตรประชาชน หรือ เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
                         }else {
                             return done(input.user_id, null)
                         }
@@ -198,7 +198,7 @@ const addUser = (input, done) => {
                     if (insertId instanceof Error) {
                         // delete user
                         deleteUser(input.user_id, (r) => { })
-                        return done('เลขที่จดทะเบียนนิติบุคคล / เลขที่บัตรประชาชน มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
+                        return done('เลขที่จดทะเบียนนิติบุคคล หรือ เลขที่บัตรประชาชน หรือ เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
                     }else {
                         return done(input.user_id, null)
                     }
