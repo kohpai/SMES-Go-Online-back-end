@@ -6,8 +6,6 @@ const router = new Router()
 import Ajv from 'ajv'
 const ajv = new Ajv()
 
-var request = require("request")
-
 // using
 import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
@@ -287,10 +285,12 @@ router.route('/').post((req, res, next) => {
         info: {}
     }
 
-    UsersModel.addUser(data, (result) => {
-        if (result instanceof Error) {
+    UsersModel.addUser(data, (result, error) => {
+        if (error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = result;
+
+            send.message = result
+            send.info = error
 
             return res.json(send);
         }

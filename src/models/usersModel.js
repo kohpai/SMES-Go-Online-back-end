@@ -102,7 +102,7 @@ const addUser = (input, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
-            return done(error);
+            return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
         } else {
 
             input.user_id = results.insertId;
@@ -171,7 +171,7 @@ const addUser = (input, done) => {
                     if (insertId instanceof Error) {
                         // delete user
                         deleteUser(input.user_id, (r) => { })
-                        return done(insertId);
+                        return done('เลขที่บัตรประชาชน ผู้ติดต่อของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId);
                     }
                     input.contact_id = insertId;
                     delete input.contact_info;
@@ -181,9 +181,9 @@ const addUser = (input, done) => {
                             // delete user & contact
                             deleteUser(input.user_id, (r) => { })
                             deleteContact(insertId, (r) => { })
-                            return done(insertId)
+                            return done('เลขที่จดทะเบียนนิติบุคคล / เลขที่บัตรประชาชน มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
                         }else {
-                            return done(input.user_id)
+                            return done(input.user_id, null)
                         }
                     });
                 });
@@ -195,9 +195,9 @@ const addUser = (input, done) => {
                     if (insertId instanceof Error) {
                         // delete user
                         deleteUser(input.user_id, (r) => { })
-                        return done(insertId)
+                        return done('เลขที่จดทะเบียนนิติบุคคล / เลขที่บัตรประชาชน มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
                     }else {
-                        return done(input.user_id)
+                        return done(input.user_id, null)
                     }
                 });
             }
@@ -207,7 +207,7 @@ const addUser = (input, done) => {
 
 const authenUser = (username, password, done) => {
     var queryOption = {
-        sql: 'SELECT `user_id` FROM `user` WHERE `username` = ? AND `password` = ?',
+        sql: 'SELECT * FROM `user` WHERE `username` = ? AND `password` = ?',
         timeout: timeout, // 20s
         values: [username, password],
     };
@@ -216,8 +216,114 @@ const authenUser = (username, password, done) => {
         if (error) {
             return done(error);
         } else if (results.length) {
-            results[0].id = results[0].user_id;
-            delete results[0].user_id;
+            return done(results[0]);
+        } else {
+            return done(results);
+        }
+    });
+}
+
+const findUser = (username, done) => {
+    var queryOption = {
+        sql: 'SELECT `username`, `otp` FROM `user` WHERE `username` = ?',
+        timeout: timeout, // 20s
+        values: [username],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if (results.length) {
+            return done(results[0]);
+        } else {
+            return done(results);
+        }
+    });
+}
+
+const updateOtp = (username, otp, done) => {
+    var queryOption = {
+        sql: 'UPDATE `user` SET `otp` = ? WHERE `username` = ?',
+        timeout: timeout, // 20s
+        values: [otp, username],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if (results.length) {
+            return done(results[0]);
+        } else {
+            return done(results);
+        }
+    });
+}
+
+const updatePin = (username, pin, done) => {
+    var queryOption = {
+        sql: 'UPDATE `user` SET `password` = ? WHERE `username` = ?',
+        timeout: timeout, // 20s
+        values: [pin, username],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if (results.length) {
+            return done(results[0]);
+        } else {
+            return done(results);
+        }
+    });
+}
+
+const findMachine = (token, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM `user_machine` WHERE `machine_token` = ?',
+        timeout: timeout, // 20s
+        values: [token],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if (results.length) {
+            return done(results[0]);
+        } else {
+            return done(results);
+        }
+    });
+}
+
+const addMachine = (input, done) => {
+    var queryOption = {
+        sql: 'INSERT INTO `user_machine` SET ? ',
+        timeout: timeout, // 20s
+        values: [input],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if (results.length) {
+            return done(results[0]);
+        } else {
+            return done(results);
+        }
+    });
+}
+
+const updateMachine = (token, done) => {
+    var queryOption = {
+        sql: 'UPDATE `user_machine` SET `access_datetime` = ? WHERE `machine_token` = ?',
+        timeout: timeout, // 20s
+        values: [new Date(), token],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if (results.length) {
             return done(results[0]);
         } else {
             return done(results);
@@ -230,4 +336,10 @@ export default {
     addUser,
     getUserById,
     getEnterpriseByUserId,
+    findUser,
+    updateOtp,
+    updatePin,
+    findMachine,
+    addMachine,
+    updateMachine,
 }
