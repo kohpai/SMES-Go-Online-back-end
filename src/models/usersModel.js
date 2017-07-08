@@ -142,6 +142,9 @@ const addUser = (input, done) => {
             }
             input.other = input.enterprise_type.other
 
+            if(input.sme_member_no.length == 0){
+                input.sme_member_no = null
+            }
 
             input.needed_help_ecommerce = input.needed_help.needed_help_ecommerce
             input.needed_help_investor = input.needed_help.needed_help_investor
@@ -181,7 +184,7 @@ const addUser = (input, done) => {
                             // delete user & contact
                             deleteUser(input.user_id, (r) => { })
                             deleteContact(insertId, (r) => { })
-                            return done('เลขที่จดทะเบียนนิติบุคคล / เลขที่บัตรประชาชน มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
+                            return done('เลขที่จดทะเบียนนิติบุคคล / เลขที่บัตรประชาชน / เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
                         }else {
                             return done(input.user_id, null)
                         }
@@ -225,7 +228,7 @@ const authenUser = (username, password, done) => {
 
 const findUser = (username, done) => {
     var queryOption = {
-        sql: 'SELECT `username`, `otp` FROM `user` WHERE `username` = ?',
+        sql: 'SELECT * FROM `user` WHERE `username` = ?',
         timeout: timeout, // 20s
         values: [username],
     };
@@ -243,9 +246,9 @@ const findUser = (username, done) => {
 
 const updateOtp = (username, otp, done) => {
     var queryOption = {
-        sql: 'UPDATE `user` SET `otp` = ? WHERE `username` = ?',
+        sql: 'UPDATE `user` SET `otp` = ?, `otp_gen` = ? WHERE `username` = ?',
         timeout: timeout, // 20s
-        values: [otp, username],
+        values: [otp, new Date(), username],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
@@ -331,6 +334,24 @@ const updateMachine = (token, done) => {
     });
 }
 
+const updatePassMachine = (token, done) => {
+    var queryOption = {
+        sql: 'UPDATE `user_machine` SET `access_datetime` = ? , `otp_pass` = 1 WHERE `machine_token` = ?',
+        timeout: timeout, // 20s
+        values: [new Date(), token],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if (results.length) {
+            return done(results[0]);
+        } else {
+            return done(results);
+        }
+    });
+}
+
 export default {
     authenUser,
     addUser,
@@ -342,4 +363,5 @@ export default {
     findMachine,
     addMachine,
     updateMachine,
+    updatePassMachine,
 }

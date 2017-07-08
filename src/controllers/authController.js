@@ -18,31 +18,25 @@ import Config from '../config.js'
 
 
 router.route('/*').all((req, res, next) => {
-    console.log(req.path)
-    const token = req.header('access-token')
-    console.log(token)
-    if(req.path.startsWith("/products") || req.path.startsWith("/news")){
-
-        var access_token = jwt.sign({ email: '', fullName: '', _id: ''}, secret)
-        console.log(access_token)
-
-        jwt.verify(access_token, secret, (err, decode) => {
-            if(err){
-                console.log(err)
-            }
-            console.log(decode)
-        })
-
-        if(token != 'xxx') {
-            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
-        }
-    }
+    const access_token = req.header('access_token')
+    // if(req.path.startsWith("/products") || req.path.startsWith("/news")){
+    //
+    //     jwt.verify(access_token, secret, (err, decode) => {
+    //         if(err){
+    //             console.log(err)
+    //         }
+    //         console.log(decode)
+    //     })
+    //
+    //     if(access_token != 'xxx') {
+    //         return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+    //     }
+    // }
 
     return next()
 })
 
 router.route('/login').post((req, res, next) => {
-    // try {
     var data = req.body
     var schema = {
         "additionalProperties": false,
@@ -72,12 +66,11 @@ router.route('/login').post((req, res, next) => {
     };
 
     UsersModel.authenUser(data.username, data.pin, (user) => {
-        if (user == null) {
+        if (user == null || user.length == 0) {
             send.message = 'Incorrect username or pin.'
             return res.json(send)
         } else if (user instanceof Error) {
             send.message = 'Incorrect username or pin.'
-            send.hint = user.sqlMessage;
             return res.json(send)
         }
 
@@ -89,7 +82,7 @@ router.route('/login').post((req, res, next) => {
 
         // find machine
         UsersModel.findMachine(data.machine_token, (machine) => {
-            if (data.machine_token.length == 0 || machine == null || machine instanceof Error) {
+            if (machine == null || machine instanceof Error || machine.length == 0) {
                 otp_pass = false
                 machine_token = jwt.sign({ username: data.username, created: new Date() }, secret)
 
@@ -100,13 +93,14 @@ router.route('/login').post((req, res, next) => {
                     machine_token: machine_token,
                     create_datetime: new Date(),
                     access_datetime: new Date(),
+                    otp_pass: otp_pass,
                 }
                 UsersModel.addMachine(insert_machine, (result) => {
                     if(result instanceof Error){ console.log(result) }
                 })
 
             }else{
-                otp_pass = true
+                otp_pass = machine.otp_pass?true:false
                 machine_token = data.machine_token
 
                 // update machine
@@ -128,19 +122,71 @@ router.route('/login').post((req, res, next) => {
     })
 })
 
+router.route('/reset_otp').post((req, res, next) => {
+    var data = req.body
+    var access_token = req.header('access_token')
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    };
+
+    jwt.verify(access_token, secret, (err, decode) => {
+        if (err) {
+            send.message = 'Incorrect access_token.'
+            return res.json(send)
+        }
+
+        // check in db
+        UsersModel.findUser(decode.username, (user) => {
+            if (user == null) {
+                send.message = 'Not found user.'
+                return res.json(send)
+            } else if (user instanceof Error) {
+                send.message = 'Not found user.';
+                return res.json(send)
+            }else if (user.length == 0) {
+                send.message = 'Not found user.';
+                return res.json(send)
+            }
+
+            // gen otp
+            var possible = '0123456789'
+            var otp = ""
+            for (var i = 0; i < 6; i++)
+                otp += possible.charAt(Math.floor(Math.random() * possible.length));
+
+            // send sms
+            // waiting
+
+            // update opt
+            UsersModel.updateOtp(decode.username, otp, (result) => {
+                if (result instanceof Error) {
+                    send.message = 'Not found user.';
+                    return res.json(send)
+                }
+
+                send.status = Enum.res_type.SUCCESS
+                send.message = 'success';
+                return res.json(send)
+            })
+
+        })
+    })
+})
+
 router.route('/otp').post((req, res, next) => {
     var data = req.body
+    var access_token = req.header('access_token')
+    var machine_token = req.header('machine_token')
+
     var schema = {
         "additionalProperties": false,
         "properties": {
-            "access_token": {
-                "type": "string"
-            },
             "otp": {
                 "type": "string"
-            }
+            },
         },
-        "required": [ "access_token" ]
+        "required": [ "otp" ]
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
@@ -151,14 +197,53 @@ router.route('/otp').post((req, res, next) => {
         info: {}
     };
 
-    jwt.verify(data.otp_token, secret, (err, decode) => {
+    jwt.verify(access_token, secret, (err, decode) => {
         if (err) {
             send.message = 'Incorrect access_token.'
             return res.json(send)
         }
 
-        // waiting
+        if(decode.otp_pass){
+            send.status = Enum.res_type.SUCCESS
+            send.info = { access_token: access_token }
+            return res.json(send)
+        }else{
 
+            // check in db
+            UsersModel.findUser(decode.username, (user) => {
+                if (user == null) {
+                    send.message = 'Incorrect otp. 1'
+                    return res.json(send)
+                } else if (user instanceof Error) {
+                    send.message = 'Incorrect otp. 2';
+                    return res.json(send)
+                }
+
+                if(user.otp != data.otp){
+                    send.message = 'Incorrect otp. 3';
+                    return res.json(send)
+                }
+
+                delete user.password
+                delete user.otp
+
+                // update otp machine
+                UsersModel.updatePassMachine(machine_token, (result) => {
+                    if(result instanceof Error){
+                        send.message = 'Machine token not found.';
+                        return res.json(send)
+                    }
+
+                    var expire = new Date()
+                    expire.setMinutes(expire.getMinutes()+expire_time)
+                    var access_token = jwt.sign({ username: user.username, otp_pass: true, expire: expire }, secret)
+
+                    send.status = Enum.res_type.SUCCESS
+                    send.info = { user: user, access_token: access_token, otp_pass: true, machine_token: machine_token };
+                    return res.json(send)
+                })
+            })
+        }
     })
 
 })
@@ -203,7 +288,7 @@ router.route('/send_otp').post((req, res, next) => {
         }
 
         // gen otp
-        var possible = '0123456789' //"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var possible = '0123456789'
         var otp = ""
         for (var i = 0; i < 6; i++)
             otp += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -281,17 +366,15 @@ router.route('/check_otp').post((req, res, next) => {
 
 router.route('/set_pin').post((req, res, next) => {
     var data = req.body
+    var otp_token = req.header('otp_token')
     var schema = {
         "additionalProperties": false,
         "properties": {
-            "otp_token": {
-                "type": "string"
-            },
             "new_pin": {
                 "type": "string"
             },
         },
-        "required": [ "otp_token", "new_pin" ]
+        "required": [ "new_pin" ]
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
@@ -302,7 +385,7 @@ router.route('/set_pin').post((req, res, next) => {
         info: {}
     };
 
-    jwt.verify(data.otp_token, secret, (err, decode) => {
+    jwt.verify(otp_token, secret, (err, decode) => {
         if(err){
             send.message = 'Incorrect otp_token.'
             return res.json(send)
