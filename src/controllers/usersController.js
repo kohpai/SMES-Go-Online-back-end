@@ -141,7 +141,16 @@ router.route('/').post((req, res, next) => {
             'postal_code': {
                 'type': 'string'
             },
-            'contact_info': {
+            'legal_title': {
+                'type': 'string'
+            },
+            'legal_name': {
+                'type': 'string'
+            },
+            'legal_id': {
+                'type': 'string'
+            },
+            /*'contact_info': {
                 'type': 'object',
                 'properties': {
                     'title': {
@@ -191,7 +200,7 @@ router.route('/').post((req, res, next) => {
                     'title', 'name', 'lastname', 'id_no', 'house_no', 'village_no',
                     'subdistrict', 'district', 'province', 'postal_code'
                 ]
-            },
+            },*/
             'phone_no': {
                 'type': 'string'
             },

@@ -142,6 +142,18 @@ const addUser = (input, done) => {
             }
             input.other = input.enterprise_type.other
 
+            if(!input.legal_title.length){
+                input.legal_title = null
+            }
+
+            if(!input.legal_name.length){
+                input.legal_name = null
+            }
+
+            if(!input.legal_id.length){
+                input.legal_id = null
+            }
+
             if(input.sme_member_no.length == 0){
                 input.sme_member_no = null
             }
@@ -166,7 +178,7 @@ const addUser = (input, done) => {
             delete input.needed_help;
             delete input.age;
 
-            if (input.contact_info && input.registration_type == 3) {
+            /*if (input.contact_info && input.registration_type == 3) {
 
                 input.contact_info.full_name = input.contact_info.title+' '+input.contact_info.name+' '+input.contact_info.lastname
 
@@ -193,7 +205,7 @@ const addUser = (input, done) => {
             } else {
 
                 delete input.contact_info;
-
+                */
                 EnterpriseModel.addEnterprise(input, function(insertId) {
                     if (insertId instanceof Error) {
                         // delete user
@@ -202,8 +214,8 @@ const addUser = (input, done) => {
                     }else {
                         return done(input.user_id, null)
                     }
-                });
-            }
+                })
+            /*}*/
         }
     });
 }
