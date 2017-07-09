@@ -15,25 +15,51 @@ import UsersModel from '../models/usersModel.js'
 import { Util,Enum } from '../helper'
 import Config from '../config.js'
 
-
-
 router.route('/*').all((req, res, next) => {
     const access_token = req.header('access_token')
-    // if(req.path.startsWith("/products") || req.path.startsWith("/news")){
-    //
-    //     jwt.verify(access_token, secret, (err, decode) => {
-    //         if(err){
-    //             console.log(err)
-    //         }
-    //         console.log(decode)
-    //     })
-    //
-    //     if(access_token != 'xxx') {
-    //         return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
-    //     }
-    // }
+    const otp_token = req.header('otp_token')
+    if(req.path.startsWith('/products') || req.path.startsWith('/news')){
 
-    return next()
+        jwt.verify(access_token, secret, (err, decode) => {
+            if(err){
+                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+            }
+            if(!decode.otp_pass){
+                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+            }
+
+            UsersModel.findUser(decode.username, (result) => {
+                if(result instanceof Error){
+                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+                }
+                return next()
+            })
+        })
+
+    }else if(req.path.startsWith('/otp') || req.path.startsWith('/reset_otp')){
+
+        jwt.verify(access_token, secret, (err, decode) => {
+            if(err){
+                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+            }
+            return next()
+        })
+
+    }else if(req.path.startsWith("/set_pin")){
+        jwt.verify(otp_token, secret, (err, decode) => {
+            if(err){
+                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+            }
+            var is_expire = new Date() > decode.expire
+            if(is_expire){
+                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+            }
+            return next()
+        })
+
+    }else{
+        return next()
+    }
 })
 
 router.route('/login').post((req, res, next) => {
@@ -123,7 +149,6 @@ router.route('/login').post((req, res, next) => {
 })
 
 router.route('/reset_otp').post((req, res, next) => {
-    var data = req.body
     var access_token = req.header('access_token')
     var send = {
         status: Enum.res_type.FAILURE,
@@ -157,6 +182,7 @@ router.route('/reset_otp').post((req, res, next) => {
 
             // send sms
             // waiting
+            send_sms(decode.username, 'hello world')
 
             // update opt
             UsersModel.updateOtp(decode.username, otp, (result) => {
@@ -295,6 +321,7 @@ router.route('/send_otp').post((req, res, next) => {
 
         // send sms
         // waiting
+        send_sms(data.phone_number, 'hello world')
 
         // update opt
         UsersModel.updateOtp(data.phone_number, otp, (result) => {
@@ -391,13 +418,6 @@ router.route('/set_pin').post((req, res, next) => {
             return res.json(send)
         }
 
-        var is_expire = new Date() > decode.expire
-
-        if(decode.otp_pass != true | is_expire){
-            send.message = 'Incorrect otp_token.'
-            return res.json(send)
-        }
-
         // update pin
         UsersModel.updatePin(decode.username, data.new_pin, (result) => {
             if (result instanceof Error) {
@@ -412,5 +432,29 @@ router.route('/set_pin').post((req, res, next) => {
 
     })
 })
+
+function send_sms(number, text) {
+    number = '0883102086'
+    var message = text.toString("utf-8")
+    var options = {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        method: 'POST',
+        url: 'http://corpsms.dtac.co.th/servlet/com.iess.socket.SmsCorplink',
+        body: 'RefNo=100000'+'&Msn='+number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEsGoONL'
+    };
+
+    console.log(options)
+
+    request(options, function (error, response, body) {
+        if (error){
+            return error
+        }
+        return response
+    });
+
+
+}
 
 export default router

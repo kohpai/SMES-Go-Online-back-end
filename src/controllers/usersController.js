@@ -11,9 +11,6 @@ import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
 import { Util, Enum } from '../helper'
 
-/* further work
-   - catch error
-   */
 router.route('/:id').get((req, res, next) => {
     var data = {user_id: req.params.id};
     var schema = {
