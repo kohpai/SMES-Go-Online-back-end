@@ -14,6 +14,15 @@ const mysql = {
     multipleStatements: true,
 };
 
+const mysql_product = {
+    host     : 'smeregister.gsoftbiz.com',
+    port     : 4000,
+    user     : 'root',
+    password : 'rootAuthP4ss',
+    database : 'smesgoproduct',
+    multipleStatements: true,
+};
+
 const seaweedfs = {
     host    : 'smeregister.gsoftbiz.com',
     port    : 9333,
@@ -26,6 +35,7 @@ const ajv = {
 export default {
     server,
     mysql,
+    mysql_product,
     seaweedfs,
     ajv,
 };

@@ -34,7 +34,7 @@ const addProduct = (input, user_id, done) => {
         values: [productInfo],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else {
@@ -68,7 +68,7 @@ const updateProduct = (id, input, done) => {
         values: [productInfo, id],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else {
@@ -84,7 +84,7 @@ const detailProduct = (id, done) => {
         values: [id],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else if(results.length) {
@@ -101,7 +101,7 @@ const getImages = (id, done) => {
         values: [id],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         }
@@ -120,7 +120,7 @@ const deleteProduct = (id, done) => {
         values: [productInfo, id],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else {
@@ -146,7 +146,7 @@ const searchProduct = (search, user_id, offset, limit, done) => {
         };
     }
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else {
@@ -162,7 +162,7 @@ const findImage = (id, image_id, done) => {
         values: [id, image_id],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         }else if(results.length){
@@ -186,7 +186,7 @@ const addImage = (id, id_image, name, weight, done) => {
         values: [productImageInfo],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else {
@@ -205,7 +205,7 @@ const deleteImage = (id, id_image, done) => {
         values: [productImageInfo, id, id_image],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else {
@@ -227,7 +227,7 @@ const addEmarket = (id, emarkets, done) => {
             values: [emarketInfo],
         };
 
-        DB.get().query(queryOption, function(error, results, fields) {
+        DB.get_product().query(queryOption, function(error, results, fields) {
             if(index == emarkets.length - 1){
                 if (error) {
                     return done(error);
@@ -247,7 +247,7 @@ const deleteEmarket = (id, done) => {
         values: [id],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else {
@@ -264,7 +264,7 @@ const getEmarket = (id, done) => {
         values: [id],
     };
 
-    DB.get().query(queryOption, function(error, results, fields) {
+    DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else {

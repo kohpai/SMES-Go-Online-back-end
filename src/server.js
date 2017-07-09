@@ -17,6 +17,11 @@ MySql.connect((err) => {
         server.listen(Config.server.port)
 })
 
+MySql.connect_product((err) => {
+    if(!err)
+        server.listen(Config.server.port)
+})
+
 // on server start
 server.on('listening', () => {
     var addr = server.address()
