@@ -50,11 +50,31 @@ const readFile = (id, name, done) => {
         fs.mkdirSync('./temp/')
     }
 
-    seaweedfs.read(id, fs.createWriteStream('./temp/'+name))
+    var file = './temp/'+name
+    var file_path = path.resolve(file)
 
-    var file_path = path.resolve('./temp/')
+    // seaweedfs.read(id, fs.createWriteStream('./temp/'+name))
 
-    return done({path: file_path, file:name})
+    seaweedfs.read(id).then(function(buffer) {
+        fs.writeFile(file_path, buffer, function(err) {
+            if(err) {
+                return done(err)
+            }
+            return done(file_path)
+        });
+    }).catch(function(err) {
+        return done(err)
+    });
+
+}
+
+const deleteTempFile = (path, done) => {
+    fs.unlink(path, (err) => {
+        if (err){
+            return done(err)
+        }
+        return done(null)
+    })
 }
 
 const deleteFile = (id, done) => {
@@ -71,4 +91,5 @@ export default {
     saveFile,
     deleteFile,
     readFile,
+    deleteTempFile,
 }

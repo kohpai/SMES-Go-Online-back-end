@@ -164,7 +164,9 @@ const findImage = (id, image_id, done) => {
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
-        } else {
+        }else if(results.length){
+            return done(results[0])
+        }else {
             return done(results);
         }
     });

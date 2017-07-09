@@ -102,21 +102,21 @@ router.route('/:id/image/:image_id').get((req, res, next) => {
             send.status = Enum.res_type.FAILURE
             send.message = result
             return res.json(send)
-
-        }else if(result.length){
-
-            FileModel.readFile(result[0].image, result[0].name, (result_image) => {
-                console.log(result_image)
-                //return res.sendFile(result_image.path+"/"+result_image.file)
-                send.status = Enum.res_type.SUCCESS
-                send.message = result_image.path+"/"+result_image.file
-                return res.json(send)
-            })
-        }else{
-            send.status = Enum.res_type.FAILURE
-            send.message = 'file not found'
-            return res.json(send)
         }
+
+        FileModel.readFile(result.image, result.name, (result_image) => {
+            if(result_image instanceof Error){
+                send.status = Enum.res_type.FAILURE
+                send.message = 'file not found'
+                return res.json(send)
+            }
+
+            res.on('finish', () => {
+                FileModel.deleteTempFile(result_image, (err) => { })
+            })
+
+            return res.sendFile(result_image)
+        })
     })
 
 })
