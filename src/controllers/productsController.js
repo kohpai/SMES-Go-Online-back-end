@@ -27,25 +27,28 @@ var search = (req, res, next) => {
     }
     var page = parseInt(req.query.page, 0)
     var limit = parseInt(req.query.limit, 0)
-    console.log(page +":"+limit)
+    var user_id = req.query.user_id
 
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
     }
 
-    ProductsModel.searchProduct(search, page*limit, limit, (result) => {
+    if(user_id.length){
+        user_id = parseInt(user_id, 0)
+    }else{
+        user_id = '%'
+    }
+
+    ProductsModel.searchProduct(search, user_id, page*limit, limit, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.message = 'Failed search an product';
-            send.hint = 'MySQL error: '+ result.sqlMessage;
-            console.log('The SQL stattement')
-            console.log(result.sql);
             return res.json(send);
         }
 
         send.status = Enum.res_type.SUCCESS
-        send.info = result;
+        send.info = result
         return res.json(send)
     });
 };
@@ -226,7 +229,7 @@ router.route('/').post((req, res, next) => {
         info: {}
     }
 
-    ProductsModel.addProduct(data, (result) => {
+    ProductsModel.addProduct(data, req.user.user_id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.message = result;
@@ -370,7 +373,7 @@ router.route('/:id').get((req, res, next) => {
         }
 
         ProductsModel.getImages(id, (result_images) => {
-            if  (result_images == null){
+            if  (result_images == null || result_images.length == 0){
                 send.status = Enum.res_type.FAILURE;
                 send.message = "not found"
                 return res.json(send);
@@ -380,10 +383,14 @@ router.route('/:id').get((req, res, next) => {
                 return res.json(send);
             }
 
-            result.images = result_images;
+            //result.images = result_images;
 
             ProductsModel.getEmarket(id, (result_emarket) => {
-                if (result_emarket instanceof Error) {
+                if (result_emarket == null || result_emarket.length == 0){
+                    send.status = Enum.res_type.FAILURE;
+                    send.message = "not found"
+                    return res.json(send);
+                }else if (result_emarket instanceof Error) {
                     send.status = Enum.res_type.FAILURE;
                     send.message = result_emarket
                     return res.json(send);

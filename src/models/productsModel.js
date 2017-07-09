@@ -8,7 +8,7 @@ import EnterpriseModel from './enterpriseModel.js';
 
 const timeout = 20000;
 
-const addProduct = (input, done) => {
+const addProduct = (input, user_id, done) => {
     var productInfo = {
         title: input.title,
         sku: input.sku,
@@ -26,6 +26,7 @@ const addProduct = (input, done) => {
         cert_organic: input.cert_organic,
         cert_safefood: input.cert_safefood,
         cert_other: input.cert_other,
+        user_id: user_id,
     };
     var queryOption = {
         sql: 'INSERT INTO product SET ?',
@@ -128,20 +129,20 @@ const deleteProduct = (id, done) => {
     });
 }
 
-const searchProduct = (search, offset, limit, done) => {
+const searchProduct = (search, user_id, offset, limit, done) => {
     var queryOption = {};
 
     if(search.length == 0){
         queryOption = {
-            sql: 'SELECT * FROM product WHERE status = 1 LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM product WHERE user_id LIKE ? AND status = 1 LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
-            values: [limit, offset],
+            values: [user_id, limit, offset],
         };
     }else{
         queryOption = {
-            sql: 'SELECT * FROM product WHERE status = 1 AND title LIKE \'%'+search+'%\' OR description LIKE \'%'+search+'%\' LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM product WHERE user_id LIKE ? AND status = 1 AND ( title LIKE \'%'+search+'%\' OR description LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
-            values: [limit, offset],
+            values: [user_id, limit, offset],
         };
     }
 

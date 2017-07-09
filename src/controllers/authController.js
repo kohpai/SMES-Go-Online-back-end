@@ -6,6 +6,9 @@ import Ajv from 'ajv'
 const router = new Router()
 const ajv = new Ajv()
 
+var request = require("request")
+var windows874 = require('windows-874');
+
 var jwt = require("jsonwebtoken")
 const secret = 'SME'
 const expire_time = 10 // minute
@@ -22,16 +25,17 @@ router.route('/*').all((req, res, next) => {
 
         jwt.verify(access_token, secret, (err, decode) => {
             if(err){
-                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 1'})
             }
             if(!decode.otp_pass){
-                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 2'})
             }
 
             UsersModel.findUser(decode.username, (result) => {
                 if(result instanceof Error){
-                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
                 }
+                req.user = result
                 return next()
             })
         })
@@ -60,6 +64,32 @@ router.route('/*').all((req, res, next) => {
     }else{
         return next()
     }
+})
+
+router.route('/status').get((req, res, next) => {
+    const access_token = req.header('access_token')
+    jwt.verify(access_token, secret, (err, decode) => {
+        if(err){
+            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 1'})
+        }
+
+        var send = {
+            status: Enum.res_type.FAILURE,
+            info: {}
+        };
+
+        UsersModel.findUser(decode.username, (result) => {
+            if(result instanceof Error){
+                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = { user: result, access_token: access_token, otp_pass: decode.otp_pass };
+
+            return res.json(send)
+
+        })
+    })
 })
 
 router.route('/login').post((req, res, next) => {
@@ -181,21 +211,21 @@ router.route('/reset_otp').post((req, res, next) => {
                 otp += possible.charAt(Math.floor(Math.random() * possible.length));
 
             // send sms
-            // waiting
-            send_sms(decode.username, 'hello world')
+            send_sms(decode.username, 'otp='+otp, (result) => {
+                console.log(result)
 
-            // update opt
-            UsersModel.updateOtp(decode.username, otp, (result) => {
-                if (result instanceof Error) {
-                    send.message = 'Not found user.';
+                // update opt
+                UsersModel.updateOtp(decode.username, otp, (result) => {
+                    if (result instanceof Error) {
+                        send.message = 'Not found user.';
+                        return res.json(send)
+                    }
+
+                    send.status = Enum.res_type.SUCCESS
+                    send.message = 'success';
                     return res.json(send)
-                }
-
-                send.status = Enum.res_type.SUCCESS
-                send.message = 'success';
-                return res.json(send)
+                })
             })
-
         })
     })
 })
@@ -321,20 +351,21 @@ router.route('/send_otp').post((req, res, next) => {
 
         // send sms
         // waiting
-        send_sms(data.phone_number, 'hello world')
+        send_sms(data.phone_number, 'otp='+otp, (result) => {
+            console.log(result)
 
-        // update opt
-        UsersModel.updateOtp(data.phone_number, otp, (result) => {
-            if (user instanceof Error) {
-                send.message = 'Not found user.';
+            // update opt
+            UsersModel.updateOtp(data.phone_number, otp, (result) => {
+                if (user instanceof Error) {
+                    send.message = 'Not found user.';
+                    return res.json(send)
+                }
+
+                send.status = Enum.res_type.SUCCESS
+                send.message = 'success';
                 return res.json(send)
-            }
-
-            send.status = Enum.res_type.SUCCESS
-            send.message = 'success';
-            return res.json(send)
+            })
         })
-
     })
 })
 
@@ -433,9 +464,8 @@ router.route('/set_pin').post((req, res, next) => {
     })
 })
 
-function send_sms(number, text) {
-    number = '0883102086'
-    var message = text.toString("utf-8")
+function send_sms(number, text, done) {
+    var message = windows874.encode(text);
     var options = {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -449,12 +479,10 @@ function send_sms(number, text) {
 
     request(options, function (error, response, body) {
         if (error){
-            return error
+            return done(error)
         }
-        return response
+        return done(body)
     });
-
-
 }
 
 export default router
