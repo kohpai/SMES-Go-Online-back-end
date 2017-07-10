@@ -142,19 +142,19 @@ const addUser = (input, done) => {
             }
             input.other = input.enterprise_type.other
 
-            if(!input.legal_title.length){
+            if(!input.legal_title || !input.legal_title.length){
                 input.legal_title = null
             }
 
-            if(!input.legal_name.length){
+            if(!input.legal_name || !input.legal_name.length){
                 input.legal_name = null
             }
 
-            if(!input.legal_id.length){
+            if(!input.legal_id || !input.legal_id.length){
                 input.legal_id = null
             }
 
-            if(input.sme_member_no.length == 0){
+            if(!input.sme_member_no || input.sme_member_no.length == 0){
                 input.sme_member_no = null
             }
 
