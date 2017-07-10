@@ -178,6 +178,12 @@ const addUser = (input, done) => {
             delete input.needed_help;
             delete input.age;
 
+            if(input.registration_type != 3){
+                input.legal_title = null
+                input.legal_name = null
+                input.legal_id = null
+            }
+
             /*if (input.contact_info && input.registration_type == 3) {
 
                 input.contact_info.full_name = input.contact_info.title+' '+input.contact_info.name+' '+input.contact_info.lastname

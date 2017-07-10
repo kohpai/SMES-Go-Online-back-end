@@ -210,8 +210,13 @@ router.route('/reset_otp').post((req, res, next) => {
             for (var i = 0; i < 6; i++)
                 otp += possible.charAt(Math.floor(Math.random() * possible.length));
 
+            // gen ref
+            var ref = ""
+            for (var i = 0; i < 4; i++)
+                ref += possible.charAt(Math.floor(Math.random() * possible.length));
+
             // send sms
-            send_sms(decode.username, 'otp='+otp, (result) => {
+            send_sms(decode.username, 'ref='+ref+'\notp='+otp, (result) => {
                 console.log(result)
 
                 // update opt
@@ -222,7 +227,7 @@ router.route('/reset_otp').post((req, res, next) => {
                     }
 
                     send.status = Enum.res_type.SUCCESS
-                    send.message = 'success';
+                    send.info = { username: decode.username, ref: ref }
                     return res.json(send)
                 })
             })
@@ -349,9 +354,14 @@ router.route('/send_otp').post((req, res, next) => {
         for (var i = 0; i < 6; i++)
             otp += possible.charAt(Math.floor(Math.random() * possible.length));
 
+        // gen ref
+        var ref = ""
+        for (var i = 0; i < 4; i++)
+            ref += possible.charAt(Math.floor(Math.random() * possible.length));
+
+
         // send sms
-        // waiting
-        send_sms(data.phone_number, 'otp='+otp, (result) => {
+        send_sms(data.phone_number, 'ref='+ref+'\notp='+otp, (result) => {
             console.log(result)
 
             // update opt
@@ -362,7 +372,7 @@ router.route('/send_otp').post((req, res, next) => {
                 }
 
                 send.status = Enum.res_type.SUCCESS
-                send.message = 'success';
+                send.info = { username: data.username, ref: ref }
                 return res.json(send)
             })
         })

@@ -13,13 +13,13 @@ import MySql from './db.js'
 var server = Http.createServer(Api)
 
 MySql.connect((err) => {
-    if(!err)
-        server.listen(Config.server.port)
-})
-
-MySql.connect_product((err) => {
-    if(!err)
-        server.listen(Config.server.port)
+    if(!err){
+        MySql.connect_product((err) => {
+            if(!err){
+                server.listen(Config.server.port)
+            }
+        })
+    }
 })
 
 // on server start
