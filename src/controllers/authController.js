@@ -220,7 +220,7 @@ router.route('/reset_otp').post((req, res, next) => {
                 console.log(result)
 
                 // update opt
-                UsersModel.updateOtp(decode.username, otp, (result) => {
+                UsersModel.updateOtp(decode.username, otp, ref, (result) => {
                     if (result instanceof Error) {
                         send.message = 'Not found user.';
                         return res.json(send)
@@ -365,7 +365,7 @@ router.route('/send_otp').post((req, res, next) => {
             console.log(result)
 
             // update opt
-            UsersModel.updateOtp(data.phone_number, otp, (result) => {
+            UsersModel.updateOtp(data.phone_number, otp, ref, (result) => {
                 if (user instanceof Error) {
                     send.message = 'Not found user.';
                     return res.json(send)
@@ -475,7 +475,14 @@ router.route('/set_pin').post((req, res, next) => {
 })
 
 function send_sms(number, text, done) {
+
+    if(number.startsWith('0')){
+        number = '66'+number.slice(1)
+    }
+
     var message = windows874.encode(text);
+    //var message = text.toString('utf-8')
+    console.log(message)
     var options = {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'

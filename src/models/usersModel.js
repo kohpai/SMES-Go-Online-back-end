@@ -262,11 +262,11 @@ const findUser = (username, done) => {
     });
 }
 
-const updateOtp = (username, otp, done) => {
+const updateOtp = (username, otp, ref, done) => {
     var queryOption = {
-        sql: 'UPDATE `user` SET `otp` = ?, `otp_gen` = ? WHERE `username` = ?',
+        sql: 'UPDATE `user` SET `otp` = ?, `otp_gen` = ?, `otp_ref` = ? WHERE `username` = ?',
         timeout: timeout, // 20s
-        values: [otp, new Date(), username],
+        values: [otp, new Date(), ref, username],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
