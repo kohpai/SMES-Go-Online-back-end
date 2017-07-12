@@ -155,6 +155,22 @@ const searchProduct = (search, user_id, offset, limit, done) => {
     });
 }
 
+const countProduct = (search, user_id, done) => {
+    var queryOption = {
+        sql: 'SELECT COUNT(*) AS count FROM product WHERE user_id LIKE ? AND status = 1 AND ( title LIKE \'%'+search+'%\' OR description LIKE \'%'+search+'%\' );',
+        timeout: timeout, // 20s
+        values: [user_id],
+    };
+
+    DB.get_product().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(results);
+        }
+    });
+}
+
 const findImage = (id, image_id, done) => {
     var queryOption = {
         sql: 'SELECT * FROM prod_image WHERE prod_id = ? AND image = ? AND status = 1;',
@@ -280,6 +296,7 @@ export default {
     getImages,
     deleteProduct,
     searchProduct,
+    countProduct,
     addImage,
     deleteImage,
     addEmarket,
