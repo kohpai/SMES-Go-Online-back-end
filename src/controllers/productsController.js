@@ -246,6 +246,12 @@ router.route('/').post((req, res, next) => {
                 "items": {
                     "type": "string"
                 }
+            },
+            'subcategory': {
+                'type': 'string'
+            },
+            'subcategory_code': {
+                'type': 'string'
             }
         },
         'required': [
@@ -343,6 +349,12 @@ router.route('/:id').put((req, res, next) => {
                 "items": {
                     "type": "string"
                 }
+            },
+            'subcategory': {
+                'type': 'string'
+            },
+            'subcategory_code': {
+                'type': 'string'
             }
         },
         'required': [
