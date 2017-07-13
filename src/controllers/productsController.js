@@ -424,7 +424,7 @@ router.route('/:id').get((req, res, next) => {
                 return res.json(send);
             }
 
-            //result.images = result_images;
+            result.images = result_images;
 
             ProductsModel.getEmarket(id, (result_emarket) => {
                 if (result_emarket == null || result_emarket.length == 0){
