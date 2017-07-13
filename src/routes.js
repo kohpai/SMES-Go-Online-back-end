@@ -18,7 +18,7 @@ var router = new Router();
 var api_version = '/api/dev';
 
 router.use(api_version, AuthController);
-router.use(api_version+'/users', UsersController);
+router.use(api_version, UsersController);
 router.use(api_version+'/news', NewsController);
 router.use(api_version+'/country', CountryController);
 router.use(api_version+'/faq', FaqController);

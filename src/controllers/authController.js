@@ -21,7 +21,7 @@ import Config from '../config.js'
 router.route('/*').all((req, res, next) => {
     const access_token = req.header('access_token')
     const otp_token = req.header('otp_token')
-    if(req.path.startsWith('/products') || req.path.startsWith('/news') || req.path.startsWith('/consult')){
+    if(req.path.startsWith('/products') || req.path.startsWith('/news') || req.path.startsWith('/consult') || req.path.startsWith('/profile')){
 
         jwt.verify(access_token, secret, (err, decode) => {
             if(err){
@@ -92,10 +92,22 @@ router.route('/status').get((req, res, next) => {
                 return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
             }
 
-            send.status = Enum.res_type.SUCCESS
-            send.info = { user: result, access_token: access_token, ent_id: decode.ent_id, otp_pass: decode.otp_pass };
+            delete result.password
+            delete result.otp
 
-            return res.json(send)
+            UsersModel.getEnterpriseByUserId(result.user_id, (ent) => {
+                if(ent instanceof Error){
+                    send.status = Enum.res_type.FAILURE
+                    send.message = ent
+                    return res.json(send)
+                }
+
+                send.status = Enum.res_type.SUCCESS
+                result.ent = ent
+                send.info = { user: result, access_token: access_token, ent_id: decode.ent_id, otp_pass: decode.otp_pass };
+
+                return res.json(send)
+            })
 
         })
     })

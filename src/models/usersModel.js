@@ -226,6 +226,120 @@ const addUser = (input, done) => {
     });
 }
 
+const updateUser = (id, input, done) => {
+
+    /*if(input.phone_no.startsWith('66')){
+        input.phone_no = '0'+input.phone_no.slice(2)
+    }else if(input.phone_no.startsWith('+66')){
+        input.phone_no = '0'+input.phone_no.slice(3)
+    }*/
+
+    var userInfo = {
+        // username: input.phone_no,
+        full_name: input.title+" "+input.name+" "+input.lastname,
+        role: 'user'
+    };
+    var queryOption = {
+        sql: 'UPDATE user SET ? WHERE user_id = ?',
+        timeout: timeout, // 20s
+        values: [userInfo, id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
+        } else {
+
+            // input.user_id = id;
+
+            if(input.enterprise_type.agricultural_product.length){
+                input.is_agricultural_product = true
+            }else{
+                input.is_agricultural_product = false
+            }
+            input.agricultural_product = input.enterprise_type.agricultural_product
+
+            if(input.enterprise_type.industrial_product.length){
+                input.is_industrial_product = true
+            }else{
+                input.is_industrial_product = false
+            }
+            input.industrial_product = input.enterprise_type.industrial_product
+
+            if(input.enterprise_type.selling.length){
+                input.is_selling = true
+            }else{
+                input.is_selling = false
+            }
+            input.selling = input.enterprise_type.selling
+
+            if(input.enterprise_type.service.length){
+                input.is_service = true
+            }else{
+                input.is_service = false
+            }
+            input.service = input.enterprise_type.service
+
+            if(input.enterprise_type.other.length){
+                input.is_other = true
+            }else{
+                input.is_other = false
+            }
+            input.other = input.enterprise_type.other
+
+            if(!input.legal_title || !input.legal_title.length){
+                input.legal_title = null
+            }
+
+            if(!input.legal_name || !input.legal_name.length){
+                input.legal_name = null
+            }
+
+            if(!input.legal_id || !input.legal_id.length){
+                input.legal_id = null
+            }
+
+            if(!input.sme_member_no || input.sme_member_no.length == 0){
+                input.sme_member_no = null
+            }
+
+            input.needed_help_ecommerce = input.needed_help.needed_help_ecommerce
+            input.needed_help_investor = input.needed_help.needed_help_investor
+            input.needed_help_supplier = input.needed_help.needed_help_supplier
+            input.needed_help_payment = input.needed_help.needed_help_payment
+            input.needed_help_logistics = input.needed_help.needed_help_logistics
+            input.needed_help_brand = input.needed_help.needed_help_brand
+            input.needed_help_online_marketing = input.needed_help.needed_help_online_marketing
+            input.needed_help_tax = input.needed_help.needed_help_tax
+
+            var date = new Date();
+            date.setFullYear(date.getFullYear() - input.age)
+            date.setMonth(0)
+            date.setDate(1)
+            input.birthyear = date.toISOString().split('T')[0];
+
+            // delete input.phone_no;
+            delete input.enterprise_type;
+            delete input.needed_help;
+            delete input.age;
+
+            if(input.registration_type != 3){
+                input.legal_title = null
+                input.legal_name = null
+                input.legal_id = null
+            }
+
+            EnterpriseModel.updateEnterprise(id, input, function(result) {
+                if (result instanceof Error) {
+                    return done('เลขที่จดทะเบียนนิติบุคคล หรือ เลขที่บัตรประชาชน หรือ เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
+                }else {
+                    return done(result, null)
+                }
+            })
+        }
+    });
+}
+
 const authenUser = (username, password, done) => {
     var queryOption = {
         sql: 'SELECT * FROM `user` WHERE `username` = ? AND `password` = ?',
@@ -373,6 +487,7 @@ const updatePassMachine = (token, done) => {
 export default {
     authenUser,
     addUser,
+    updateUser,
     getUserById,
     getEnterpriseByUserId,
     findUser,

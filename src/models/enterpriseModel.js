@@ -34,7 +34,23 @@ const addEnterprise = (input, done) => {
     });
 }
 
+const updateEnterprise = (id, input, done) => {
+    var queryOption = {
+        sql: 'UPDATE enterprise SET ? WHERE user_id = ?',
+        timeout: timeout, // 20s
+        values: [input, id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error)
+            return done(error);
+        else
+            return done(results);
+    });
+}
+
 export default {
     addContact,
-    addEnterprise
+    addEnterprise,
+    updateEnterprise
 }
