@@ -27,6 +27,8 @@ const addProduct = (input, user_id, done) => {
         cert_safefood: input.cert_safefood,
         cert_other: input.cert_other,
         user_id: user_id,
+        subcategory: input.subcategory,
+        subcategory_code: input.subcategory_code,
     };
     var queryOption = {
         sql: 'INSERT INTO product SET ?',
@@ -61,6 +63,8 @@ const updateProduct = (id, input, done) => {
         cert_organic: input.cert_organic,
         cert_safefood: input.cert_safefood,
         cert_other: input.cert_other,
+        subcategory: input.subcategory,
+        subcategory_code: input.subcategory_code,
     };
     var queryOption = {
         sql: 'UPDATE product SET ? WHERE prod_id = ?',
