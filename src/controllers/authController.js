@@ -144,10 +144,10 @@ router.route('/login').post((req, res, next) => {
 
     UsersModel.authenUser(data.username, data.pin, (user) => {
         if (user == null || user.length == 0) {
-            send.message = 'Incorrect username or pin.'
+            send.message = 'รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบ'
             return res.json(send)
         } else if (user instanceof Error) {
-            send.message = 'Incorrect username or pin.'
+            send.message = 'รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบ'
             return res.json(send)
         }
 
@@ -214,13 +214,13 @@ router.route('/reset_otp').post((req, res, next) => {
         // check in db
         UsersModel.findUser(decode.username, (user) => {
             if (user == null) {
-                send.message = 'Not found user.'
+                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ'
                 return res.json(send)
             } else if (user instanceof Error) {
-                send.message = 'Not found user.';
+                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
                 return res.json(send)
             }else if (user.length == 0) {
-                send.message = 'Not found user.';
+                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
                 return res.json(send)
             }
 
@@ -242,7 +242,7 @@ router.route('/reset_otp').post((req, res, next) => {
                 // update opt
                 UsersModel.updateOtp(decode.username, otp, ref, (result) => {
                     if (result instanceof Error) {
-                        send.message = 'Not found user.';
+                        send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
                         return res.json(send)
                     }
 
@@ -293,15 +293,15 @@ router.route('/otp').post((req, res, next) => {
             // check in db
             UsersModel.findUser(decode.username, (user) => {
                 if (user == null) {
-                    send.message = 'Incorrect otp. 1'
+                    send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'
                     return res.json(send)
                 } else if (user instanceof Error) {
-                    send.message = 'Incorrect otp. 2';
+                    send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
                     return res.json(send)
                 }
 
                 if(user.otp != data.otp){
-                    send.message = 'Incorrect otp. 3';
+                    send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
                     return res.json(send)
                 }
 
@@ -358,13 +358,13 @@ router.route('/send_otp').post((req, res, next) => {
     // check in db
     UsersModel.findUser(data.phone_number, (user) => {
         if (user == null) {
-            send.message = 'Not found user.'
+            send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ'
             return res.json(send)
         } else if (user instanceof Error) {
-            send.message = 'Not found user.';
+            send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
             return res.json(send)
         }else if (user.length == 0) {
-            send.message = 'Not found user.';
+            send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
             return res.json(send)
         }
 
@@ -387,7 +387,7 @@ router.route('/send_otp').post((req, res, next) => {
             // update opt
             UsersModel.updateOtp(data.phone_number, otp, ref, (result) => {
                 if (user instanceof Error) {
-                    send.message = 'Not found user.';
+                    send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ'
                     return res.json(send)
                 }
 
@@ -425,18 +425,18 @@ router.route('/check_otp').post((req, res, next) => {
     // check in db
     UsersModel.findUser(data.phone_number, (user) => {
         if (user == null) {
-            send.message = 'Incorrect phone_number or otp.'
+            send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'
             return res.json(send)
         } else if (user instanceof Error) {
-            send.message = 'Incorrect phone_number or otp.';
+            send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
             return res.json(send)
         }else if (user.length == 0) {
-            send.message = 'Incorrect phone_number or otp.';
+            send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
             return res.json(send)
         }
 
         if(user.otp != data.otp){
-            send.message = 'Incorrect phone_number or otp.';
+            send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
             return res.json(send)
         }
 
@@ -482,7 +482,7 @@ router.route('/set_pin').post((req, res, next) => {
         // update pin
         UsersModel.updatePin(decode.username, data.new_pin, (result) => {
             if (result instanceof Error) {
-                send.message = 'Not found user.';
+                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอ';
                 return res.json(send)
             }
 
