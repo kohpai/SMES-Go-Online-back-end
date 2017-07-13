@@ -418,11 +418,7 @@ router.route('/:id').get((req, res, next) => {
         }
 
         ProductsModel.getImages(id, (result_images) => {
-            if  (result_images == null || result_images.length == 0){
-                send.status = Enum.res_type.FAILURE;
-                send.message = "not found"
-                return res.json(send);
-            }else if (result_images instanceof Error) {
+            if (result_images instanceof Error) {
                 send.status = Enum.res_type.FAILURE;
                 send.message = result_images
                 return res.json(send);
