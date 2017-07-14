@@ -124,39 +124,6 @@ router.route('/:id/image/:image_id').delete((req, res, next) => {
     })
 })
 
-router.route('/:id/image/:image_id').get((req, res, next) => {
-    var id = req.params.id
-    var image_id = req.params.image_id
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    ProductsModel.findImage(id, image_id, (result) => {
-        if(result instanceof Error){
-            send.status = Enum.res_type.FAILURE
-            send.message = result
-            return res.json(send)
-        }
-
-        FileModel.readFile(result.image, result.name, (result_image) => {
-            if(result_image instanceof Error){
-                send.status = Enum.res_type.FAILURE
-                send.message = 'file not found'
-                return res.json(send)
-            }
-
-            res.on('finish', () => {
-                FileModel.deleteTempFile(result_image, (err) => { })
-            })
-
-            return res.sendFile(result_image)
-        })
-    })
-
-})
-
 router.route('/:id/image').post((req, res, next) => {
     var id = req.params.id
 

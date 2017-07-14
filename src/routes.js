@@ -11,6 +11,7 @@ import NewsController from './controllers/newsController.js'
 import CountryController from './controllers/countryController.js'
 import FaqController from './controllers/faqController.js'
 import ConsultController from './controllers/consultController.js'
+import FileController from './controllers/fileController.js'
 
 // create router path
 var router = new Router();
@@ -24,5 +25,6 @@ router.use(api_version+'/country', CountryController);
 router.use(api_version+'/faq', FaqController);
 router.use(api_version+'/products', ProductsController);
 router.use(api_version+'/consult', ConsultController);
+router.use(api_version+'/file', FileController);
 
 export default router;
