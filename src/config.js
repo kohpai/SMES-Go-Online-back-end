@@ -28,6 +28,14 @@ const seaweedfs = {
     port    : 9333,
 };
 
+const sms = {
+    url : 'http://smeregister.gsoftbiz.com:5080/sms.php',
+}
+
+const wording = {
+    sms_otp: 'รหัส OTP คือ {{otp}} สำหรับ ref no. {{ref}} OTP จะหมดอายุภายใน 5 นาที',
+}
+
 const ajv = {
     additionalProperties : false,
 };
@@ -38,4 +46,6 @@ export default {
     mysql_product,
     seaweedfs,
     ajv,
+    sms,
+    wording
 };

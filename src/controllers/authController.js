@@ -7,7 +7,7 @@ const router = new Router()
 const ajv = new Ajv()
 
 var request = require("request")
-var windows874 = require('windows-874');
+//var windows874 = require('windows-874');
 
 var jwt = require("jsonwebtoken")
 const secret = 'SME'
@@ -87,24 +87,29 @@ router.route('/status').get((req, res, next) => {
             info: {}
         };
 
-        UsersModel.findUser(decode.username, (result) => {
-            if(result instanceof Error){
+        UsersModel.findUser(decode.username, (user) => {
+            if(user instanceof Error){
                 return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
             }
 
-            delete result.password
-            delete result.otp
+            delete user.password
+            delete user.otp
 
-            UsersModel.getEnterpriseByUserId(result.user_id, (ent) => {
+            UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
                 if(ent instanceof Error){
                     send.status = Enum.res_type.FAILURE
                     send.message = ent
                     return res.json(send)
                 }
 
+                var date = new Date(ent.birthyear);
+                var now = new Date();
+
+                user.age = now.getFullYear() - date.getFullYear()
+
                 send.status = Enum.res_type.SUCCESS
-                result.ent = ent
-                send.info = { user: result, access_token: access_token, ent_id: decode.ent_id, otp_pass: decode.otp_pass };
+                user.ent = ent
+                send.info = { user: user, access_token: access_token, ent_id: decode.ent_id, otp_pass: decode.otp_pass };
 
                 return res.json(send)
             })
@@ -236,7 +241,10 @@ router.route('/reset_otp').post((req, res, next) => {
                 ref += possible.charAt(Math.floor(Math.random() * possible.length));
 
             // send sms
-            send_sms(decode.username, 'ref='+ref+'\notp='+otp, (result) => {
+            var message = Config.wording.sms_otp
+            message = message.replace('{{otp}}', otp)
+            message = message.replace('{{ref}}', ref)
+            send_sms(decode.username, message, (result) => {
                 console.log(result)
 
                 // update opt
@@ -381,7 +389,10 @@ router.route('/send_otp').post((req, res, next) => {
 
 
         // send sms
-        send_sms(data.phone_number, 'ref='+ref+'\notp='+otp, (result) => {
+        var message = Config.wording.sms_otp
+        message = message.replace('{{otp}}', otp)
+        message = message.replace('{{ref}}', ref)
+        send_sms(data.phone_number, message, (result) => {
             console.log(result)
 
             // update opt
@@ -500,19 +511,26 @@ function send_sms(number, text, done) {
         number = '66'+number.slice(1)
     }
 
-    var message = windows874.encode(text);
-    //var message = text.toString('utf-8')
-    console.log(message)
-    var options = {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        method: 'POST',
-        url: 'http://corpsms.dtac.co.th/servlet/com.iess.socket.SmsCorplink',
-        body: 'RefNo=100000'+'&Msn='+number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEsGoONL'
-    };
+    //var message = windows874.encode(text);
+    var message = text.toString('utf-8')
 
-    console.log(options)
+    // var options = {
+    //     headers: {
+    //         'Content-Type': 'application/x-www-form-urlencoded'
+    //     },
+    //     method: 'POST',
+    //     url: 'http://corpsms.dtac.co.th/servlet/com.iess.socket.SmsCorplink',
+    //     body: 'RefNo=100000'+'&Msn='+number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEsGoONL'
+    // };
+
+    var options = {
+        method: 'POST',
+        url: Config.sms.url,
+        headers:{
+            'cache-control': 'no-cache'
+        },
+        formData: { 'msn': number, 'msg': message }
+    };
 
     request(options, function (error, response, body) {
         if (error){

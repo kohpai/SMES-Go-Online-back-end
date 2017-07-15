@@ -327,9 +327,9 @@ router.route('/profile/').put((req, res, next) => {
             'age': {
                 'type': 'number'
             },
-            /*'id_no': {
+            'id_no': {
                 'type': 'string'
-            },*/
+            },
             'house_no': {
                 'type': 'string'
             },
@@ -445,7 +445,7 @@ router.route('/profile/').put((req, res, next) => {
             }
         },
         'required': [
-            'registration_type', 'enterprise_name', 'title', 'name', 'lastname', /*'id_no',*/
+            'registration_type', 'enterprise_name', 'title', 'name', 'lastname', 'id_no',
             'house_no', 'village_no', 'subdistrict', 'district', 'province',
             'postal_code', /*'phone_no',*/ 'enterprise_type', 'needed_help'
         ]
@@ -466,7 +466,7 @@ router.route('/profile/').put((req, res, next) => {
             send.info = error
             return res.json(send);
         }
-        console.log(result)
+
         send.status = Enum.res_type.SUCCESS
         send.info = result;
         return res.json(send)
