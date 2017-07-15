@@ -78,7 +78,7 @@ const getEnterpriseByUserId = (id, done) => {
     });
 }
 
-const addUser = (input, done) => {
+const addUser = (input, user_id, done) => {
     var hashids = new Hashids(input.phone_no);
 
     if(input.phone_no.startsWith('66')){
@@ -92,7 +92,7 @@ const addUser = (input, done) => {
         username: input.phone_no,
         //password: hashids.encode(6, 7, 8),
         full_name: input.title+" "+input.name+" "+input.lastname,
-        role: 'user'
+        role: 'user',
     };
     var queryOption = {
         sql: 'INSERT INTO user SET ?',
@@ -183,6 +183,9 @@ const addUser = (input, done) => {
                 input.legal_name = null
                 input.legal_id = null
             }
+
+            if(user_id)
+                input.create_user_id = user_id
 
             /*if (input.contact_info && input.registration_type == 3) {
 

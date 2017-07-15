@@ -5,11 +5,13 @@ import { Router } from 'express'
 const router = new Router()
 import Ajv from 'ajv'
 const ajv = new Ajv()
+var jwt = require("jsonwebtoken")
 
 // using
 import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
 import { Util, Enum } from '../helper'
+import Config from '../config.js'
 
 router.route('/users/:id').get((req, res, next) => {
     var data = {user_id: req.params.id};
@@ -291,17 +293,46 @@ router.route('/users/').post((req, res, next) => {
         info: {}
     }
 
-    UsersModel.addUser(data, (result, error) => {
-        if (error) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = result
-            send.info = error
-            return res.json(send);
+    var access_token = req.header('access_token')
+    jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
+        if(err && access_token){
+            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
         }
-        send.status = Enum.res_type.SUCCESS
-        send.info = result;
-        return res.json(send)
-    });
+
+        if(access_token){
+            UsersModel.findUser(decode.username, (user) => {
+                if(user instanceof Error){
+                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
+                }else if(!user.is_admin){
+                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
+                }
+                UsersModel.addUser(data, user.user_id, (result, error) => {
+                    if (error) {
+                        send.status = Enum.res_type.FAILURE;
+                        send.message = result
+                        send.info = error
+                        return res.json(send);
+                    }
+                    send.status = Enum.res_type.SUCCESS
+                    send.info = result;
+                    return res.json(send)
+                });
+            })
+
+        }else{
+            UsersModel.addUser(data, null, (result, error) => {
+                if (error) {
+                    send.status = Enum.res_type.FAILURE;
+                    send.message = result
+                    send.info = error
+                    return res.json(send);
+                }
+                send.status = Enum.res_type.SUCCESS
+                send.info = result;
+                return res.json(send)
+            });
+        }
+    })
 });
 
 router.route('/profile/').put((req, res, next) => {

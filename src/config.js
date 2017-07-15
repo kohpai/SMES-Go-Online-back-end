@@ -36,6 +36,10 @@ const wording = {
     sms_otp: 'รหัส OTP คือ {{otp}} สำหรับ ref no. {{ref}} OTP จะหมดอายุภายใน 5 นาที',
 }
 
+const pwd = {
+    jwt_secret: 'SME',
+}
+
 const ajv = {
     additionalProperties : false,
 };
@@ -47,5 +51,6 @@ export default {
     seaweedfs,
     ajv,
     sms,
-    wording
+    wording,
+    pwd
 };

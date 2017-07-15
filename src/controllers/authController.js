@@ -10,7 +10,6 @@ var request = require("request")
 //var windows874 = require('windows-874');
 
 var jwt = require("jsonwebtoken")
-const secret = 'SME'
 const expire_time = 10 // minute
 // using
 import HttpStatus from './../helper/http_status.js'
@@ -51,7 +50,7 @@ router.route('/*').all((req, res, next) => {
 
     }else if(req.path.startsWith('/otp') || req.path.startsWith('/reset_otp')){
 
-        jwt.verify(access_token, secret, (err, decode) => {
+        jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
                 return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
             }
@@ -59,7 +58,7 @@ router.route('/*').all((req, res, next) => {
         })
 
     }else if(req.path.startsWith("/set_pin")){
-        jwt.verify(otp_token, secret, (err, decode) => {
+        jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
                 return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
             }
