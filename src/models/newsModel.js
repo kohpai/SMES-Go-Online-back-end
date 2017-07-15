@@ -31,11 +31,9 @@ const countNews = (done) => {
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
-        } else {
-            results.forEach(function(value) {
-                delete value.news_id;
-            });
-
+        } else if(results.length){
+            return done(results[0]);
+        }else{
             return done(results);
         }
     });

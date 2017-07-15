@@ -34,22 +34,22 @@ var search = (req, res, next) => {
         info: {}
     }
 
+    if(!req.user.is_admin && req.user.user_id != user_id ){
+        user_id = req.user.user_id
+    }
+
     if(user_id.length){
         user_id = parseInt(user_id, 0)
     }else{
         user_id = '%'
     }
 
-    ProductsModel.countProduct(search, user_id, (result) => {
-        if (result instanceof Error) {
+    ProductsModel.countProduct(search, user_id, (count_product) => {
+        if (count_product instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.message = 'Failed search an product';
             return res.json(send);
         }
-
-        console.log(result)
-
-        send.pageinfo = {page: page, limit: limit, count: result.count}
 
         ProductsModel.searchProduct(search, user_id, page*limit, limit, (result) => {
             if (result instanceof Error) {
@@ -60,6 +60,7 @@ var search = (req, res, next) => {
 
             send.status = Enum.res_type.SUCCESS
             send.info = result
+            send.pageinfo = {page: page, limit: limit, count: count_product.count}
             return res.json(send)
         });
     });

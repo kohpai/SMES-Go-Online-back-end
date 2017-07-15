@@ -11,30 +11,42 @@ import HttpStatus from './../helper/http_status.js'
 import ConsultTopicModel from '../models/consultTopicModel.js'
 import { Util, Enum } from '../helper'
 
-
-/* further work
-   - catch error
-   */
 router.route('/topics').get((req, res, next) => {
+
+    var page = parseInt(req.query.page, 0)
+    var limit = parseInt(req.query.limit, 0)
+    var user_id = req.query.user_id
 
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
     }
 
-    ConsultTopicModel.getTopics(req.user.ent.enterprise_id, (topics) => {
-        if (topics == null) {
-            send.message = 'not found topics';
-            return res.json(send);
-        }else if(topics instanceof Error){
-            send.message = 'error topic';
+    if(!req.user.is_admin && req.user.user_id != user_id ){
+        user_id = req.user.user_id
+    }
+
+    ConsultTopicModel.countTopic(user_id, (count_topic) => {
+        if (count_topic instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed search an product';
             return res.json(send);
         }
-        send.status = Enum.res_type.SUCCESS;
-        send.info = {topics: topics};
-        return res.json(send)
-    })
 
+        ConsultTopicModel.getTopics(user_id, page*limit, limit, (topics) => {
+            if (topics == null) {
+                send.message = 'not found topics';
+                return res.json(send);
+            }else if(topics instanceof Error){
+                send.message = 'error topic';
+                return res.json(send);
+            }
+            send.status = Enum.res_type.SUCCESS;
+            send.info = {topics: topics};
+            send.pageinfo = {count: count_topic.count, page: page, limit: limit}
+            return res.json(send)
+        })
+    })
 });
 
 router.route('/topics').post((req, res, next) => {
@@ -57,7 +69,7 @@ router.route('/topics').post((req, res, next) => {
         info: {}
     }
 
-    ConsultTopicModel.addTopic(data, req.user.ent.enterprise_id, (result, error) => {
+    ConsultTopicModel.addTopic(data, req.user.user_id, (result, error) => {
         if (error) {
             send.status = Enum.res_type.FAILURE;
             send.message = result
@@ -92,7 +104,7 @@ router.route('/topics').delete((req, res, next) => {
         status: Enum.res_type.FAILURE,
         info: {}
     }
-    ConsultTopicModel.deleteTopic(data.consult_id, req.user.ent.enterprise_id, (result, error) => {
+    ConsultTopicModel.deleteTopic(data.consult_id, req.user.user_id, (result, error) => {
         if (error) {
             send.status = Enum.res_type.FAILURE;
             send.message = result
@@ -191,24 +203,30 @@ router.route('/topics/msg/:id').get((req, res, next) => {
         info: {}
     }
 
-    ConsultTopicModel.getMsgByTopic(id, (msg) => {
-        if (msg == null) {
-            send.message = 'not found msg';
-            return res.json(send);
-        }else if(msg instanceof Error){
-            send.message = 'error msg';
+    ConsultTopicModel.getTopicsById(id, (topic) => {
+        if(topic instanceof Error){
+            send.message = 'not found topic';
             return res.json(send);
         }
 
-        if(req.user.is_admin){
-            ConsultTopicModel.updateTopicRead(id, (result) => {})
-        }
+        ConsultTopicModel.getMsgByTopic(id, (msg) => {
+            if (msg == null) {
+                send.message = 'not found msg';
+                return res.json(send);
+            }else if(msg instanceof Error){
+                send.message = 'error msg';
+                return res.json(send);
+            }
 
-        send.status = Enum.res_type.SUCCESS;
-        send.info = {msg: msg};
-        return res.json(send)
+            if(req.user.is_admin){
+                ConsultTopicModel.updateTopicRead(id, (result) => {})
+            }
+
+            send.status = Enum.res_type.SUCCESS;
+            send.info = {topic: topic, msg: msg};
+            return res.json(send)
+        })
     })
-
 });
 
 export default router

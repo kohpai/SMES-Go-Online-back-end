@@ -23,43 +23,47 @@ router.route('/').get((req, res, next) => {
         info: {}
     };
 
-    NewsModel.getNews(page*limit, limit, (news) => {
-        if (news instanceof Error) {
+    NewsModel.countNews((count_news) => {
+        if (count_news instanceof Error) {
             send.message = 'Error getting news';
-            send.hint = news.sqlMessage;
-
             return res.json(send);
         }
 
-        send.status = Enum.res_type.SUCCESS;
-        send.info = news;
+        NewsModel.getNews(page*limit, limit, (news) => {
+            if (news instanceof Error) {
+                send.message = 'Error getting news';
+                return res.json(send);
+            }
 
-        return res.json(send);
-
-    });
-})
-
-router.route('/count').get((req, res, next) => {
-    // try {
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    };
-
-    NewsModel.countNews((news) => {
-        if (news instanceof Error) {
-            send.message = 'Error getting news';
-            send.hint = news.sqlMessage;
-
+            send.status = Enum.res_type.SUCCESS;
+            send.info = news;
+            send.pageinfo = {page:page, limit:limit, count:count_news.count}
             return res.json(send);
-        }
 
-        send.status = Enum.res_type.SUCCESS;
-        send.info = news;
-
-        return res.json(send);
-
+        });
     });
 })
+
+// router.route('/count').get((req, res, next) => {
+//     var send = {
+//         status: Enum.res_type.FAILURE,
+//         info: {}
+//     };
+//
+//     NewsModel.countNews((news) => {
+//         if (news instanceof Error) {
+//             send.message = 'Error getting news';
+//             send.hint = news.sqlMessage;
+//
+//             return res.json(send);
+//         }
+//
+//         send.status = Enum.res_type.SUCCESS;
+//         send.info = news;
+//
+//         return res.json(send);
+//
+//     });
+// })
 
 export default router

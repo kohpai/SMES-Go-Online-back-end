@@ -6,17 +6,35 @@ import DB from '../db.js'
 
 const timeout = 20000;
 
-const getTopics = (ent_id, done) => {
+const getTopics = (user_id, offset, limit, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM `consult_topic` WHERE `ent_id` = ?;',
+        sql: 'SELECT * FROM `consult_topic` WHERE `user_id` = ? LIMIT ? OFFSET ?;',
         timeout: timeout, // 40s
-        values: [ent_id],
+        values: [user_id, limit, offset],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
         } else {
+            return done(results);
+        }
+    });
+}
+
+const countTopic = (user_id, done) => {
+    var queryOption = {
+        sql: 'SELECT COUNT(*) AS count FROM `consult_topic` WHERE `user_id` = ?;',
+        timeout: timeout, // 40s
+        values: [user_id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if(results.length){
+            return done(results[0]);
+        }else{
             return done(results);
         }
     });
@@ -40,11 +58,11 @@ const getTopicsById = (id, done) => {
 }
 
 
-const addTopic = (input, ent_id, done) => {
+const addTopic = (input, user_id, done) => {
 
     var topicInfo = {
         topic: input.topic,
-        ent_id: ent_id,
+        user_id: user_id,
         update_datetime: new Date(),
     };
     var queryOption = {
@@ -62,12 +80,12 @@ const addTopic = (input, ent_id, done) => {
     });
 }
 
-const deleteTopic = (id, ent_id, done) => {
+const deleteTopic = (id, user_id, done) => {
 
     var queryOption = {
-        sql: 'DELETE FROM consult_topic WHERE ent_id = ? AND consult_id = ?',
+        sql: 'DELETE FROM consult_topic WHERE user_id = ? AND consult_id = ?',
         timeout: timeout, // 20s
-        values: [ent_id, id],
+        values: [user_id, id],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
@@ -156,6 +174,7 @@ const updateTopicRead = (id, done) => {
 
 export default {
     getTopicsById,
+    countTopic,
     getTopics,
     getMsgByTopic,
     addTopic,
