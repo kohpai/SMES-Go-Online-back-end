@@ -169,7 +169,9 @@ const countProduct = (search, user_id, done) => {
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
-        } else {
+        } else if(results.length){
+            return done(results[0]);
+        }else{
             return done(results);
         }
     });

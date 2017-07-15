@@ -40,40 +40,6 @@ var search = (req, res, next) => {
         user_id = '%'
     }
 
-    ProductsModel.searchProduct(search, user_id, page*limit, limit, (result) => {
-        if (result instanceof Error) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'Failed search an product';
-            return res.json(send);
-        }
-
-        send.status = Enum.res_type.SUCCESS
-        send.info = result
-        return res.json(send)
-    });
-};
-
-router.route('/list/:search').get(search)
-router.route('/list/').get(search)
-
-var count = (req, res, next) => {
-    var search = ''
-    if(req.params.search){
-        search = req.params.search
-    }
-    var user_id = req.query.user_id
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    if(user_id.length){
-        user_id = parseInt(user_id, 0)
-    }else{
-        user_id = '%'
-    }
-
     ProductsModel.countProduct(search, user_id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
@@ -81,13 +47,59 @@ var count = (req, res, next) => {
             return res.json(send);
         }
 
-        send.status = Enum.res_type.SUCCESS
-        send.info = result
-        return res.json(send)
+        console.log(result)
+
+        send.pageinfo = {page: page, limit: limit, count: result.count}
+
+        ProductsModel.searchProduct(search, user_id, page*limit, limit, (result) => {
+            if (result instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = 'Failed search an product';
+                return res.json(send);
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result
+            return res.json(send)
+        });
     });
-}
-router.route('/count/:search').get(count)
-router.route('/count/').get(count)
+};
+
+router.route('/list/:search').get(search)
+router.route('/list/').get(search)
+
+// var count = (req, res, next) => {
+//     var search = ''
+//     if(req.params.search){
+//         search = req.params.search
+//     }
+//     var user_id = req.query.user_id
+//
+//     var send = {
+//         status: Enum.res_type.FAILURE,
+//         info: {}
+//     }
+//
+//     if(user_id.length){
+//         user_id = parseInt(user_id, 0)
+//     }else{
+//         user_id = '%'
+//     }
+//
+//     ProductsModel.countProduct(search, user_id, (result) => {
+//         if (result instanceof Error) {
+//             send.status = Enum.res_type.FAILURE;
+//             send.message = 'Failed search an product';
+//             return res.json(send);
+//         }
+//
+//         send.status = Enum.res_type.SUCCESS
+//         send.info = result
+//         return res.json(send)
+//     });
+// }
+// router.route('/count/:search').get(count)
+// router.route('/count/').get(count)
 
 router.route('/:id/image/:image_id').delete((req, res, next) => {
     var id = req.params.id
