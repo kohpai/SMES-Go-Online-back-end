@@ -16,10 +16,6 @@ import FileModel from '../models/fileModel.js'
 const fileUpload = require('express-fileupload')
 router.use(fileUpload())
 
-
-/* further work
-   - catch error
-   */
 var search = (req, res, next) => {
     var search = ''
     if(req.params.search){

@@ -116,6 +116,7 @@ const getImages = (id, done) => {
 
 const deleteProduct = (id, done) => {
     var productInfo = {
+        sku: null,
         status: 0
     };
     var queryOption = {

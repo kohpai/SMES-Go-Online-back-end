@@ -26,7 +26,6 @@ const saveFile = (file, done) => {
     let fileName = './temp/' + file.name
     file.mv(fileName, function (err) {
         if (err) {
-            console.log(err)
             return done(null)
         }
     })
@@ -38,7 +37,6 @@ const saveFile = (file, done) => {
     }).then(function (Buffer) {
     }).catch(function (err) {
         fs.unlink(fileName)
-        console.log(err)
         return done(null)
 
     })
