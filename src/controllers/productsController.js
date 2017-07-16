@@ -249,7 +249,8 @@ router.route('/').post((req, res, next) => {
     ProductsModel.addProduct(data, req.user.user_id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = result;
+            send.info = result;
+            send.message = 'Seller SKU ของสินค้าได้มีการบันทึกแล้ว'
             return res.json(send);
         }
 
@@ -351,10 +352,8 @@ router.route('/:id').put((req, res, next) => {
     ProductsModel.updateProduct(id, data, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = 'Failed update an product';
-            send.hint = 'MySQL error: '+ result.sqlMessage;
-            console.log('The SQL stattement')
-            console.log(result.sql);
+            send.info = result
+            send.message = 'Seller SKU ของสินค้าได้มีการบันทึกแล้ว'
             return res.json(send);
         }
 
