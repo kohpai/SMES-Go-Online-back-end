@@ -33,7 +33,12 @@ router.route('/*').all((req, res, next) => {
                 return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 2'})
             }
 
-
+            // check expire
+            var expire = new Date(decode.expire)
+            var now = new Date()
+            if(expire <= now){
+                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
+            }
 
             UsersModel.findUser(decode.username, (result) => {
                 if(result instanceof Error){
@@ -84,6 +89,13 @@ router.route('/status').get((req, res, next) => {
     jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if(err){
             return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 1'})
+        }
+
+        // check expire
+        var expire = new Date(decode.expire)
+        var now = new Date()
+        if(expire <= now){
+            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
         }
 
         var send = {
@@ -200,7 +212,7 @@ router.route('/login').post((req, res, next) => {
             }
 
             var expire = new Date()
-            expire.setMinutes(expire.getMinutes()+expire_time)
+            expire.setHours(expire.getHours()+Config.expire.login)
             var access_token = jwt.sign({ username: data.username, otp_pass: otp_pass, expire: expire }, Config.pwd.jwt_secret)
 
             send.status = Enum.res_type.SUCCESS
@@ -222,6 +234,13 @@ router.route('/reset_otp').post((req, res, next) => {
         if (err) {
             send.message = 'Incorrect access_token.'
             return res.json(send)
+        }
+
+        // check expire
+        var expire = new Date(decode.expire)
+        var now = new Date()
+        if(expire <= now){
+            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
         }
 
         // check in db
@@ -253,7 +272,6 @@ router.route('/reset_otp').post((req, res, next) => {
             message = message.replace('{{otp}}', otp)
             message = message.replace('{{ref}}', ref)
             send_sms(decode.username, message, (result) => {
-                console.log(result)
 
                 // update opt
                 UsersModel.updateOtp(decode.username, otp, ref, (result) => {
@@ -300,6 +318,13 @@ router.route('/otp').post((req, res, next) => {
             return res.json(send)
         }
 
+        // check expire
+        var expire = new Date(decode.expire)
+        var now = new Date()
+        if(expire <= now){
+            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
+        }
+
         if(decode.otp_pass){
             send.status = Enum.res_type.SUCCESS
             send.info = { access_token: access_token }
@@ -314,6 +339,14 @@ router.route('/otp').post((req, res, next) => {
                 } else if (user instanceof Error) {
                     send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
                     return res.json(send)
+                }
+
+                // check otp expire
+                var expire = new Date(user.otp_gen)
+                var now = new Date()
+                expire.setMinutes(expire.getMinutes() + Config.expire.otp)
+                if(expire <= now){
+                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The otp is expire.'})
                 }
 
                 if(user.otp != data.otp){
@@ -332,7 +365,7 @@ router.route('/otp').post((req, res, next) => {
                     }
 
                     var expire = new Date()
-                    expire.setMinutes(expire.getMinutes()+expire_time)
+                    expire.setHours(expire.getHours()+Config.expire.login)
                     var access_token = jwt.sign({ username: user.username, otp_pass: true, expire: expire }, Config.pwd.jwt_secret)
 
                     send.status = Enum.res_type.SUCCESS
@@ -401,8 +434,6 @@ router.route('/send_otp').post((req, res, next) => {
         message = message.replace('{{otp}}', otp)
         message = message.replace('{{ref}}', ref)
         send_sms(data.phone_number, message, (result) => {
-            console.log(result)
-
             // update opt
             UsersModel.updateOtp(data.phone_number, otp, ref, (result) => {
                 if (user instanceof Error) {
@@ -454,13 +485,23 @@ router.route('/check_otp').post((req, res, next) => {
             return res.json(send)
         }
 
+        // check otp expire
+        var expire = new Date(user.otp_gen)
+        var now = new Date()
+        expire.setMinutes(expire.getMinutes() + Config.expire.otp)
+        console.log(expire)
+        console.log(now)
+        if(expire <= now){
+            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The otp is expire.'})
+        }
+
         if(user.otp != data.otp){
             send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
             return res.json(send)
         }
 
         var expire = new Date()
-        expire.setMinutes(expire.getMinutes()+expire_time)
+        expire.setMinutes(expire.getMinutes()+Config.expire.otp_token)
         var otp_token = jwt.sign({ username: data.phone_number, otp_pass: true, expire: expire}, Config.pwd.jwt_secret)
 
         send.status = Enum.res_type.SUCCESS
@@ -496,6 +537,15 @@ router.route('/set_pin').post((req, res, next) => {
         if(err){
             send.message = 'Incorrect otp_token.'
             return res.json(send)
+        }
+
+        // check expire
+        var expire = new Date(decode.expire)
+        var now = new Date()
+        console.log(expire)
+        console.log(now)
+        if(expire <= now){
+            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
         }
 
         // update pin

@@ -40,6 +40,12 @@ const pwd = {
     jwt_secret: 'SME',
 }
 
+const expire = {
+    login: 24, // h
+    otp: 5, // m
+    otp_token: 10 // m
+}
+
 const ajv = {
     additionalProperties : false,
 };
@@ -52,5 +58,6 @@ export default {
     ajv,
     sms,
     wording,
-    pwd
+    pwd,
+    expire
 };
