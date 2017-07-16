@@ -33,6 +33,8 @@ router.route('/*').all((req, res, next) => {
                 return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 2'})
             }
 
+
+
             UsersModel.findUser(decode.username, (result) => {
                 if(result instanceof Error){
                     return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
@@ -187,8 +189,12 @@ router.route('/login').post((req, res, next) => {
                 otp_pass = machine.otp_pass?true:false
                 machine_token = data.machine_token
 
+                if(machine.user_id != user.user_id){
+                    otp_pass = false
+                }
+
                 // update machine
-                UsersModel.updateMachine(machine_token, (result) => {
+                UsersModel.updateMachine(machine_token, user.user_id, otp_pass, (result) => {
                     if(result instanceof Error){ console.log(result) }
                 })
             }

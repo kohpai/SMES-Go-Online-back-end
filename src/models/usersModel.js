@@ -451,11 +451,11 @@ const addMachine = (input, done) => {
     });
 }
 
-const updateMachine = (token, done) => {
+const updateMachine = (token, user_id, otp_pass, done) => {
     var queryOption = {
-        sql: 'UPDATE `user_machine` SET `access_datetime` = ? WHERE `machine_token` = ?',
+        sql: 'UPDATE `user_machine` SET `access_datetime` = ?, `user_id` = ?, `otp_pass` = ? WHERE `machine_token` = ?',
         timeout: timeout, // 20s
-        values: [new Date(), token],
+        values: [new Date(), user_id, otp_pass, token],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
