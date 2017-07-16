@@ -22,7 +22,7 @@ router.route('/*').all((req, res, next) => {
     const otp_token = req.header('otp_token')
     if(req.path.startsWith('/products') || req.path.startsWith('/news') || req.path.startsWith('/consult') || req.path.startsWith('/profile')){
 
-        jwt.verify(access_token, secret, (err, decode) => {
+        jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
                 return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 1'})
             }
@@ -76,7 +76,7 @@ router.route('/*').all((req, res, next) => {
 
 router.route('/status').get((req, res, next) => {
     const access_token = req.header('access_token')
-    jwt.verify(access_token, secret, (err, decode) => {
+    jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if(err){
             return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 1'})
         }
@@ -165,7 +165,7 @@ router.route('/login').post((req, res, next) => {
         UsersModel.findMachine(data.machine_token, (machine) => {
             if (machine == null || machine instanceof Error || machine.length == 0) {
                 otp_pass = false
-                machine_token = jwt.sign({ username: data.username, created: new Date() }, secret)
+                machine_token = jwt.sign({ username: data.username, created: new Date() }, Config.pwd.jwt_secret)
 
                 // add new machine
                 var insert_machine = {
@@ -192,7 +192,7 @@ router.route('/login').post((req, res, next) => {
 
             var expire = new Date()
             expire.setMinutes(expire.getMinutes()+expire_time)
-            var access_token = jwt.sign({ username: data.username, otp_pass: otp_pass, expire: expire }, secret)
+            var access_token = jwt.sign({ username: data.username, otp_pass: otp_pass, expire: expire }, Config.pwd.jwt_secret)
 
             send.status = Enum.res_type.SUCCESS
             send.info = { user: user, access_token: access_token, otp_pass: otp_pass, machine_token: machine_token };
@@ -209,7 +209,7 @@ router.route('/reset_otp').post((req, res, next) => {
         info: {}
     };
 
-    jwt.verify(access_token, secret, (err, decode) => {
+    jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if (err) {
             send.message = 'Incorrect access_token.'
             return res.json(send)
@@ -285,7 +285,7 @@ router.route('/otp').post((req, res, next) => {
         info: {}
     };
 
-    jwt.verify(access_token, secret, (err, decode) => {
+    jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if (err) {
             send.message = 'Incorrect access_token.'
             return res.json(send)
@@ -324,7 +324,7 @@ router.route('/otp').post((req, res, next) => {
 
                     var expire = new Date()
                     expire.setMinutes(expire.getMinutes()+expire_time)
-                    var access_token = jwt.sign({ username: user.username, otp_pass: true, expire: expire }, secret)
+                    var access_token = jwt.sign({ username: user.username, otp_pass: true, expire: expire }, Config.pwd.jwt_secret)
 
                     send.status = Enum.res_type.SUCCESS
                     send.info = { user: user, access_token: access_token, otp_pass: true, machine_token: machine_token };
@@ -452,7 +452,7 @@ router.route('/check_otp').post((req, res, next) => {
 
         var expire = new Date()
         expire.setMinutes(expire.getMinutes()+expire_time)
-        var otp_token = jwt.sign({ username: data.phone_number, otp_pass: true, expire: expire}, secret)
+        var otp_token = jwt.sign({ username: data.phone_number, otp_pass: true, expire: expire}, Config.pwd.jwt_secret)
 
         send.status = Enum.res_type.SUCCESS
         send.message = 'success';
@@ -483,7 +483,7 @@ router.route('/set_pin').post((req, res, next) => {
         info: {}
     };
 
-    jwt.verify(otp_token, secret, (err, decode) => {
+    jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
         if(err){
             send.message = 'Incorrect otp_token.'
             return res.json(send)
