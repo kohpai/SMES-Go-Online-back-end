@@ -20,6 +20,9 @@ import Config from '../config.js'
 router.route('/*').all((req, res, next) => {
     const access_token = req.header('access_token')
     const otp_token = req.header('otp_token')
+
+    console.log(req.path)
+
     if(req.path.startsWith('/products') || req.path.startsWith('/news') || req.path.startsWith('/consult') || req.path.startsWith('/profile')){
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
@@ -165,7 +168,7 @@ router.route('/login').post((req, res, next) => {
         UsersModel.findMachine(data.machine_token, (machine) => {
             if (machine == null || machine instanceof Error || machine.length == 0) {
                 otp_pass = false
-                machine_token = jwt.sign({ username: data.username, created: new Date() }, Config.pwd.jwt_secret)
+                machine_token = jwt.sign({ created: new Date() }, Config.pwd.jwt_secret)
 
                 // add new machine
                 var insert_machine = {
