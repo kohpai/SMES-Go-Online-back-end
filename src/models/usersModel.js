@@ -334,7 +334,7 @@ const updateUser = (id, input, done) => {
 
             EnterpriseModel.updateEnterprise(id, input, function(result) {
                 if (result instanceof Error) {
-                    return done('เลขที่จดทะเบียนนิติบุคคล หรือ เลขที่บัตรประชาชน หรือ เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
+                    return done('เลขที่จดทะเบียนนิติบุคคล หรือ เลขที่บัตรประชาชน หรือ เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', id)
                 }else {
                     return done(result, null)
                 }
