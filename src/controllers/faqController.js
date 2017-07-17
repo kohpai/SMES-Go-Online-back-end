@@ -23,8 +23,7 @@ router.route('/').get((req, res, next) => {
     FaqModel.getFaq((faq) => {
         if (faq instanceof Error) {
             send.message = 'Error getting faq';
-            send.hint = faq.sqlMessage;
-
+            send.info = faq
             return res.json(send);
         }
 

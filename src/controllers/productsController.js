@@ -107,14 +107,6 @@ router.route('/:id/image/:image_id').delete((req, res, next) => {
         info: {}
     }
 
-    // FileModel.deleteFile(image_id, (result) => {
-    //     if(result == null){
-    //         send.status = Enum.res_type.FAILURE
-    //         send.message = 'file not found'
-    //         return res.json(send)
-    //     }
-    // })
-
     ProductsModel.deleteImage(id, image_id, (result) => {
         if(result == null){
             send.status = Enum.res_type.FAILURE
@@ -235,7 +227,7 @@ router.route('/').post((req, res, next) => {
 
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -338,7 +330,7 @@ router.route('/:id').put((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,

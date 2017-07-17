@@ -27,27 +27,27 @@ router.route('/*').all((req, res, next) => {
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
-                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 1'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
             if(!decode.otp_pass){
-                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 2'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
 
             // check expire
             var expire = new Date(decode.expire)
             var now = new Date()
             if(expire <= now){
-                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
 
             UsersModel.findUser(decode.username, (result) => {
                 if(result instanceof Error){
-                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
+                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                 }
 
                 UsersModel.getEnterpriseByUserId(result.user_id, (ent) => {
                     if(ent instanceof Error){
-                        HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 4'})
+                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                     }
 
                     req.user = result
@@ -62,7 +62,7 @@ router.route('/*').all((req, res, next) => {
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
-                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
             return next()
         })
@@ -70,11 +70,11 @@ router.route('/*').all((req, res, next) => {
     }else if(req.path.startsWith("/set_pin")){
         jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
-                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
             var is_expire = new Date() > decode.expire
             if(is_expire){
-                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
             return next()
         })
@@ -88,14 +88,14 @@ router.route('/status').get((req, res, next) => {
     const access_token = req.header('access_token')
     jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if(err){
-            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 1'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
         }
 
         // check expire
         var expire = new Date(decode.expire)
         var now = new Date()
         if(expire <= now){
-            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
         }
 
         var send = {
@@ -105,7 +105,7 @@ router.route('/status').get((req, res, next) => {
 
         UsersModel.findUser(decode.username, (user) => {
             if(user instanceof Error){
-                return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
 
             delete user.password
@@ -156,7 +156,7 @@ router.route('/login').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -240,7 +240,7 @@ router.route('/reset_otp').post((req, res, next) => {
         var expire = new Date(decode.expire)
         var now = new Date()
         if(expire <= now){
-            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
         }
 
         // check in db
@@ -322,7 +322,7 @@ router.route('/otp').post((req, res, next) => {
         var expire = new Date(decode.expire)
         var now = new Date()
         if(expire <= now){
-            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
         }
 
         if(decode.otp_pass){
@@ -346,7 +346,7 @@ router.route('/otp').post((req, res, next) => {
                 var now = new Date()
                 expire.setMinutes(expire.getMinutes() + Config.expire.otp)
                 if(expire <= now){
-                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The otp is expire.'})
+                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
                 }
 
                 if(user.otp != data.otp){
@@ -492,7 +492,7 @@ router.route('/check_otp').post((req, res, next) => {
         console.log(expire)
         console.log(now)
         if(expire <= now){
-            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The otp is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
         }
 
         if(user.otp != data.otp){
@@ -545,7 +545,7 @@ router.route('/set_pin').post((req, res, next) => {
         console.log(expire)
         console.log(now)
         if(expire <= now){
-            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
         }
 
         // update pin

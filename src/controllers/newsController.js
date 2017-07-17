@@ -25,10 +25,6 @@ router.route('/').get((req, res, next) => {
         info: {}
     };
 
-    if(!req.user.is_admin){
-        return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'Not is admin.'})
-    }
-
     NewsModel.countNews((count_news) => {
         if (count_news instanceof Error) {
             send.message = 'Error getting news';
@@ -90,12 +86,12 @@ router.route('/').post((req, res, next) => {
     }
 
     if(!req.user.is_admin){
-        return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'Not is admin.'})
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -132,17 +128,18 @@ router.route('/:id').put((req, res, next) => {
             'title', 'content',
         ]
     }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
-    }
-
-    if(!req.user.is_admin){
-        return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'Not is admin.'})
     }
 
     NewsModel.updateNews(id, data, req.user.user_id, (result) => {
@@ -167,7 +164,7 @@ router.route('/:id').delete((req, res, next) => {
     }
 
     if(!req.user.is_admin){
-        return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'Not is admin.'})
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
     NewsModel.deleteNews(id, req.user.user_id, (result) => {
@@ -189,6 +186,10 @@ router.route('/:id/image').post((req, res, next) => {
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
     FileModel.saveFile(req.files.image, (result) => {

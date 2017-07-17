@@ -62,7 +62,7 @@ router.route('/topics').post((req, res, next) => {
 
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -98,7 +98,7 @@ router.route('/topics').delete((req, res, next) => {
 
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -156,7 +156,7 @@ router.route('/topics/msg/:id').post((req, res, next) => {
 
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,

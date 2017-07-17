@@ -27,7 +27,7 @@ router.route('/users/:id').get((req, res, next) => {
 
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -64,7 +64,7 @@ router.route('/users/:id/enterprise').get((req, res, next) => {
 
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -286,7 +286,7 @@ router.route('/users/').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -296,15 +296,15 @@ router.route('/users/').post((req, res, next) => {
     var access_token = req.header('access_token')
     jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if(err && access_token){
-            return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
         }
 
         if(access_token){
             UsersModel.findUser(decode.username, (user) => {
                 if(user instanceof Error){
-                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
+                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                 }else if(!user.is_admin){
-                    return HttpStatus.send(res, 'UNAUTHORIZED', {message: 'The token is invalid. 3'})
+                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                 }
                 UsersModel.addUser(data, user.user_id, (result, error) => {
                     if (error) {
@@ -483,7 +483,7 @@ router.route('/profile/').put((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,

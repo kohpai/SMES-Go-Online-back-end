@@ -49,7 +49,8 @@ router.route('/amphoe/:id').get((req, res, next) => {
         'required': [ 'province_id' ]
     };
     var valid = ajv.validate(schema, data)
-    if (!valid) return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -83,7 +84,8 @@ router.route('/tambon/:id').get((req, res, next) => {
         'required': [ 'tambon_id' ]
     };
     var valid = ajv.validate(schema, data)
-    if (!valid) return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
