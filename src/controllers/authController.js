@@ -111,6 +111,12 @@ router.route('/status').get((req, res, next) => {
             delete user.password
             delete user.otp
 
+            if(user.is_admin){
+                send.status = Enum.res_type.SUCCESS
+                send.info = { user: user, access_token: access_token, otp_pass: decode.otp_pass };
+                return res.json(send)
+            }
+
             UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
                 if(ent instanceof Error){
                     send.status = Enum.res_type.FAILURE
@@ -126,7 +132,6 @@ router.route('/status').get((req, res, next) => {
                 send.status = Enum.res_type.SUCCESS
                 user.ent = ent
                 send.info = { user: user, access_token: access_token, ent_id: decode.ent_id, otp_pass: decode.otp_pass };
-
                 return res.json(send)
             })
 
