@@ -240,8 +240,7 @@ router.route('/reset_otp').post((req, res, next) => {
 
     jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if (err) {
-            send.message = 'Incorrect access_token.'
-            return res.json(send)
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
         }
 
         // check expire
@@ -313,7 +312,7 @@ router.route('/otp').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -322,15 +321,14 @@ router.route('/otp').post((req, res, next) => {
 
     jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if (err) {
-            send.message = 'Incorrect access_token.'
-            return res.json(send)
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
         }
 
         // check expire
         var expire = new Date(decode.expire)
         var now = new Date()
         if(expire <= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'})
         }
 
         if(decode.otp_pass){
@@ -399,7 +397,7 @@ router.route('/send_otp').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -473,7 +471,7 @@ router.route('/check_otp').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -500,7 +498,7 @@ router.route('/check_otp').post((req, res, next) => {
         console.log(expire)
         console.log(now)
         if(expire <= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'})
         }
 
         if(user.otp != data.otp){
@@ -534,7 +532,7 @@ router.route('/set_pin').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return HttpStatus.send(res, 'BAD_REQUEST', { message: Util.toAjvResponse(ajv.errors) })
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -543,8 +541,7 @@ router.route('/set_pin').post((req, res, next) => {
 
     jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
         if(err){
-            send.message = 'Incorrect otp_token.'
-            return res.json(send)
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
         }
 
         // check expire
