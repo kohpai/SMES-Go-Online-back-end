@@ -40,20 +40,23 @@ router.route('/*').all((req, res, next) => {
                 return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
 
-            UsersModel.findUser(decode.username, (result) => {
-                if(result instanceof Error){
+            UsersModel.findUser(decode.username, (user) => {
+                if(user instanceof Error){
                     return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                 }
 
-                UsersModel.getEnterpriseByUserId(result.user_id, (ent) => {
+                if(user.is_admin){
+                    req.user = user
+                    return next()
+                }
+
+                UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
                     if(ent instanceof Error){
                         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                     }
 
-                    req.user = result
                     req.user.ent = ent
                     return next()
-
                 })
             })
         })
