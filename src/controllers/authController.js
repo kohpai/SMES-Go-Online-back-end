@@ -32,24 +32,22 @@ router.route('/*').all((req, res, next) => {
             if(!decode.otp_pass){
                 return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
-
             // check expire
             var expire = new Date(decode.expire)
             var now = new Date()
             if(expire <= now){
                 return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
-
             UsersModel.findUser(decode.username, (user) => {
                 if(user instanceof Error){
                     return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                 }
 
+                req.user = user
+
                 if(user.is_admin){
-                    req.user = user
                     return next()
                 }
-
                 UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
                     if(ent instanceof Error){
                         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
