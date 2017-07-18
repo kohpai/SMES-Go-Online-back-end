@@ -20,7 +20,7 @@ router.route('/*').all((req, res, next) => {
 
     console.log(req.path)
 
-    if(req.path.startsWith('/products') || req.path.startsWith('/news') || req.path.startsWith('/consult') || req.path.startsWith('/profile')){
+    if(req.path.startsWith('/products') || req.path.startsWith('/news') || req.path.startsWith('/consult') || req.path.startsWith('/profile') || (req.path.startsWith('/faq') && req.method != 'GET') ){
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
