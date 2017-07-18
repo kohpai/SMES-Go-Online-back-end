@@ -361,7 +361,25 @@ const authenUser = (username, password, done) => {
     });
 }
 
-const findUser = (username, done) => {
+const findUser = (id, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM `user` WHERE `user_id` = ?',
+        timeout: timeout, // 20s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if (results.length) {
+            return done(results[0]);
+        } else {
+            return done(results);
+        }
+    });
+}
+
+const findUserByUsername = (username, done) => {
     var queryOption = {
         sql: 'SELECT * FROM `user` WHERE `username` = ?',
         timeout: timeout, // 20s
@@ -487,17 +505,99 @@ const updatePassMachine = (token, done) => {
     });
 }
 
+const countUsers = (search, done) => {
+    var queryOption = {
+        sql: 'SELECT COUNT(*) AS count FROM user WHERE ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' );',
+        timeout: timeout, // 20s
+        values: [search],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if(results.length){
+            return done(results[0]);
+        }else{
+            return done(results);
+        }
+    });
+}
+
+const searchUsers = (search, offset, limit, done) => {
+    var queryOption = {};
+
+    if(search.length == 0){
+        queryOption = {
+            sql: 'SELECT * FROM user LIMIT ? OFFSET ?;',
+            timeout: timeout, // 20s
+            values: [limit, offset],
+        };
+    }else{
+        queryOption = {
+            sql: 'SELECT * FROM user WHERE ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
+            timeout: timeout, // 20s
+            values: [limit, offset],
+        };
+    }
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+
+            for(var i in results){
+                delete results[i].password
+                delete results[i].otp
+                delete results[i].otp_ref
+            }
+
+            return done(results);
+        }
+    });
+}
+
+const detailUser = (id, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM user WHERE user_id = ?',
+        timeout: timeout, // 20s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if(results.length) {
+
+            delete results[0].password
+            delete results[0].otp
+            delete results[0].otp_ref
+
+            return done(results[0]);
+        }
+
+        delete results.password
+        delete results.otp
+        delete results.otp_ref
+
+        return done(results);
+    });
+}
+
 export default {
     authenUser,
     addUser,
     updateUser,
     getUserById,
-    getEnterpriseByUserId,
     findUser,
+    getEnterpriseByUserId,
+    findUserByUsername,
     updateOtp,
     updatePin,
     findMachine,
     addMachine,
     updateMachine,
     updatePassMachine,
+    countUsers,
+    searchUsers,
+    detailUser,
 }

@@ -7,87 +7,12 @@ import Ajv from 'ajv'
 const ajv = new Ajv()
 var jwt = require("jsonwebtoken")
 
-// using
 import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
 import { Util, Enum } from '../helper'
 import Config from '../config.js'
 
-router.route('/users/:id').get((req, res, next) => {
-    var data = {user_id: req.params.id};
-    var schema = {
-        'additionalProperties': false,
-        'properties': {
-            'user_id': {
-                'type': 'string'
-            }
-        },
-        'required': [ 'user_id' ]
-    };
-
-    var valid = ajv.validate(schema, data)
-    if (!valid)
-        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    UsersModel.getUserById(data.user_id, (user) => {
-        if (user == null) {
-            send.message = 'Unknown user_id ' + data.user_id;
-            return res.json(send);
-        } else if (user instanceof Error) {
-            send.message = 'Cannot get user ' + data.user_id;
-            send.hint = user.sqlMessage;
-            return res.json(send);
-        }
-
-        send.status = Enum.res_type.SUCCESS;
-        send.info = Object.assign({}, user);
-        return res.json(send);
-    });
-});
-
-router.route('/users/:id/enterprise').get((req, res, next) => {
-    var data = {user_id: req.params.id};
-    var schema = {
-        'additionalProperties': false,
-        'properties': {
-            'user_id': {
-                'type': 'string'
-            }
-        },
-        'required': [ 'user_id' ]
-    };
-
-    var valid = ajv.validate(schema, data)
-    if (!valid)
-        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    UsersModel.getEnterpriseByUserId(data.user_id, (user) => {
-        if (user == null) {
-            send.message = 'Unknown user_id ' + data.user_id;
-            return res.json(send);
-        } else if (user instanceof Error) {
-            send.message = 'Cannot get user ' + data.user_id;
-            send.hint = user.sqlMessage;
-            return res.json(send);
-        }
-
-        send.status = Enum.res_type.SUCCESS;
-        send.info = Object.assign({}, user);
-        return res.json(send);
-    });
-});
-
-router.route('/users/').post((req, res, next) => {
+router.route('/users').post((req, res, next) => {
     var data = req.body
     var schema = {
         'additionalProperties': false,
@@ -302,7 +227,7 @@ router.route('/users/').post((req, res, next) => {
         }
 
         if(access_token){
-            UsersModel.findUser(decode.username, (user) => {
+            UsersModel.findUserByUsername(decode.username, (user) => {
                 if(user instanceof Error){
                     return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                 }else if(!user.is_admin){
@@ -343,7 +268,8 @@ router.route('/users/').post((req, res, next) => {
     })
 });
 
-router.route('/profile/').put((req, res, next) => {
+var profile = (req, res, next) => {
+    var id = req.params.id
     var data = req.body
     var schema = {
         'additionalProperties': false,
@@ -409,8 +335,8 @@ router.route('/profile/').put((req, res, next) => {
                 'type': 'string'
             },
             /*'phone_no': {
-                'type': 'string'
-            },*/
+             'type': 'string'
+             },*/
             'email': {
                 'type': 'string'
             },
@@ -498,7 +424,17 @@ router.route('/profile/').put((req, res, next) => {
         info: {}
     }
 
-    UsersModel.findUser(req.user.username, (user) => {
+    if(id && !req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    var user_id = req.user.user_id
+
+    if(id){
+        user_id = id
+    }
+
+    UsersModel.findUser(user_id, (user) => {
         if(user instanceof Error){
             send.status = Enum.res_type.FAILURE;
             send.message = 'user not found.'
@@ -506,7 +442,9 @@ router.route('/profile/').put((req, res, next) => {
             return res.json(send);
         }
 
-        UsersModel.updateUser(req.user.username, data, (result, error) => {
+        var user_name = req.user.username
+
+        UsersModel.updateUser(user_id, data, (result, error) => {
             if (error) {
                 send.status = Enum.res_type.FAILURE;
                 send.message = result
@@ -514,13 +452,105 @@ router.route('/profile/').put((req, res, next) => {
                 return res.json(send);
             }
 
-            Util.send_sms(user.username, Config.wording.profile_success, (send_sms_result) => {
+            Util.send_sms(user_name, Config.wording.profile_success, (send_sms_result) => {
                 send.status = Enum.res_type.SUCCESS
                 send.info = result;
                 return res.json(send)
             })
         });
     })
+};
+
+router.route('/profile').put(profile);
+router.route('/profile/:id').put(profile);
+
+var search = (req, res, next) => {
+    var search = ''
+    if(req.params.search){
+        search = req.params.search
+    }
+    var page = parseInt(req.query.page, 0)
+    var limit = parseInt(req.query.limit, 0)
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    UsersModel.countUsers(search, (count_users) => {
+        if (count_users instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed search an users';
+            send.info = count_users
+            return res.json(send);
+        }
+
+        UsersModel.searchUsers(search, page*limit, limit, (result) => {
+            if (result instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = 'Failed search an users';
+                return res.json(send);
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result
+            send.pageinfo = {page: page, limit: limit, count: count_users.count}
+            return res.json(send)
+        });
+    });
+};
+
+router.route('/users/list/:search').get(search)
+router.route('/users/list/').get(search)
+
+router.route('/users/:id').get((req, res, next) => {
+    var id = req.params.id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    UsersModel.detailUser(id, (user) => {
+        if (user instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = user;
+            return res.json(send);
+        }
+
+        if(user.is_admin){
+            send.status = Enum.res_type.SUCCESS
+            send.info = user;
+            return res.json(send)
+        }
+
+        UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
+            if(ent instanceof Error){
+                send.status = Enum.res_type.FAILURE
+                send.message = ent
+                return res.json(send)
+            }
+
+            var date = new Date(ent.birthyear);
+            var now = new Date();
+
+            user.ent = ent
+            user.ent.age = now.getFullYear() - date.getFullYear()
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = user;
+            return res.json(send)
+        })
+
+    });
 });
 
 export default router

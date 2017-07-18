@@ -20,7 +20,9 @@ router.route('/*').all((req, res, next) => {
 
     console.log(req.path)
 
-    if(req.path.startsWith('/products') || req.path.startsWith('/news') || req.path.startsWith('/consult') || req.path.startsWith('/profile') || (req.path.startsWith('/faq') && req.method != 'GET') ){
+    if(req.path.startsWith('/products') || req.path.startsWith('/news') ||
+        req.path.startsWith('/consult') || req.path.startsWith('/profile') ||
+        (req.path.startsWith('/faq') && req.method != 'GET') || (req.path.startsWith('/users') && req.method != 'POST') ){
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
@@ -35,7 +37,7 @@ router.route('/*').all((req, res, next) => {
             if(expire <= now){
                 return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
-            UsersModel.findUser(decode.username, (user) => {
+            UsersModel.findUserByUsername(decode.username, (user) => {
                 if(user instanceof Error){
                     return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                 }
@@ -101,7 +103,7 @@ router.route('/status').get((req, res, next) => {
             info: {}
         };
 
-        UsersModel.findUser(decode.username, (user) => {
+        UsersModel.findUserByUsername(decode.username, (user) => {
             if(user instanceof Error){
                 return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
             }
@@ -125,10 +127,10 @@ router.route('/status').get((req, res, next) => {
                 var date = new Date(ent.birthyear);
                 var now = new Date();
 
-                user.age = now.getFullYear() - date.getFullYear()
+                user.ent = ent
+                user.ent.age = now.getFullYear() - date.getFullYear()
 
                 send.status = Enum.res_type.SUCCESS
-                user.ent = ent
                 send.info = { user: user, access_token: access_token, ent_id: decode.ent_id, otp_pass: decode.otp_pass };
                 return res.json(send)
             })
@@ -246,7 +248,7 @@ router.route('/reset_otp').post((req, res, next) => {
         }
 
         // check in db
-        UsersModel.findUser(decode.username, (user) => {
+        UsersModel.findUserByUsername(decode.username, (user) => {
             if (user == null) {
                 send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ'
                 return res.json(send)
@@ -333,7 +335,7 @@ router.route('/otp').post((req, res, next) => {
         }else{
 
             // check in db
-            UsersModel.findUser(decode.username, (user) => {
+            UsersModel.findUserByUsername(decode.username, (user) => {
                 if (user == null) {
                     send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'
                     return res.json(send)
@@ -406,7 +408,7 @@ router.route('/send_otp').post((req, res, next) => {
     }
 
     // check in db
-    UsersModel.findUser(data.phone_number, (user) => {
+    UsersModel.findUserByUsername(data.phone_number, (user) => {
         if (user == null) {
             send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ'
             return res.json(send)
@@ -474,7 +476,7 @@ router.route('/check_otp').post((req, res, next) => {
     };
 
     // check in db
-    UsersModel.findUser(data.phone_number, (user) => {
+    UsersModel.findUserByUsername(data.phone_number, (user) => {
         if (user == null) {
             send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'
             return res.json(send)
