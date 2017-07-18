@@ -34,6 +34,8 @@ const sms = {
 
 const wording = {
     sms_otp: 'รหัส OTP คือ {{otp}} สำหรับ ref no. {{ref}} OTP จะหมดอายุภายใน 5 นาที',
+    register_success: 'ท่านได้เข้าร่วม SMEsGoOnline แล้ว ใช้งานได้ที่ https://goo.gl/r9sP7s',
+    profile_success: 'ระบบได้ทำการแก้ไขข้อมูลท่านเรียบร้อยแล้ว',
 }
 
 const pwd = {

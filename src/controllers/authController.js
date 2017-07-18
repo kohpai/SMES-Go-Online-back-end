@@ -6,9 +6,6 @@ import Ajv from 'ajv'
 const router = new Router()
 const ajv = new Ajv()
 
-var request = require("request")
-//var windows874 = require('windows-874');
-
 var jwt = require("jsonwebtoken")
 const expire_time = 10 // minute
 // using
@@ -276,7 +273,7 @@ router.route('/reset_otp').post((req, res, next) => {
             var message = Config.wording.sms_otp
             message = message.replace('{{otp}}', otp)
             message = message.replace('{{ref}}', ref)
-            send_sms(decode.username, message, (result) => {
+            Util.send_sms(decode.username, message, (result) => {
 
                 // update opt
                 UsersModel.updateOtp(decode.username, otp, ref, (result) => {
@@ -437,7 +434,7 @@ router.route('/send_otp').post((req, res, next) => {
         var message = Config.wording.sms_otp
         message = message.replace('{{otp}}', otp)
         message = message.replace('{{ref}}', ref)
-        send_sms(data.phone_number, message, (result) => {
+        Util.send_sms(data.phone_number, message, (result) => {
             // update opt
             UsersModel.updateOtp(data.phone_number, otp, ref, (result) => {
                 if (user instanceof Error) {
@@ -565,40 +562,5 @@ router.route('/set_pin').post((req, res, next) => {
 
     })
 })
-
-function send_sms(number, text, done) {
-
-    if(number.startsWith('0')){
-        number = '66'+number.slice(1)
-    }
-
-    //var message = windows874.encode(text);
-    var message = text.toString('utf-8')
-
-    // var options = {
-    //     headers: {
-    //         'Content-Type': 'application/x-www-form-urlencoded'
-    //     },
-    //     method: 'POST',
-    //     url: 'http://corpsms.dtac.co.th/servlet/com.iess.socket.SmsCorplink',
-    //     body: 'RefNo=100000'+'&Msn='+number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEsGoONL'
-    // };
-
-    var options = {
-        method: 'POST',
-        url: Config.sms.url,
-        headers:{
-            'cache-control': 'no-cache'
-        },
-        formData: { 'msn': number, 'msg': message }
-    };
-
-    request(options, function (error, response, body) {
-        if (error){
-            return done(error)
-        }
-        return done(body)
-    });
-}
 
 export default router

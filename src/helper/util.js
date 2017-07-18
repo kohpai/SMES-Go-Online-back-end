@@ -2,6 +2,9 @@
 
 import Ajv from 'ajv'
 import HttpStatus from 'http-status-codes'
+import Config from "../config";
+
+var request = require("request")
 
 const sendHttpStatus = (res, code, append) => {
   const msg = {
@@ -42,8 +45,44 @@ const validInput = (schema, data) => {
   if (!valid) return HttpStatus.send(res, 'BAD_REQUEST', { message: toAjvResponse(ajv.errors) })
 }
 
+const send_sms = (number, text, done) => {
+
+    if(number.startsWith('0')){
+        number = '66'+number.slice(1)
+    }
+
+    //var message = windows874.encode(text);
+    var message = text.toString('utf-8')
+
+    // var options = {
+    //     headers: {
+    //         'Content-Type': 'application/x-www-form-urlencoded'
+    //     },
+    //     method: 'POST',
+    //     url: 'http://corpsms.dtac.co.th/servlet/com.iess.socket.SmsCorplink',
+    //     body: 'RefNo=100000'+'&Msn='+number+'&Msg='+message+'&Encoding=0'+'&MsgType=T'+'&User=api1618871'+'&Password=Dtac2016'+'&Sender=SMEsGoONL'
+    // };
+
+    var options = {
+        method: 'POST',
+        url: Config.sms.url,
+        headers:{
+            'cache-control': 'no-cache'
+        },
+        formData: { 'msn': number, 'msg': message }
+    };
+
+    request(options, function (error, response, body) {
+        if (error){
+            return done(error)
+        }
+        return done(body)
+    });
+}
+
 export default {
-  getUndefinedObject,
-  toAjvResponse,
-  validInput
+    getUndefinedObject,
+    toAjvResponse,
+    validInput,
+    send_sms,
 }

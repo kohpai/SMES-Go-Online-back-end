@@ -293,6 +293,8 @@ router.route('/users/').post((req, res, next) => {
         info: {}
     }
 
+    var phone_no = data.phone_no
+
     var access_token = req.header('access_token')
     jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if(err && access_token){
@@ -313,9 +315,12 @@ router.route('/users/').post((req, res, next) => {
                         send.info = error
                         return res.json(send);
                     }
-                    send.status = Enum.res_type.SUCCESS
-                    send.info = result;
-                    return res.json(send)
+
+                    Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
+                        send.status = Enum.res_type.SUCCESS
+                        send.info = result;
+                        return res.json(send)
+                    })
                 });
             })
 
@@ -327,9 +332,12 @@ router.route('/users/').post((req, res, next) => {
                     send.info = error
                     return res.json(send);
                 }
-                send.status = Enum.res_type.SUCCESS
-                send.info = result;
-                return res.json(send)
+
+                Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
+                    send.status = Enum.res_type.SUCCESS
+                    send.info = result;
+                    return res.json(send)
+                })
             });
         }
     })
@@ -490,18 +498,29 @@ router.route('/profile/').put((req, res, next) => {
         info: {}
     }
 
-    UsersModel.updateUser(req.user.user_id, data, (result, error) => {
-        if (error) {
+    UsersModel.findUser(req.user.username, (user) => {
+        if(user instanceof Error){
             send.status = Enum.res_type.FAILURE;
-            send.message = result
-            send.info = error
+            send.message = 'user not found.'
+            send.info = user
             return res.json(send);
         }
 
-        send.status = Enum.res_type.SUCCESS
-        send.info = result;
-        return res.json(send)
-    });
+        UsersModel.updateUser(req.user.username, data, (result, error) => {
+            if (error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = result
+                send.info = error
+                return res.json(send);
+            }
+
+            Util.send_sms(user.username, Config.wording.profile_success, (send_sms_result) => {
+                send.status = Enum.res_type.SUCCESS
+                send.info = result;
+                return res.json(send)
+            })
+        });
+    })
 });
 
 export default router
