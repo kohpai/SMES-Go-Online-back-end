@@ -544,8 +544,6 @@ router.route('/set_pin').post((req, res, next) => {
         // check expire
         var expire = new Date(decode.expire)
         var now = new Date()
-        console.log(expire)
-        console.log(now)
         if(expire <= now){
             return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
         }
@@ -553,7 +551,8 @@ router.route('/set_pin').post((req, res, next) => {
         // update pin
         UsersModel.updatePin(decode.username, data.new_pin, (result) => {
             if (result instanceof Error) {
-                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอ';
+                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
+                console.log(result)
                 return res.json(send)
             }
 
