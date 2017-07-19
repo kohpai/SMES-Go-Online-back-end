@@ -233,7 +233,7 @@ router.route('/users').post((req, res, next) => {
                 }else if(!user.is_admin){
                     return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                 }
-                UsersModel.addUser(data, user.user_id, (result, error) => {
+                UsersModel.addUser(data, user.user_id, 'admin', (result, error) => {
                     if (error) {
                         send.status = Enum.res_type.FAILURE;
                         send.message = result
@@ -250,7 +250,7 @@ router.route('/users').post((req, res, next) => {
             })
 
         }else{
-            UsersModel.addUser(data, null, (result, error) => {
+            UsersModel.addUser(data, null, 'web', (result, error) => {
                 if (error) {
                     send.status = Enum.res_type.FAILURE;
                     send.message = result
@@ -428,10 +428,14 @@ var profile = (req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
-    var user_id = req.user.user_id
-
-    if(id){
+    var user_id = ''
+    var update_user_id = ''
+    if(id){ // admin
         user_id = id
+        update_user_id = req.user.user_id
+    }else{ // web
+        user_id = req.user.user_id
+        update_user_id = null
     }
 
     UsersModel.findUser(user_id, (user) => {
@@ -442,9 +446,14 @@ var profile = (req, res, next) => {
             return res.json(send);
         }
 
-        var user_name = req.user.username
+        var send_sms = ''
+        if(id){ // admin
+            send_sms = user.username
+        }else{ // web
+            send_sms = req.user.username
+        }
 
-        UsersModel.updateUser(user_id, data, (result, error) => {
+        UsersModel.updateUser(user_id, data, req.user.user_id, (result, error) => {
             if (error) {
                 send.status = Enum.res_type.FAILURE;
                 send.message = result
@@ -452,7 +461,7 @@ var profile = (req, res, next) => {
                 return res.json(send);
             }
 
-            Util.send_sms(user_name, Config.wording.profile_success, (send_sms_result) => {
+            Util.send_sms(send_sms, Config.wording.profile_success, (send_sms_result) => {
                 send.status = Enum.res_type.SUCCESS
                 send.info = result;
                 return res.json(send)

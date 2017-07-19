@@ -35,7 +35,7 @@ router.route('/*').all((req, res, next) => {
             var expire = new Date(decode.expire)
             var now = new Date()
             if(expire <= now){
-                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
             }
             UsersModel.findUserByUsername(decode.username, (user) => {
                 if(user instanceof Error){

@@ -78,7 +78,7 @@ const getEnterpriseByUserId = (id, done) => {
     });
 }
 
-const addUser = (input, user_id, done) => {
+const addUser = (input, user_id, create_channel, done) => {
     var hashids = new Hashids(input.phone_no);
 
     if(input.phone_no.startsWith('66')){
@@ -184,8 +184,13 @@ const addUser = (input, user_id, done) => {
                 input.legal_id = null
             }
 
-            if(user_id)
+            if(user_id){
                 input.create_user_id = user_id
+            }
+
+            input.create_datetime = new Date()
+
+            input.create_channel = create_channel
 
             /*if (input.contact_info && input.registration_type == 3) {
 
@@ -229,7 +234,7 @@ const addUser = (input, user_id, done) => {
     });
 }
 
-const updateUser = (id, input, done) => {
+const updateUser = (id, input, user_id, done) => {
 
     /*if(input.phone_no.startsWith('66')){
         input.phone_no = '0'+input.phone_no.slice(2)
@@ -331,6 +336,12 @@ const updateUser = (id, input, done) => {
                 input.legal_name = null
                 input.legal_id = null
             }
+
+            if(user_id){
+                input.update_user_id = user_id
+            }
+
+            input.update_datetime = new Date()
 
             EnterpriseModel.updateEnterprise(id, input, function(result) {
                 if (result instanceof Error) {
