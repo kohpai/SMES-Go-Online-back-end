@@ -28,7 +28,7 @@ router.route('/product/:id/image/:image_id').get((req, res, next) => {
             return res.json(send)
         }
 
-        FileModel.readFile(result.image, result.name, (result_image) => {
+        FileModel.readFile(result.image, result.image_name, (result_image) => {
             if(result_image instanceof Error){
                 send.status = Enum.res_type.FAILURE
                 send.message = result_image

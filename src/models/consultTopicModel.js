@@ -107,11 +107,9 @@ const getMsgByTopic = (id, done) => {
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
             return done(error);
-        } else if (results.length) {
+        } else{
             return done(results);
         }
-
-        return done([]);
     });
 }
 

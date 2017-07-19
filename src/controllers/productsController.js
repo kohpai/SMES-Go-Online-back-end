@@ -392,11 +392,7 @@ router.route('/:id').get((req, res, next) => {
             result.images = result_images;
 
             ProductsModel.getEmarket(id, (result_emarket) => {
-                if (result_emarket == null || result_emarket.length == 0){
-                    send.status = Enum.res_type.FAILURE;
-                    send.message = "not found"
-                    return res.json(send);
-                }else if (result_emarket instanceof Error) {
+                if (result_emarket instanceof Error) {
                     send.status = Enum.res_type.FAILURE;
                     send.message = result_emarket
                     return res.json(send);

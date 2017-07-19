@@ -114,7 +114,7 @@ const getImages = (id, done) => {
     });
 }
 
-const deleteProduct = (id, done) => {
+const deleteProduct = (id, user_id, done) => {
     var productInfo = {
         sku: null,
         status: 0
@@ -139,13 +139,14 @@ const searchProduct = (search, user_id, offset, limit, done) => {
 
     if(search.length == 0){
         queryOption = {
-            sql: 'SELECT * FROM product WHERE user_id LIKE ? AND status = 1 LIMIT ? OFFSET ?;',
+            //sql: 'SELECT * FROM product WHERE user_id LIKE ? AND status = 1 LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM product LEFT JOIN prod_image ON product.prod_id = prod_image.prod_id & prod_image.status = 1 WHERE product.user_id LIKE ? AND product.status = 1 LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
             values: [user_id, limit, offset],
         };
     }else{
         queryOption = {
-            sql: 'SELECT * FROM product WHERE user_id LIKE ? AND status = 1 AND ( title LIKE \'%'+search+'%\' OR description LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM product LEFT JOIN prod_image ON product.prod_id = prod_image.prod_id & prod_image.status = 1 WHERE product.user_id LIKE ? AND product.status = 1 AND ( product.title LIKE \'%'+search+'%\' OR product.description LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
             values: [user_id, limit, offset],
         };
@@ -200,7 +201,7 @@ const addImage = (id, id_image, name, weight, done) => {
     var productImageInfo = {
         prod_id: id,
         image: id_image,
-        name: name,
+        image_name: name,
         weight: weight,
     };
     var queryOption = {
