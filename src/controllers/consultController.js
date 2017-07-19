@@ -210,10 +210,7 @@ router.route('/topics/msg/:id').get((req, res, next) => {
         }
 
         ConsultTopicModel.getMsgByTopic(id, (msg) => {
-            if (msg == null) {
-                send.message = 'not found msg';
-                return res.json(send);
-            }else if(msg instanceof Error){
+            if(msg instanceof Error){
                 send.message = 'error msg';
                 return res.json(send);
             }

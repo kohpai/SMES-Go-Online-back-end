@@ -111,7 +111,7 @@ const getMsgByTopic = (id, done) => {
             return done(results);
         }
 
-        return done(null);
+        return done([]);
     });
 }
 
