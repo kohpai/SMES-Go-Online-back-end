@@ -518,7 +518,7 @@ const updatePassMachine = (token, done) => {
 
 const countUsers = (search, done) => {
     var queryOption = {
-        sql: 'SELECT COUNT(*) AS count FROM user WHERE user.is_admin = 0 && ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' );',
+        sql: 'SELECT COUNT(*) AS count FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 && user.is_admin = 0 && ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' );',
         timeout: timeout, // 20s
         values: [search],
     };
@@ -545,7 +545,7 @@ const searchUsers = (search, offset, limit, done) => {
         };
     }else{
         queryOption = {
-            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 && ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 && ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
             values: [limit, offset],
         };
