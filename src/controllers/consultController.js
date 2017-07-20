@@ -6,7 +6,6 @@ const router = new Router()
 import Ajv from 'ajv'
 const ajv = new Ajv()
 
-// using
 import HttpStatus from './../helper/http_status.js'
 import ConsultTopicModel from '../models/consultTopicModel.js'
 import { Util, Enum } from '../helper'
@@ -29,7 +28,7 @@ router.route('/topics').get((req, res, next) => {
     ConsultTopicModel.countTopic(user_id, (count_topic) => {
         if (count_topic instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = 'Failed search an product';
+            send.message = 'Failed search an topics';
             return res.json(send);
         }
 

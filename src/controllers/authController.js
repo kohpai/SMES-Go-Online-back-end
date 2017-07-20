@@ -26,20 +26,20 @@ router.route('/*').all((req, res, next) => {
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
-                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_invalid})
             }
             if(!decode.otp_pass){
-                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_invalid})
             }
             // check expire
             var expire = new Date(decode.expire)
             var now = new Date()
             if(expire <= now){
-                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_expire})
             }
             UsersModel.findUserByUsername(decode.username, (user) => {
                 if(user instanceof Error){
-                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.not_found_user})
                 }
 
                 req.user = user
@@ -49,7 +49,7 @@ router.route('/*').all((req, res, next) => {
                 }
                 UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
                     if(ent instanceof Error){
-                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.not_found_enterprise})
                     }
 
                     req.user.ent = ent
@@ -70,11 +70,11 @@ router.route('/*').all((req, res, next) => {
     }else if(req.path.startsWith("/set_pin")){
         jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
-                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_invalid})
             }
             var is_expire = new Date() > decode.expire
             if(is_expire){
-                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_expire})
             }
             return next()
         })
@@ -88,14 +88,14 @@ router.route('/status').get((req, res, next) => {
     const access_token = req.header('access_token')
     jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if(err){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_invalid})
         }
 
         // check expire
         var expire = new Date(decode.expire)
         var now = new Date()
         if(expire <= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_expire})
         }
 
         var send = {
@@ -105,7 +105,7 @@ router.route('/status').get((req, res, next) => {
 
         UsersModel.findUserByUsername(decode.username, (user) => {
             if(user instanceof Error){
-                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.not_found_user})
             }
 
             delete user.password
@@ -161,7 +161,7 @@ router.route('/login').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: Config.wording.bad_request})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -170,10 +170,10 @@ router.route('/login').post((req, res, next) => {
 
     UsersModel.authenUser(data.username, data.pin, (user) => {
         if (user == null || user.length == 0) {
-            send.message = 'รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบ'
+            send.message = Config.wording.password_incorrect
             return res.json(send)
         } else if (user instanceof Error) {
-            send.message = 'รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบ'
+            send.message = Config.wording.password_incorrect
             return res.json(send)
         }
 
@@ -237,27 +237,35 @@ router.route('/reset_otp').post((req, res, next) => {
 
     jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if (err) {
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_invalid})
         }
 
         // check expire
         var expire = new Date(decode.expire)
         var now = new Date()
         if(expire <= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_expire})
         }
 
         // check in db
         UsersModel.findUserByUsername(decode.username, (user) => {
             if (user == null) {
-                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ'
+                send.message = Config.wording.not_found_phone
                 return res.json(send)
             } else if (user instanceof Error) {
-                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
+                send.message = Config.wording.not_found_phone
                 return res.json(send)
             }else if (user.length == 0) {
-                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
+                send.message = Config.wording.not_found_phone
                 return res.json(send)
+            }
+
+            // check otp_gen
+            var expire = new Date(user.otp_gen)
+            expire.setMinutes(expire.getMinutes()+Config.expire.otp_gen)
+            var now = new Date()
+            if(expire >= now){
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.otp_gen_already})
             }
 
             // gen otp
@@ -280,7 +288,7 @@ router.route('/reset_otp').post((req, res, next) => {
                 // update opt
                 UsersModel.updateOtp(decode.username, otp, ref, (result) => {
                     if (result instanceof Error) {
-                        send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
+                        send.message = Config.wording.not_found_phone;
                         return res.json(send)
                     }
 
@@ -309,7 +317,7 @@ router.route('/otp').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: Config.wording.bad_request})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -318,14 +326,14 @@ router.route('/otp').post((req, res, next) => {
 
     jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
         if (err) {
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_invalid})
         }
 
         // check expire
         var expire = new Date(decode.expire)
         var now = new Date()
         if(expire <= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_expire})
         }
 
         if(decode.otp_pass){
@@ -337,10 +345,10 @@ router.route('/otp').post((req, res, next) => {
             // check in db
             UsersModel.findUserByUsername(decode.username, (user) => {
                 if (user == null) {
-                    send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'
+                    send.message = Config.wording.not_found_user
                     return res.json(send)
                 } else if (user instanceof Error) {
-                    send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
+                    send.message = Config.wording.not_found_user;
                     return res.json(send)
                 }
 
@@ -349,11 +357,11 @@ router.route('/otp').post((req, res, next) => {
                 var now = new Date()
                 expire.setMinutes(expire.getMinutes() + Config.expire.otp)
                 if(expire <= now){
-                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
+                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.otp_incorrect})
                 }
 
                 if(user.otp != data.otp){
-                    send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
+                    send.message = Config.wording.otp_incorrect
                     return res.json(send)
                 }
 
@@ -363,7 +371,7 @@ router.route('/otp').post((req, res, next) => {
                 // update otp machine
                 UsersModel.updatePassMachine(machine_token, (result) => {
                     if(result instanceof Error){
-                        send.message = 'Machine token not found.';
+                        send.message = Config.wording.not_found_machine_token;
                         return res.json(send)
                     }
 
@@ -394,7 +402,7 @@ router.route('/send_otp').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: Config.wording.bad_request})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -410,14 +418,22 @@ router.route('/send_otp').post((req, res, next) => {
     // check in db
     UsersModel.findUserByUsername(data.phone_number, (user) => {
         if (user == null) {
-            send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ'
+            send.message = Config.wording.not_found_phone
             return res.json(send)
         } else if (user instanceof Error) {
-            send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
+            send.message = Config.wording.not_found_phone
             return res.json(send)
         }else if (user.length == 0) {
-            send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
+            send.message = Config.wording.not_found_phone
             return res.json(send)
+        }
+
+        // check otp_gen
+        var expire = new Date(user.otp_gen)
+        expire.setMinutes(expire.getMinutes()+Config.expire.otp_gen)
+        var now = new Date()
+        if(expire >= now){
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.otp_gen_already})
         }
 
         // gen otp
@@ -440,7 +456,7 @@ router.route('/send_otp').post((req, res, next) => {
             // update opt
             UsersModel.updateOtp(data.phone_number, otp, ref, (result) => {
                 if (user instanceof Error) {
-                    send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ'
+                    send.message = Config.wording.not_found_user
                     return res.json(send)
                 }
 
@@ -468,7 +484,7 @@ router.route('/check_otp').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: Config.wording.bad_request})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -478,13 +494,13 @@ router.route('/check_otp').post((req, res, next) => {
     // check in db
     UsersModel.findUserByUsername(data.phone_number, (user) => {
         if (user == null) {
-            send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'
+            send.message = Config.wording.otp_incorrect
             return res.json(send)
         } else if (user instanceof Error) {
-            send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
+            send.message = Config.wording.otp_incorrect
             return res.json(send)
         }else if (user.length == 0) {
-            send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
+            send.message = Config.wording.otp_incorrect
             return res.json(send)
         }
 
@@ -492,14 +508,12 @@ router.route('/check_otp').post((req, res, next) => {
         var expire = new Date(user.otp_gen)
         var now = new Date()
         expire.setMinutes(expire.getMinutes() + Config.expire.otp)
-        console.log(expire)
-        console.log(now)
         if(expire <= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.otp_incorrect})
         }
 
         if(user.otp != data.otp){
-            send.message = 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ';
+            send.message = Config.wording.otp_incorrect;
             return res.json(send)
         }
 
@@ -508,7 +522,6 @@ router.route('/check_otp').post((req, res, next) => {
         var otp_token = jwt.sign({ username: data.phone_number, otp_pass: true, expire: expire}, Config.pwd.jwt_secret)
 
         send.status = Enum.res_type.SUCCESS
-        send.message = 'success';
         send.info = {otp_token: otp_token}
         return res.json(send)
 
@@ -529,7 +542,7 @@ router.route('/set_pin').post((req, res, next) => {
     }
     var valid = ajv.validate(schema, data)
     if (!valid)
-        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: Config.wording.bad_request})
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -538,21 +551,20 @@ router.route('/set_pin').post((req, res, next) => {
 
     jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
         if(err){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_invalid})
         }
 
         // check expire
         var expire = new Date(decode.expire)
         var now = new Date()
         if(expire <= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is expire.'})
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_expire})
         }
 
         // update pin
         UsersModel.updatePin(decode.username, data.new_pin, (result) => {
             if (result instanceof Error) {
-                send.message = 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ';
-                console.log(result)
+                send.message = Config.wording.not_found_phone;
                 return res.json(send)
             }
 

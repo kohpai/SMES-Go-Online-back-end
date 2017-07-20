@@ -33,9 +33,20 @@ const sms = {
 }
 
 const wording = {
+    token_invalid: 'The token is invalid.',
+    token_expire: 'The token is expire.',
+    otp_expire: 'The otp is expire.',
+    not_found_user: 'Not found user.',
+    not_found_machine_token: 'Not found machine token.',
+    not_found_enterprise: 'Not found enterprise.',
     sms_otp: 'รหัส OTP คือ {{otp}} สำหรับ ref no. {{ref}} OTP จะหมดอายุภายใน 5 นาที',
     register_success: 'ท่านได้เข้าร่วม SMEsGoOnline แล้ว ใช้งานได้ที่ https://goo.gl/r9sP7s',
     profile_success: 'ระบบได้ทำการแก้ไขข้อมูลท่านเรียบร้อยแล้ว',
+    otp_gen_already: 'หมายเลข OTP ได้ถูกส่งไปแล้ว กรุณารอสักครู่',
+    bad_request: 'bad request.',
+    password_incorrect: 'รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบ',
+    otp_incorrect: 'หมายเลข OTP ไม่ถูกต้อง กรุณาตรวจสอบ',
+    not_found_phone: 'ไม่พบหมายเลขโทรศัพท์มือถือในระบบ กรุณาตรวจสอบ',
 }
 
 const pwd = {
@@ -45,6 +56,7 @@ const pwd = {
 const expire = {
     login: 24, // h
     otp: 5, // m
+    otp_gen: 1, // m
     otp_token: 10 // m
 }
 
