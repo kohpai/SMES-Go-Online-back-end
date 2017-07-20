@@ -13,6 +13,26 @@ var seaweedfs = new weedClient({
     port: Config.seaweedfs.port,
 })
 
+const saveFileLocal = (file, done) => {
+
+    if (!file) {
+        return done(null);
+    }
+
+    if (!fs.existsSync('./temp/')){
+        fs.mkdirSync('./temp/')
+    }
+
+    let fileName = './temp/' + file.name
+    file.mv(fileName, function (err) {
+        if (err) {
+            return done(null)
+        }
+    })
+
+    return done(fileName)
+}
+
 const saveFile = (file, done) => {
 
     if (!file) {
@@ -90,4 +110,5 @@ export default {
     deleteFile,
     readFile,
     deleteTempFile,
+    saveFileLocal,
 }

@@ -131,6 +131,11 @@ router.route('/:id/image').post((req, res, next) => {
         info: {}
     }
 
+    if(!req.files || !req.files.image){
+        send.message = 'File not found.'
+        return send
+    }
+
     FileModel.saveFile(req.files.image, (result) => {
         if(result == null){
             send.status = Enum.res_type.FAILURE
@@ -416,7 +421,7 @@ router.route('/:id').delete((req, res, next) => {
         info: {}
     }
 
-    ProductsModel.deleteProduct(id, (result) => {
+    ProductsModel.deleteProduct(id, req.user.user_id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.message = result;

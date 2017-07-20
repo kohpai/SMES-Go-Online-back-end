@@ -47,6 +47,10 @@ const validInput = (schema, data) => {
 
 const send_sms = (number, text, done) => {
 
+    if(!Config.sms.enable){
+        return done(null)
+    }
+
     if(number.startsWith('0')){
         number = '66'+number.slice(1)
     }

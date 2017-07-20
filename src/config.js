@@ -29,7 +29,8 @@ const seaweedfs = {
 };
 
 const sms = {
-    url : 'http://smeregister.gsoftbiz.com:5080/sms.php',
+    url: 'http://smeregister.gsoftbiz.com:5080/sms.php',
+    enable: true,
 }
 
 const wording = {
