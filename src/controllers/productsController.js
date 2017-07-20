@@ -243,7 +243,7 @@ router.route('/').post((req, res, next) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.info = result;
-            send.message = 'Seller SKU นี้ถูกใช้งานแล้วกรุณาตรวจสอบ'
+            send.message = 'รหัสสินค้านี้ถูกใช้งานแล้วกรุณาตรวจสอบ'
             return res.json(send);
         }
 
@@ -346,7 +346,7 @@ router.route('/:id').put((req, res, next) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.info = result
-            send.message = 'Seller SKU นี้ถูกใช้งานแล้วกรุณาตรวจสอบ'
+            send.message = 'รหัสสินค้านี้ถูกใช้งานแล้วกรุณาตรวจสอบ'
             return res.json(send);
         }
 

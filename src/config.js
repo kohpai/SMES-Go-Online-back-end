@@ -41,7 +41,7 @@ const wording = {
     not_found_machine_token: 'Not found machine token.',
     not_found_enterprise: 'Not found enterprise.',
     sms_otp: 'รหัส OTP คือ {{otp}}  สำหรับรหัส  OTP REF: {{ref}} จะหมดอายุภายใน 5 นาที',
-    register_success: 'ท่านได้เข้าร่วม SMEsGoOnline แล้ว ใช้งานได้ที่ https://goo.gl/r9sP7s',
+    register_success: 'ท่านได้เข้าร่วม SMEsGoOnline แล้ว ใช้งานได้ที่ https://goo.gl/s2XdpU',
     profile_success: 'ระบบได้ทำการแก้ไขข้อมูลท่านเรียบร้อยแล้ว',
     otp_gen_already: 'หมายเลข OTP ได้ถูกส่งไปแล้ว กรุณารอสักครู่',
     bad_request: 'bad request.',
