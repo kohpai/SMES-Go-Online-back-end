@@ -6,6 +6,8 @@ import Ajv from 'ajv'
 const router = new Router()
 const ajv = new Ajv()
 
+const crypto = require('crypto');
+
 var jwt = require("jsonwebtoken")
 const expire_time = 10 // minute
 // using
@@ -168,7 +170,9 @@ router.route('/login').post((req, res, next) => {
         info: {}
     };
 
-    UsersModel.authenUser(data.username, data.pin, (user) => {
+    var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.pin).digest('hex');
+
+    UsersModel.authenUser(data.username, hash, (user) => {
         if (user == null || user.length == 0) {
             send.message = Config.wording.password_incorrect
             return res.json(send)
@@ -453,6 +457,7 @@ router.route('/send_otp').post((req, res, next) => {
         message = message.replace('{{otp}}', otp)
         message = message.replace('{{ref}}', ref)
         Util.send_sms(data.phone_number, message, (result) => {
+
             // update opt
             UsersModel.updateOtp(data.phone_number, otp, ref, (result) => {
                 if (user instanceof Error) {
@@ -561,8 +566,10 @@ router.route('/set_pin').post((req, res, next) => {
             return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_expire})
         }
 
+        var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.new_pin).digest('hex');
+
         // update pin
-        UsersModel.updatePin(decode.username, data.new_pin, (result) => {
+        UsersModel.updatePin(decode.username, hash, (result) => {
             if (result instanceof Error) {
                 send.message = Config.wording.not_found_phone;
                 return res.json(send)

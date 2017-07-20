@@ -50,7 +50,8 @@ const wording = {
 }
 
 const pwd = {
-    jwt_secret: 'SME',
+    jwt_secret: 's6njKG?g@y',
+    sha256_secret: 'vuqXhd9H',
 }
 
 const expire = {
