@@ -86,6 +86,10 @@ const send_sms = (number, text, done) => {
 
 const check_recaptcha = (response, done) => {
 
+    if(!Config.recaptcha.enable){
+        return done({success: true})
+    }
+
     var options = { method: 'POST',
         url: 'https://www.google.com/recaptcha/api/siteverify',
         headers:{

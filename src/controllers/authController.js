@@ -176,11 +176,11 @@ router.route('/login').post((req, res, next) => {
 
     Util.check_recaptcha(data.recaptcha, (recaptcha) => {
         if (recaptcha instanceof Error) {
-            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.1'})
         }
 
         if (!recaptcha.success) {
-            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.2'})
         }
 
         var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.pin).digest('hex');

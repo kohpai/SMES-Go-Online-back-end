@@ -28,6 +28,10 @@ const seaweedfs = {
     port    : 9333,
 };
 
+const recaptcha = {
+    enable: false,
+}
+
 const sms = {
     url: 'http://smeregister.gsoftbiz.com:5080/sms.php',
     enable: true,
@@ -76,5 +80,6 @@ export default {
     sms,
     wording,
     pwd,
-    expire
+    expire,
+    recaptcha
 };
