@@ -24,7 +24,8 @@ router.route('/*').all((req, res, next) => {
 
     if(req.path.startsWith('/products') || req.path.startsWith('/news') ||
         req.path.startsWith('/consult') || req.path.startsWith('/profile') ||
-        (req.path.startsWith('/faq') && req.method != 'GET') || (req.path.startsWith('/users') && req.method != 'POST') ){
+        (req.path.startsWith('/faq') && req.method != 'GET') ||
+        req.path.startsWith('/users/import') || (req.path.startsWith('/users') && req.method != 'POST') ){
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){

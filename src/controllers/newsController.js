@@ -6,14 +6,14 @@ const router = new Router()
 import Ajv from 'ajv'
 const ajv = new Ajv()
 
+const fileUpload = require('express-fileupload')
+router.use(fileUpload())
+
 // using
 import HttpStatus from './../helper/http_status.js'
 import NewsModel from '../models/newsModel.js'
 import { Util, Enum } from '../helper'
 import FileModel from "../models/fileModel";
-
-const fileUpload = require('express-fileupload')
-router.use(fileUpload())
 
 router.route('/').get((req, res, next) => {
 
@@ -190,6 +190,11 @@ router.route('/:id/image').post((req, res, next) => {
 
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if(!req.files || !req.files.image){
+        send.message = 'File not found.'
+        return res.json(send)
     }
 
     FileModel.saveFile(req.files.image, (result) => {
