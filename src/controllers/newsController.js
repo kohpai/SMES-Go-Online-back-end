@@ -111,6 +111,31 @@ router.route('/').post((req, res, next) => {
     });
 });
 
+router.route('/:id').get((req, res, next) => {
+    var id = req.params.id
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    NewsModel.detailNews(id, (news) => {
+        if (news instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.info = news;
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = news;
+        return res.json(send)
+    })
+});
+
 router.route('/:id').put((req, res, next) => {
     var id = req.params.id
     var data = req.body

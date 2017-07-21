@@ -39,6 +39,24 @@ const countNews = (done) => {
     });
 }
 
+const detailNews = (id, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM `news` WHERE `news_id` = ?;',
+        timeout: timeout, // 40s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if(results.length){
+            return done(results[0]);
+        }else{
+            return done(results)
+        }
+    });
+}
+
 const addNews = (news, user_id, done) => {
     var newsInfo = {
         title: news.title,
@@ -151,4 +169,5 @@ export default {
     deleteNews,
     updateImage,
     findImage,
+    detailNews,
 }

@@ -180,7 +180,7 @@ router.route('/login').post((req, res, next) => {
         }
 
         if (!recaptcha.success) {
-            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.2'})
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
         }
 
         var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.pin).digest('hex');
