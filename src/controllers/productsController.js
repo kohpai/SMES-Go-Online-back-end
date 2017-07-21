@@ -65,38 +65,38 @@ var search = (req, res, next) => {
 router.route('/list/:search').get(search)
 router.route('/list/').get(search)
 
-var count = (req, res, next) => {
-    var search = ''
-    if(req.params.search){
-        search = req.params.search
-    }
-    var user_id = req.query.user_id
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    if(user_id.length){
-        user_id = parseInt(user_id, 0)
-    }else{
-        user_id = '%'
-    }
-
-    ProductsModel.countProduct(search, user_id, (result) => {
-        if (result instanceof Error) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'Failed search an product';
-            return res.json(send);
-        }
-
-        send.status = Enum.res_type.SUCCESS
-        send.info = result
-        return res.json(send)
-    });
-}
-router.route('/count/:search').get(count)
-router.route('/count/').get(count)
+// var count = (req, res, next) => {
+//     var search = ''
+//     if(req.params.search){
+//         search = req.params.search
+//     }
+//     var user_id = req.query.user_id
+//
+//     var send = {
+//         status: Enum.res_type.FAILURE,
+//         info: {}
+//     }
+//
+//     if(user_id.length){
+//         user_id = parseInt(user_id, 0)
+//     }else{
+//         user_id = '%'
+//     }
+//
+//     ProductsModel.countProduct(search, user_id, (result) => {
+//         if (result instanceof Error) {
+//             send.status = Enum.res_type.FAILURE;
+//             send.message = 'Failed search an product';
+//             return res.json(send);
+//         }
+//
+//         send.status = Enum.res_type.SUCCESS
+//         send.info = result
+//         return res.json(send)
+//     });
+// }
+// router.route('/count/:search').get(count)
+// router.route('/count/').get(count)
 
 router.route('/:id/image/:image_id').delete((req, res, next) => {
     var id = req.params.id
@@ -107,19 +107,36 @@ router.route('/:id/image/:image_id').delete((req, res, next) => {
         info: {}
     }
 
-    ProductsModel.deleteImage(id, image_id, (result) => {
-        if(result == null){
-            send.status = Enum.res_type.FAILURE
-            send.message = 'file not found'
-            return res.json(send)
-        }else if(result instanceof Error){
-            send.status = Enum.res_type.FAILURE
-            send.message = result
-            return res.json(send)
+    ProductsModel.detailProduct(id, (old_product) => {
+        if (old_product instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.info = old_product
+            send.message = 'Not found product.'
+            return res.json(send);
         }
-        send.status = 'success'
-        send.info = result
-        return res.json(send)
+
+        if (old_product.user_id == req.user.user_id) {
+
+        } else if (!req.user.is_admin) {
+            return res.json({status: Enum.res_type.FAILURE, info: {}, message: 'Not is admin.'})
+        } else {
+
+        }
+
+        ProductsModel.deleteImage(id, image_id, (result) => {
+            if (result == null) {
+                send.status = Enum.res_type.FAILURE
+                send.message = 'file not found'
+                return res.json(send)
+            } else if (result instanceof Error) {
+                send.status = Enum.res_type.FAILURE
+                send.message = result
+                return res.json(send)
+            }
+            send.status = 'success'
+            send.info = result
+            return res.json(send)
+        })
     })
 })
 
@@ -132,30 +149,48 @@ router.route('/:id/image').post((req, res, next) => {
     }
 
     if(!req.files || !req.files.image){
+        send.status = Enum.res_type.FAILURE
         send.message = 'File not found.'
-        return send
+        return res.json(send)
     }
 
-    FileModel.saveFile(req.files.image, (result) => {
-        if(result == null){
-            send.status = Enum.res_type.FAILURE
-            send.message = 'file not found'
-            return res.json(send)
+    ProductsModel.detailProduct(id, (old_product) => {
+        if (old_product instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.info = old_product
+            send.message = 'Not found product.'
+            return res.json(send);
         }
 
-        ProductsModel.addImage(id, result.fid, req.files.image.name, 0, (result) => {
-            if(result == null){
+        if (old_product.user_id == req.user.user_id) {
+
+        } else if (!req.user.is_admin) {
+            return res.json({status: Enum.res_type.FAILURE, info: {}, message: 'Not is admin.'})
+        } else {
+
+        }
+
+        FileModel.saveFile(req.files.image, (result) => {
+            if (result == null) {
                 send.status = Enum.res_type.FAILURE
                 send.message = 'file not found'
                 return res.json(send)
-            }else if(result instanceof Error){
-                send.status = Enum.res_type.FAILURE
-                send.message = result
-                return res.json(send)
             }
-            send.status = 'success'
-            send.info = result
-            return res.json(send)
+
+            ProductsModel.addImage(id, result.fid, req.files.image.name, 0, (result) => {
+                if (result == null) {
+                    send.status = Enum.res_type.FAILURE
+                    send.message = 'file not found'
+                    return res.json(send)
+                } else if (result instanceof Error) {
+                    send.status = Enum.res_type.FAILURE
+                    send.message = result
+                    return res.json(send)
+                }
+                send.status = 'success'
+                send.info = result
+                return res.json(send)
+            })
         })
     })
 })
@@ -239,11 +274,27 @@ router.route('/').post((req, res, next) => {
         info: {}
     }
 
-    ProductsModel.addProduct(data, req.user.user_id, (result) => {
+    var user_id = ''
+    if(data.user_id){
+        user_id = data.user_id
+
+        if(user_id == req.user.user_id){
+
+        }else if(!req.user.is_admin){
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+        }else{
+
+        }
+
+    }else{
+        user_id = req.user.user_id
+    }
+
+    ProductsModel.addProduct(data, user_id, req.user.user_id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.info = result;
-            send.message = 'Seller SKU นี้ถูกใช้งานแล้วกรุณาตรวจสอบ'
+            send.message = 'รหัสสินค้านี้ถูกใช้งานแล้วกรุณาตรวจสอบ'
             return res.json(send);
         }
 
@@ -342,34 +393,51 @@ router.route('/:id').put((req, res, next) => {
         info: {}
     }
 
-    ProductsModel.updateProduct(id, data, (result) => {
-        if (result instanceof Error) {
+    ProductsModel.detailProduct(id, (old_product) => {
+        if (old_product instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.info = result
-            send.message = 'Seller SKU นี้ถูกใช้งานแล้วกรุณาตรวจสอบ'
+            send.info = old_product
+            send.message = 'Not found product.'
             return res.json(send);
         }
 
-        ProductsModel.deleteEmarket(id, (result_delete) => {
+        if(old_product.user_id == req.user.user_id){
+
+        }else if(!req.user.is_admin){
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+        }else{
+
+        }
+
+        ProductsModel.updateProduct(id, data, req.user.user_id, (result) => {
             if (result instanceof Error) {
                 send.status = Enum.res_type.FAILURE;
-                send.message = result;
+                send.info = result
+                send.message = 'รหัสสินค้านี้ถูกใช้งานแล้วกรุณาตรวจสอบ'
                 return res.json(send);
             }
 
-            ProductsModel.addEmarket(id, data.using_platforms, (result) => {
+            ProductsModel.deleteEmarket(id, (result_delete) => {
                 if (result instanceof Error) {
                     send.status = Enum.res_type.FAILURE;
                     send.message = result;
                     return res.json(send);
                 }
 
-                send.status = Enum.res_type.SUCCESS
-                send.info = result;
-                return res.json(send)
+                ProductsModel.addEmarket(id, data.using_platforms, (result) => {
+                    if (result instanceof Error) {
+                        send.status = Enum.res_type.FAILURE;
+                        send.message = result;
+                        return res.json(send);
+                    }
+
+                    send.status = Enum.res_type.SUCCESS
+                    send.info = result;
+                    return res.json(send)
+                })
             })
-        })
-    });
+        });
+    })
 });
 
 router.route('/:id').get((req, res, next) => {
@@ -380,11 +448,19 @@ router.route('/:id').get((req, res, next) => {
         info: {}
     }
 
-    ProductsModel.detailProduct(id, (result) => {
-        if (result instanceof Error) {
+    ProductsModel.detailProduct(id, (product) => {
+        if (product instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = result;
+            send.message = product;
             return res.json(send);
+        }
+
+        if (product.user_id == req.user.user_id) {
+
+        } else if (!req.user.is_admin) {
+            return res.json({status: Enum.res_type.FAILURE, info: {}, message: 'Not is admin.'})
+        } else {
+
         }
 
         ProductsModel.getImages(id, (result_images) => {
@@ -394,7 +470,7 @@ router.route('/:id').get((req, res, next) => {
                 return res.json(send);
             }
 
-            result.images = result_images;
+            product.images = result_images;
 
             ProductsModel.getEmarket(id, (result_emarket) => {
                 if (result_emarket instanceof Error) {
@@ -403,10 +479,10 @@ router.route('/:id').get((req, res, next) => {
                     return res.json(send);
                 }
 
-                result.using_platforms = result_emarket
+                product.using_platforms = result_emarket
 
                 send.status = Enum.res_type.SUCCESS
-                send.info = result;
+                send.info = product;
                 return res.json(send)
             })
         })
@@ -421,16 +497,33 @@ router.route('/:id').delete((req, res, next) => {
         info: {}
     }
 
-    ProductsModel.deleteProduct(id, req.user.user_id, (result) => {
-        if (result instanceof Error) {
+    ProductsModel.detailProduct(id, (old_product) => {
+        if (old_product instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = result;
+            send.info = old_product
+            send.message = 'Not found product.'
             return res.json(send);
         }
 
-        send.status = Enum.res_type.SUCCESS
-        send.info = result;
-        return res.json(send)
+        if (old_product.user_id == req.user.user_id) {
+
+        } else if (!req.user.is_admin) {
+            return res.json({status: Enum.res_type.FAILURE, info: {}, message: 'Not is admin.'})
+        } else {
+
+        }
+
+        ProductsModel.deleteProduct(id, req.user.user_id, (result) => {
+            if (result instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = result;
+                return res.json(send);
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result;
+            return res.json(send)
+        });
     });
 });
 

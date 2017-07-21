@@ -192,6 +192,11 @@ router.route('/:id/image').post((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if(!req.files || !req.files.image){
+        send.message = 'File not found.'
+        return res.json(send)
+    }
+
     FileModel.saveFile(req.files.image, (result) => {
         if(result == null){
             send.status = Enum.res_type.FAILURE

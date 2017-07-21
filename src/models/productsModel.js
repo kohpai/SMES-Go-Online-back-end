@@ -8,7 +8,7 @@ import EnterpriseModel from './enterpriseModel.js';
 
 const timeout = 20000;
 
-const addProduct = (input, user_id, done) => {
+const addProduct = (input, user_id, create_user_id, done) => {
     var productInfo = {
         title: input.title,
         sku: input.sku,
@@ -29,6 +29,8 @@ const addProduct = (input, user_id, done) => {
         user_id: user_id,
         subcategory: input.subcategory,
         subcategory_code: input.subcategory_code,
+        create_user_id: create_user_id,
+        create_datetime: new Date(),
     };
     var queryOption = {
         sql: 'INSERT INTO product SET ?',
@@ -45,7 +47,7 @@ const addProduct = (input, user_id, done) => {
     });
 }
 
-const updateProduct = (id, input, done) => {
+const updateProduct = (id, input, update_user_id, done) => {
     var productInfo = {
         title: input.title,
         sku: input.sku,
@@ -65,6 +67,8 @@ const updateProduct = (id, input, done) => {
         cert_other: input.cert_other,
         subcategory: input.subcategory,
         subcategory_code: input.subcategory_code,
+        update_user_id: update_user_id,
+        update_datetime: new Date(),
     };
     var queryOption = {
         sql: 'UPDATE product SET ? WHERE prod_id = ?',
@@ -114,10 +118,12 @@ const getImages = (id, done) => {
     });
 }
 
-const deleteProduct = (id, user_id, done) => {
+const deleteProduct = (id, update_user_id, done) => {
     var productInfo = {
         sku: null,
-        status: 0
+        status: 0,
+        update_user_id: update_user_id,
+        update_datetime: new Date(),
     };
     var queryOption = {
         sql: 'UPDATE product SET ? WHERE prod_id = ?',
@@ -221,7 +227,7 @@ const addImage = (id, id_image, name, weight, done) => {
 
 const deleteImage = (id, id_image, done) => {
     var productImageInfo = {
-       status: 0,
+        status: 0,
     };
     var queryOption = {
         sql: 'UPDATE prod_image SET ? WHERE prod_id = ? AND image = ?',
