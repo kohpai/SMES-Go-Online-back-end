@@ -53,6 +53,7 @@ const wording = {
 const pwd = {
     jwt_secret: 's6njKG?g@y',
     sha256_secret: 'vuqXhd9H',
+    recaptcha_secret: '6Ldt7ykUAAAAAAZ6I3fesDVZimpd-H9mzA6QC5c7',
 }
 
 const expire = {

@@ -12,15 +12,6 @@ import UsersModel from '../models/usersModel.js'
 import { Util, Enum } from '../helper'
 import Config from '../config.js'
 
-import FileModel from '../models/fileModel.js'
-
-// const fileUpload = require('express-fileupload')
-// router.use(fileUpload())
-//
-// var fs = require('fs')
-// var path = require("path")
-// var csv = require("fast-csv");
-
 router.route('/users').post((req, res, next) => {
     var data = req.body
     var schema = {
@@ -210,6 +201,9 @@ router.route('/users').post((req, res, next) => {
             },
             'on_ecommerce': {
                 'type': 'boolean'
+            },
+            'recaptcha': {
+                'type': 'string'
             }
         },
         'required': [
@@ -227,22 +221,48 @@ router.route('/users').post((req, res, next) => {
         info: {}
     }
 
-    var phone_no = data.phone_no
-
-    var access_token = req.header('access_token')
-    jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
-        if(err && access_token){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+    Util.check_recaptcha(data.recaptcha, (recaptcha) => {
+        if(recaptcha instanceof Error){
+            return res.json({status: Enum.res_type.FAILURE, info:recaptcha, message: 'fail recaptcha.'})
         }
 
-        if(access_token){
-            UsersModel.findUserByUsername(decode.username, (user) => {
-                if(user instanceof Error){
-                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
-                }else if(!user.is_admin){
-                    return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
-                }
-                UsersModel.addUser(data, user.user_id, 'admin', (result, error) => {
+        if(!recaptcha.success){
+            return res.json({status: Enum.res_type.FAILURE, info:recaptcha, message: 'fail recaptcha.'})
+        }
+
+        var phone_no = data.phone_no
+
+        var access_token = req.header('access_token')
+        jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
+            if(err && access_token){
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+            }
+
+            if(access_token){
+                UsersModel.findUserByUsername(decode.username, (user) => {
+                    if(user instanceof Error){
+                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                    }else if(!user.is_admin){
+                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                    }
+                    UsersModel.addUser(data, user.user_id, 'admin', (result, error) => {
+                        if (error) {
+                            send.status = Enum.res_type.FAILURE;
+                            send.message = result
+                            send.info = error
+                            return res.json(send);
+                        }
+
+                        Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
+                            send.status = Enum.res_type.SUCCESS
+                            send.info = result;
+                            return res.json(send)
+                        })
+                    });
+                })
+
+            }else{
+                UsersModel.addUser(data, null, 'web', (result, error) => {
                     if (error) {
                         send.status = Enum.res_type.FAILURE;
                         send.message = result
@@ -256,24 +276,9 @@ router.route('/users').post((req, res, next) => {
                         return res.json(send)
                     })
                 });
-            })
+            }
+        })
 
-        }else{
-            UsersModel.addUser(data, null, 'web', (result, error) => {
-                if (error) {
-                    send.status = Enum.res_type.FAILURE;
-                    send.message = result
-                    send.info = error
-                    return res.json(send);
-                }
-
-                Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
-                    send.status = Enum.res_type.SUCCESS
-                    send.info = result;
-                    return res.json(send)
-                })
-            });
-        }
     })
 });
 

@@ -84,9 +84,32 @@ const send_sms = (number, text, done) => {
     });
 }
 
+const check_recaptcha = (response, done) => {
+
+    var options = { method: 'POST',
+        url: 'https://www.google.com/recaptcha/api/siteverify',
+        headers:{
+            'postman-token': 'ff986113-484d-dcdb-5bb2-4481c9c1a14e',
+            'cache-control': 'no-cache',
+            'content-type': 'multipart/form-data;' },
+        formData:{
+            secret: Config.pwd.recaptcha_secret,
+            response: response,
+            remoteip: '' }
+    };
+
+    request(options, function (error, response, body) {
+        if (error)
+            done(error)
+        else
+            done(body)
+    });
+}
+
 export default {
     getUndefinedObject,
     toAjvResponse,
     validInput,
     send_sms,
+    check_recaptcha,
 }

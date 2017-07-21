@@ -158,6 +158,9 @@ router.route('/login').post((req, res, next) => {
             },
             "machine_name": {
                 "type": "string"
+            },
+            'recaptcha': {
+                'type': 'string'
             }
         },
         "required": [ "username", "pin" ]
@@ -171,64 +174,82 @@ router.route('/login').post((req, res, next) => {
         info: {}
     };
 
-    var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.pin).digest('hex');
-
-    UsersModel.authenUser(data.username, hash, (user) => {
-        if (user == null || user.length == 0) {
-            send.message = Config.wording.password_incorrect
-            return res.json(send)
-        } else if (user instanceof Error) {
-            send.message = Config.wording.password_incorrect
-            return res.json(send)
+    Util.check_recaptcha(data.recaptcha, (recaptcha) => {
+        if (recaptcha instanceof Error) {
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
         }
 
-        delete user.password
-        delete user.otp
+        if (!recaptcha.success) {
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
+        }
 
-        var otp_pass = false
-        var machine_token = ''
+        var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.pin).digest('hex');
 
-        // find machine
-        UsersModel.findMachine(data.machine_token, (machine) => {
-            if (machine == null || machine instanceof Error || machine.length == 0) {
-                otp_pass = false
-                machine_token = jwt.sign({ created: new Date() }, Config.pwd.jwt_secret)
-
-                // add new machine
-                var insert_machine = {
-                    user_id: user.user_id,
-                    machine_name: data.machine_name,
-                    machine_token: machine_token,
-                    create_datetime: new Date(),
-                    access_datetime: new Date(),
-                    otp_pass: otp_pass,
-                }
-                UsersModel.addMachine(insert_machine, (result) => {
-                    if(result instanceof Error){ console.log(result) }
-                })
-
-            }else{
-                otp_pass = machine.otp_pass?true:false
-                machine_token = data.machine_token
-
-                if(machine.user_id != user.user_id){
-                    otp_pass = false
-                }
-
-                // update machine
-                UsersModel.updateMachine(machine_token, user.user_id, otp_pass, (result) => {
-                    if(result instanceof Error){ console.log(result) }
-                })
+        UsersModel.authenUser(data.username, hash, (user) => {
+            if (user == null || user.length == 0) {
+                send.message = Config.wording.password_incorrect
+                return res.json(send)
+            } else if (user instanceof Error) {
+                send.message = Config.wording.password_incorrect
+                return res.json(send)
             }
 
-            var expire = new Date()
-            expire.setHours(expire.getHours()+Config.expire.login)
-            var access_token = jwt.sign({ username: data.username, otp_pass: otp_pass, expire: expire }, Config.pwd.jwt_secret)
+            delete user.password
+            delete user.otp
 
-            send.status = Enum.res_type.SUCCESS
-            send.info = { user: user, access_token: access_token, otp_pass: otp_pass, machine_token: machine_token };
+            var otp_pass = false
+            var machine_token = ''
 
-            return res.json(send)
+            // find machine
+            UsersModel.findMachine(data.machine_token, (machine) => {
+                if (machine == null || machine instanceof Error || machine.length == 0) {
+                    otp_pass = false
+                    machine_token = jwt.sign({created: new Date()}, Config.pwd.jwt_secret)
+
+                    // add new machine
+                    var insert_machine = {
+                        user_id: user.user_id,
+                        machine_name: data.machine_name,
+                        machine_token: machine_token,
+                        create_datetime: new Date(),
+                        access_datetime: new Date(),
+                        otp_pass: otp_pass,
+                    }
+                    UsersModel.addMachine(insert_machine, (result) => {
+                        if (result instanceof Error) {
+                            console.log(result)
+                        }
+                    })
+
+                } else {
+                    otp_pass = machine.otp_pass ? true : false
+                    machine_token = data.machine_token
+
+                    if (machine.user_id != user.user_id) {
+                        otp_pass = false
+                    }
+
+                    // update machine
+                    UsersModel.updateMachine(machine_token, user.user_id, otp_pass, (result) => {
+                        if (result instanceof Error) {
+                            console.log(result)
+                        }
+                    })
+                }
+
+                var expire = new Date()
+                expire.setHours(expire.getHours() + Config.expire.login)
+                var access_token = jwt.sign({
+                    username: data.username,
+                    otp_pass: otp_pass,
+                    expire: expire
+                }, Config.pwd.jwt_secret)
+
+                send.status = Enum.res_type.SUCCESS
+                send.info = {user: user, access_token: access_token, otp_pass: otp_pass, machine_token: machine_token};
+
+                return res.json(send)
+            })
         })
     })
 })
@@ -402,6 +423,9 @@ router.route('/send_otp').post((req, res, next) => {
             "phone_number": {
                 "type": "string"
             },
+            'recaptcha': {
+                'type': 'string'
+            }
         },
         "required": [ "phone_number" ]
     }
@@ -414,61 +438,71 @@ router.route('/send_otp').post((req, res, next) => {
         info: {}
     };
 
-    if(data.phone_number.startsWith('66')){
-        data.phone_number = '0'+data.phone_number.slice(2)
-    }else if(data.phone_number.startsWith('+66')){
-        data.phone_number = '0'+data.phone_number.slice(3)
-    }
-
-    // check in db
-    UsersModel.findUserByUsername(data.phone_number, (user) => {
-        if (user == null) {
-            send.message = Config.wording.not_found_phone
-            return res.json(send)
-        } else if (user instanceof Error) {
-            send.message = Config.wording.not_found_phone
-            return res.json(send)
-        }else if (user.length == 0) {
-            send.message = Config.wording.not_found_phone
-            return res.json(send)
+    Util.check_recaptcha(data.recaptcha, (recaptcha) => {
+        if (recaptcha instanceof Error) {
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
         }
 
-        // check otp_gen
-        var expire = new Date(user.otp_gen)
-        expire.setMinutes(expire.getMinutes()+Config.expire.otp_gen)
-        var now = new Date()
-        if(expire >= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.otp_gen_already})
+        if (!recaptcha.success) {
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
         }
 
-        // gen otp
-        var possible = '0123456789'
-        var otp = ""
-        for (var i = 0; i < 6; i++)
-            otp += possible.charAt(Math.floor(Math.random() * possible.length));
+        if (data.phone_number.startsWith('66')) {
+            data.phone_number = '0' + data.phone_number.slice(2)
+        } else if (data.phone_number.startsWith('+66')) {
+            data.phone_number = '0' + data.phone_number.slice(3)
+        }
 
-        // gen ref
-        var ref = ""
-        for (var i = 0; i < 4; i++)
-            ref += possible.charAt(Math.floor(Math.random() * possible.length));
-
-
-        // send sms
-        var message = Config.wording.sms_otp
-        message = message.replace('{{otp}}', otp)
-        message = message.replace('{{ref}}', ref)
-        Util.send_sms(data.phone_number, message, (result) => {
-
-            // update opt
-            UsersModel.updateOtp(data.phone_number, otp, ref, (result) => {
-                if (user instanceof Error) {
-                    send.message = Config.wording.not_found_user
-                    return res.json(send)
-                }
-
-                send.status = Enum.res_type.SUCCESS
-                send.info = { username: data.username, ref: ref }
+        // check in db
+        UsersModel.findUserByUsername(data.phone_number, (user) => {
+            if (user == null) {
+                send.message = Config.wording.not_found_phone
                 return res.json(send)
+            } else if (user instanceof Error) {
+                send.message = Config.wording.not_found_phone
+                return res.json(send)
+            } else if (user.length == 0) {
+                send.message = Config.wording.not_found_phone
+                return res.json(send)
+            }
+
+            // check otp_gen
+            var expire = new Date(user.otp_gen)
+            expire.setMinutes(expire.getMinutes() + Config.expire.otp_gen)
+            var now = new Date()
+            if (expire >= now) {
+                return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.otp_gen_already})
+            }
+
+            // gen otp
+            var possible = '0123456789'
+            var otp = ""
+            for (var i = 0; i < 6; i++)
+                otp += possible.charAt(Math.floor(Math.random() * possible.length));
+
+            // gen ref
+            var ref = ""
+            for (var i = 0; i < 4; i++)
+                ref += possible.charAt(Math.floor(Math.random() * possible.length));
+
+
+            // send sms
+            var message = Config.wording.sms_otp
+            message = message.replace('{{otp}}', otp)
+            message = message.replace('{{ref}}', ref)
+            Util.send_sms(data.phone_number, message, (result) => {
+
+                // update opt
+                UsersModel.updateOtp(data.phone_number, otp, ref, (result) => {
+                    if (user instanceof Error) {
+                        send.message = Config.wording.not_found_user
+                        return res.json(send)
+                    }
+
+                    send.status = Enum.res_type.SUCCESS
+                    send.info = {username: data.username, ref: ref}
+                    return res.json(send)
+                })
             })
         })
     })
@@ -485,6 +519,9 @@ router.route('/check_otp').post((req, res, next) => {
             "otp": {
                 "type": "string"
             },
+            'recaptcha': {
+                'type': 'string'
+            }
         },
         "required": [ "phone_number", "otp" ]
     }
@@ -497,40 +534,54 @@ router.route('/check_otp').post((req, res, next) => {
         info: {}
     };
 
-    // check in db
-    UsersModel.findUserByUsername(data.phone_number, (user) => {
-        if (user == null) {
-            send.message = Config.wording.otp_incorrect
-            return res.json(send)
-        } else if (user instanceof Error) {
-            send.message = Config.wording.otp_incorrect
-            return res.json(send)
-        }else if (user.length == 0) {
-            send.message = Config.wording.otp_incorrect
-            return res.json(send)
+    Util.check_recaptcha(data.recaptcha, (recaptcha) => {
+        if (recaptcha instanceof Error) {
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
         }
 
-        // check otp expire
-        var expire = new Date(user.otp_gen)
-        var now = new Date()
-        expire.setMinutes(expire.getMinutes() + Config.expire.otp)
-        if(expire <= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.otp_incorrect})
+        if (!recaptcha.success) {
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
         }
 
-        if(user.otp != data.otp){
-            send.message = Config.wording.otp_incorrect;
+        // check in db
+        UsersModel.findUserByUsername(data.phone_number, (user) => {
+            if (user == null) {
+                send.message = Config.wording.otp_incorrect
+                return res.json(send)
+            } else if (user instanceof Error) {
+                send.message = Config.wording.otp_incorrect
+                return res.json(send)
+            } else if (user.length == 0) {
+                send.message = Config.wording.otp_incorrect
+                return res.json(send)
+            }
+
+            // check otp expire
+            var expire = new Date(user.otp_gen)
+            var now = new Date()
+            expire.setMinutes(expire.getMinutes() + Config.expire.otp)
+            if (expire <= now) {
+                return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.otp_incorrect})
+            }
+
+            if (user.otp != data.otp) {
+                send.message = Config.wording.otp_incorrect;
+                return res.json(send)
+            }
+
+            var expire = new Date()
+            expire.setMinutes(expire.getMinutes() + Config.expire.otp_token)
+            var otp_token = jwt.sign({
+                username: data.phone_number,
+                otp_pass: true,
+                expire: expire
+            }, Config.pwd.jwt_secret)
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = {otp_token: otp_token}
             return res.json(send)
-        }
 
-        var expire = new Date()
-        expire.setMinutes(expire.getMinutes()+Config.expire.otp_token)
-        var otp_token = jwt.sign({ username: data.phone_number, otp_pass: true, expire: expire}, Config.pwd.jwt_secret)
-
-        send.status = Enum.res_type.SUCCESS
-        send.info = {otp_token: otp_token}
-        return res.json(send)
-
+        })
     })
 })
 
@@ -543,6 +594,9 @@ router.route('/set_pin').post((req, res, next) => {
             "new_pin": {
                 "type": "string"
             },
+            'recaptcha': {
+                'type': 'string'
+            }
         },
         "required": [ "new_pin" ]
     }
@@ -555,32 +609,42 @@ router.route('/set_pin').post((req, res, next) => {
         info: {}
     };
 
-    jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
-        if(err){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_invalid})
+    Util.check_recaptcha(data.recaptcha, (recaptcha) => {
+        if (recaptcha instanceof Error) {
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
         }
 
-        // check expire
-        var expire = new Date(decode.expire)
-        var now = new Date()
-        if(expire <= now){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_expire})
+        if (!recaptcha.success) {
+            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
         }
 
-        var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.new_pin).digest('hex');
-
-        // update pin
-        UsersModel.updatePin(decode.username, hash, (result) => {
-            if (result instanceof Error) {
-                send.message = Config.wording.not_found_phone;
-                return res.json(send)
+        jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
+            if (err) {
+                return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.token_invalid})
             }
 
-            send.status = Enum.res_type.SUCCESS
-            send.message = 'success';
-            return res.json(send)
-        })
+            // check expire
+            var expire = new Date(decode.expire)
+            var now = new Date()
+            if (expire <= now) {
+                return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.token_expire})
+            }
 
+            var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.new_pin).digest('hex');
+
+            // update pin
+            UsersModel.updatePin(decode.username, hash, (result) => {
+                if (result instanceof Error) {
+                    send.message = Config.wording.not_found_phone;
+                    return res.json(send)
+                }
+
+                send.status = Enum.res_type.SUCCESS
+                send.message = 'success';
+                return res.json(send)
+            })
+
+        })
     })
 })
 
