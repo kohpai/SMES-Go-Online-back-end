@@ -8,7 +8,7 @@ const timeout = 20000;
 
 const getNews = (offset, limit, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM `news` LIMIT ? OFFSET ?;',
+        sql: 'SELECT * FROM `news` WHERE `status` = 1 LIMIT ? OFFSET ?;',
         timeout: timeout, // 40s
         values: [limit, offset],
     };
