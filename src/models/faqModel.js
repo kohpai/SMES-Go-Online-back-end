@@ -21,6 +21,24 @@ const getFaq = (done) => {
     });
 }
 
+const detailFaq = (id, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM `faq` WHERE `question_id` = ? ;',
+        timeout: timeout, // 40s
+        values: [id]
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if(results.length){
+            return done(results[0]);
+        } else{
+            return done(results)
+        }
+    });
+}
+
 const getFaqById = (id, done) => {
     var queryOption = {
         sql: 'SELECT * FROM `faq` WHERE `question_id` = ?, `status` = 1 ;',
@@ -109,4 +127,5 @@ export default {
     updateFaq,
     deleteFaq,
     getFaqById,
+    detailFaq
 }

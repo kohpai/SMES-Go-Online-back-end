@@ -73,6 +73,28 @@ router.route('/').post((req, res, next) => {
     });
 });
 
+router.route('/:id').get((req, res, next) => {
+    var id = req.params.id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    FaqModel.detailFaq(id, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'faq not found.'
+            send.info = result
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result;
+        return res.json(send)
+    });
+});
+
 router.route('/:id').put((req, res, next) => {
     var id = req.params.id
     var data = req.body
