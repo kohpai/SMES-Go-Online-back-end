@@ -40,7 +40,7 @@ router.route('/*').all((req, res, next) => {
             if(expire <= now){
                 return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_expire})
             }
-            UsersModel.findUserByUsername(decode.username, (user) => {
+            UsersModel.findUser(decode.user_id, (user) => {
                 if(user instanceof Error){
                     return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.not_found_user})
                 }
@@ -106,7 +106,7 @@ router.route('/status').get((req, res, next) => {
             info: {}
         };
 
-        UsersModel.findUserByUsername(decode.username, (user) => {
+        UsersModel.findUser(decode.user_id, (user) => {
             if(user instanceof Error){
                 return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.not_found_user})
             }
@@ -240,7 +240,7 @@ router.route('/login').post((req, res, next) => {
                 var expire = new Date()
                 expire.setHours(expire.getHours() + Config.expire.login)
                 var access_token = jwt.sign({
-                    username: data.username,
+                    user_id: user.user_id,
                     otp_pass: otp_pass,
                     expire: expire
                 }, Config.pwd.jwt_secret)
@@ -274,7 +274,7 @@ router.route('/reset_otp').post((req, res, next) => {
         }
 
         // check in db
-        UsersModel.findUserByUsername(decode.username, (user) => {
+        UsersModel.findUser(decode.user_id, (user) => {
             if (user == null) {
                 send.message = Config.wording.not_found_phone
                 return res.json(send)
@@ -309,17 +309,17 @@ router.route('/reset_otp').post((req, res, next) => {
             var message = Config.wording.sms_otp
             message = message.replace('{{otp}}', otp)
             message = message.replace('{{ref}}', ref)
-            Util.send_sms(decode.username, message, (result) => {
+            Util.send_sms(user.username, message, (result) => {
 
                 // update opt
-                UsersModel.updateOtp(decode.username, otp, ref, (result) => {
+                UsersModel.updateOtp(user.username, otp, ref, (result) => {
                     if (result instanceof Error) {
                         send.message = Config.wording.not_found_phone;
                         return res.json(send)
                     }
 
                     send.status = Enum.res_type.SUCCESS
-                    send.info = { username: decode.username, ref: ref }
+                    send.info = { username: user.username, ref: ref }
                     return res.json(send)
                 })
             })
@@ -369,7 +369,7 @@ router.route('/otp').post((req, res, next) => {
         }else{
 
             // check in db
-            UsersModel.findUserByUsername(decode.username, (user) => {
+            UsersModel.findUser(decode.user_id, (user) => {
                 if (user == null) {
                     send.message = Config.wording.not_found_user
                     return res.json(send)
@@ -403,7 +403,7 @@ router.route('/otp').post((req, res, next) => {
 
                     var expire = new Date()
                     expire.setHours(expire.getHours()+Config.expire.login)
-                    var access_token = jwt.sign({ username: user.username, otp_pass: true, expire: expire }, Config.pwd.jwt_secret)
+                    var access_token = jwt.sign({ user_id: user.user_id, otp_pass: true, expire: expire }, Config.pwd.jwt_secret)
 
                     send.status = Enum.res_type.SUCCESS
                     send.info = { user: user, access_token: access_token, otp_pass: true, machine_token: machine_token };
@@ -494,7 +494,7 @@ router.route('/send_otp').post((req, res, next) => {
 
                 // update opt
                 UsersModel.updateOtp(data.phone_number, otp, ref, (result) => {
-                    if (user instanceof Error) {
+                    if (result instanceof Error) {
                         send.message = Config.wording.not_found_user
                         return res.json(send)
                     }
@@ -572,7 +572,7 @@ router.route('/check_otp').post((req, res, next) => {
             var expire = new Date()
             expire.setMinutes(expire.getMinutes() + Config.expire.otp_token)
             var otp_token = jwt.sign({
-                username: data.phone_number,
+                user_id: user.user_id,
                 otp_pass: true,
                 expire: expire
             }, Config.pwd.jwt_secret)
@@ -633,7 +633,7 @@ router.route('/set_pin').post((req, res, next) => {
             var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.new_pin).digest('hex');
 
             // update pin
-            UsersModel.updatePin(decode.username, hash, (result) => {
+            UsersModel.updatePin(decode.user_id, hash, (result) => {
                 if (result instanceof Error) {
                     send.message = Config.wording.not_found_phone;
                     return res.json(send)

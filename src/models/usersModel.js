@@ -426,11 +426,11 @@ const updateOtp = (username, otp, ref, done) => {
     });
 }
 
-const updatePin = (username, pin, done) => {
+const updatePin = (user_id, pin, done) => {
     var queryOption = {
-        sql: 'UPDATE `user` SET `password` = ?, `otp` = NULL WHERE `username` = ?',
+        sql: 'UPDATE `user` SET `password` = ?, `otp` = NULL WHERE `user_id` = ?',
         timeout: timeout, // 20s
-        values: [pin, username],
+        values: [pin, user_id],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {

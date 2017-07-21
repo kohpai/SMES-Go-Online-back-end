@@ -258,6 +258,9 @@ router.route('/').post((req, res, next) => {
             },
             'subcategory_code': {
                 'type': 'string'
+            },
+            'user_id': {
+                'type': 'string'
             }
         },
         'required': [

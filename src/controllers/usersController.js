@@ -239,7 +239,7 @@ router.route('/users').post((req, res, next) => {
             }
 
             if(access_token){
-                UsersModel.findUserByUsername(decode.username, (user) => {
+                UsersModel.findUser(decode.user_id, (user) => {
                     if(user instanceof Error){
                         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                     }else if(!user.is_admin){
