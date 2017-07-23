@@ -29,7 +29,9 @@ router.route('/*').all((req, res, next) => {
         (req.path.startsWith('/faq') && req.method != 'GET') ||
         req.path.startsWith('/users/import') ||
         (req.path.startsWith('/users') && req.method != 'POST') ||
-        req.path.startsWith('/set_phone')){
+        req.path.startsWith('/set_phone') ||
+        req.path.startsWith('/change_password')
+    ){
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
@@ -763,6 +765,55 @@ router.route('/set_phone/check_otp').post((req, res, next) => {
         send.status = Enum.res_type.SUCCESS
         send.info = result
         return res.json(send)
+    })
+})
+
+router.route('/change_password').put((req, res, next) => {
+    var data = req.body
+    var schema = {
+        "additionalProperties": false,
+        "properties": {
+            "new_pin": {
+                "type": "string"
+            },
+            'old_pin': {
+                'type': 'string'
+            }
+        },
+        "required": [ "new_pin","old_pin" ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: Config.wording.bad_request})
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    };
+
+    var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.old_pin).digest('hex');
+    var new_hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.new_pin).digest('hex');
+
+    UsersModel.authenUser(req.user.username, hash, (user) => {
+        if (user == null || user.length == 0) {
+            send.message = Config.wording.password_incorrect
+            return res.json(send)
+        } else if (user instanceof Error) {
+            send.message = Config.wording.password_incorrect
+            return res.json(send)
+        }
+
+        // update pin
+        UsersModel.updatePin(req.user.user_id, new_hash, (result) => {
+            if (result instanceof Error) {
+                send.message = Config.wording.not_found_phone;
+                return res.json(send)
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.message = 'success';
+            return res.json(send)
+        })
     })
 })
 
