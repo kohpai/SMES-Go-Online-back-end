@@ -444,6 +444,24 @@ const updatePin = (user_id, pin, done) => {
     });
 }
 
+const updatePhone = (user_id, phone_number, done) => {
+    var queryOption = {
+        sql: 'UPDATE `user` SET `username` = ? WHERE `user_id` = ?',
+        timeout: timeout, // 20s
+        values: [phone_number, user_id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if (results.length) {
+            return done(results[0]);
+        } else {
+            return done(results);
+        }
+    });
+}
+
 const findMachine = (token, done) => {
     var queryOption = {
         sql: 'SELECT * FROM `user_machine` WHERE `machine_token` = ?',
@@ -611,4 +629,5 @@ export default {
     countUsers,
     searchUsers,
     detailUser,
+    updatePhone,
 }

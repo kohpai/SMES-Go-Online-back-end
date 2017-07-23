@@ -9,7 +9,7 @@ const ajv = new Ajv()
 const crypto = require('crypto');
 
 var jwt = require("jsonwebtoken")
-const expire_time = 10 // minute
+
 // using
 import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
@@ -22,10 +22,14 @@ router.route('/*').all((req, res, next) => {
 
     console.log('['+req.method+'] '+req.path)
 
-    if(req.path.startsWith('/products') || req.path.startsWith('/news') ||
-        req.path.startsWith('/consult') || req.path.startsWith('/profile') ||
+    if(req.path.startsWith('/products') ||
+        req.path.startsWith('/news') ||
+        req.path.startsWith('/consult') ||
+        req.path.startsWith('/profile') ||
         (req.path.startsWith('/faq') && req.method != 'GET') ||
-        req.path.startsWith('/users/import') || (req.path.startsWith('/users') && req.method != 'POST') ){
+        req.path.startsWith('/users/import') ||
+        (req.path.startsWith('/users') && req.method != 'POST') ||
+        req.path.startsWith('/set_phone')){
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
@@ -645,6 +649,120 @@ router.route('/set_pin').post((req, res, next) => {
             })
 
         })
+    })
+})
+
+router.route('/set_phone/send_otp').post((req, res, next) => {
+    var data = req.body
+    var schema = {
+        "additionalProperties": false,
+        "properties": {
+            "phone_number": {
+                "type": "string"
+            }
+        },
+        "required": [ "phone_number" ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: Config.wording.bad_request})
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    };
+
+    if (data.phone_number.startsWith('66')) {
+        data.phone_number = '0' + data.phone_number.slice(2)
+    } else if (data.phone_number.startsWith('+66')) {
+        data.phone_number = '0' + data.phone_number.slice(3)
+    }
+
+    // check otp_gen
+    var expire = new Date(req.user.otp_gen)
+    expire.setMinutes(expire.getMinutes() + Config.expire.otp_gen)
+    var now = new Date()
+    if (expire >= now) {
+        return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.otp_gen_already})
+    }
+
+    // gen otp
+    var possible = '0123456789'
+    var otp = ""
+    for (var i = 0; i < 6; i++)
+        otp += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    // gen ref
+    var ref = ""
+    for (var i = 0; i < 4; i++)
+        ref += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    // send sms
+    var message = Config.wording.sms_otp
+    message = message.replace('{{otp}}', otp)
+    message = message.replace('{{ref}}', ref)
+    Util.send_sms(data.phone_number, message, (result) => {
+        // update opt
+        UsersModel.updateOtp(req.user.username, otp, ref, (result) => {
+            if (result instanceof Error) {
+                send.message = Config.wording.not_found_user
+                return res.json(send)
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = {username: data.username, ref: ref}
+            return res.json(send)
+        })
+    })
+})
+
+router.route('/set_phone/check_otp').post((req, res, next) => {
+    var data = req.body
+    var schema = {
+        "additionalProperties": false,
+        "properties": {
+            "phone_number": {
+                "type": "string"
+            },
+            "otp": {
+                "type": "string"
+            }
+        },
+        "required": [ "phone_number", "otp" ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: Config.wording.bad_request})
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    };
+
+    // check otp expire
+    var expire = new Date(req.user.otp_gen)
+    var now = new Date()
+    expire.setMinutes(expire.getMinutes() + Config.expire.otp)
+    if (expire <= now) {
+        return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.otp_incorrect})
+    }
+
+    if (req.user.otp != data.otp) {
+        send.message = Config.wording.otp_incorrect;
+        return res.json(send)
+    }
+
+    // update opt
+    UsersModel.updatePhone(req.user.user_id, data.phone_number, (result) => {
+        if (result instanceof Error) {
+            send.message = Config.wording.already_phone
+            send.info = result
+            return res.json(send)
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result
+        return res.json(send)
     })
 })
 
