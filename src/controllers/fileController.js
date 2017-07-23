@@ -22,7 +22,11 @@ router.route('/product/:id/image/:image_id').get((req, res, next) => {
     }
 
     ProductsModel.findImage(id, image_id, (result) => {
-        if(result instanceof Error){
+        if(result == null || result.length == 0){
+            send.status = Enum.res_type.FAILURE
+            send.message = 'file not found'
+            return res.json(send)
+        }else if(result instanceof Error){
             send.status = Enum.res_type.FAILURE
             send.message = result
             return res.json(send)
@@ -55,7 +59,11 @@ router.route('/news/:id/image/:image_id').get((req, res, next) => {
     }
 
     NewsModel.findImage(id, image_id, (result) => {
-        if(result instanceof Error){
+        if(result == null || result.length == 0){
+            send.status = Enum.res_type.FAILURE
+            send.message = 'file not found'
+            return res.json(send)
+        }else if(result instanceof Error){
             send.status = Enum.res_type.FAILURE
             send.message = result
             return res.json(send)
