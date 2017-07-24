@@ -524,9 +524,6 @@ router.route('/check_otp').post((req, res, next) => {
             },
             "otp": {
                 "type": "string"
-            },
-            'recaptcha': {
-                'type': 'string'
             }
         },
         "required": [ "phone_number", "otp" ]
@@ -540,54 +537,44 @@ router.route('/check_otp').post((req, res, next) => {
         info: {}
     };
 
-    Util.check_recaptcha(data.recaptcha, (recaptcha) => {
-        if (recaptcha instanceof Error) {
-            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
-        }
-
-        if (!recaptcha.success) {
-            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
-        }
-
-        // check in db
-        UsersModel.findUserByUsername(data.phone_number, (user) => {
-            if (user == null) {
-                send.message = Config.wording.otp_incorrect
-                return res.json(send)
-            } else if (user instanceof Error) {
-                send.message = Config.wording.otp_incorrect
-                return res.json(send)
-            } else if (user.length == 0) {
-                send.message = Config.wording.otp_incorrect
-                return res.json(send)
-            }
-
-            // check otp expire
-            var expire = new Date(user.otp_gen)
-            var now = new Date()
-            expire.setMinutes(expire.getMinutes() + Config.expire.otp)
-            if (expire <= now) {
-                return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.otp_incorrect})
-            }
-
-            if (user.otp != data.otp) {
-                send.message = Config.wording.otp_incorrect;
-                return res.json(send)
-            }
-
-            var expire = new Date()
-            expire.setMinutes(expire.getMinutes() + Config.expire.otp_token)
-            var otp_token = jwt.sign({
-                user_id: user.user_id,
-                otp_pass: true,
-                expire: expire
-            }, Config.pwd.jwt_secret)
-
-            send.status = Enum.res_type.SUCCESS
-            send.info = {otp_token: otp_token}
+    // check in db
+    UsersModel.findUserByUsername(data.phone_number, (user) => {
+        if (user == null) {
+            send.message = Config.wording.otp_incorrect
             return res.json(send)
+        } else if (user instanceof Error) {
+            send.message = Config.wording.otp_incorrect
+            return res.json(send)
+        } else if (user.length == 0) {
+            send.message = Config.wording.otp_incorrect
+            return res.json(send)
+        }
 
-        })
+        // check otp expire
+        var expire = new Date(user.otp_gen)
+        var now = new Date()
+        expire.setMinutes(expire.getMinutes() + Config.expire.otp)
+        if (expire <= now) {
+            return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.otp_incorrect})
+        }
+
+        if (user.otp != data.otp) {
+            send.message = Config.wording.otp_incorrect;
+            return res.json(send)
+        }
+
+        var expire = new Date()
+        expire.setMinutes(expire.getMinutes() + Config.expire.otp_token)
+        var otp_token = jwt.sign({
+            user_id: user.user_id,
+            otp_pass: true,
+            expire: expire
+        }, Config.pwd.jwt_secret)
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = {otp_token: otp_token}
+        return res.json(send)
+
     })
 })
 
@@ -599,9 +586,6 @@ router.route('/set_pin').post((req, res, next) => {
         "properties": {
             "new_pin": {
                 "type": "string"
-            },
-            'recaptcha': {
-                'type': 'string'
             }
         },
         "required": [ "new_pin" ]
@@ -615,42 +599,32 @@ router.route('/set_pin').post((req, res, next) => {
         info: {}
     };
 
-    Util.check_recaptcha(data.recaptcha, (recaptcha) => {
-        if (recaptcha instanceof Error) {
-            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
+    jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
+        if (err) {
+            return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.token_invalid})
         }
 
-        if (!recaptcha.success) {
-            return res.json({status: Enum.res_type.FAILURE, info: recaptcha, message: 'fail recaptcha.'})
+        // check expire
+        var expire = new Date(decode.expire)
+        var now = new Date()
+        if (expire <= now) {
+            return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.token_expire})
         }
 
-        jwt.verify(otp_token, Config.pwd.jwt_secret, (err, decode) => {
-            if (err) {
-                return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.token_invalid})
-            }
+        var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.new_pin).digest('hex');
 
-            // check expire
-            var expire = new Date(decode.expire)
-            var now = new Date()
-            if (expire <= now) {
-                return res.json({status: Enum.res_type.FAILURE, info: {}, message: Config.wording.token_expire})
-            }
-
-            var hash = crypto.createHmac('sha256', Config.pwd.sha256_secret).update(data.new_pin).digest('hex');
-
-            // update pin
-            UsersModel.updatePin(decode.user_id, hash, (result) => {
-                if (result instanceof Error) {
-                    send.message = Config.wording.not_found_phone;
-                    return res.json(send)
-                }
-
-                send.status = Enum.res_type.SUCCESS
-                send.message = 'success';
+        // update pin
+        UsersModel.updatePin(decode.user_id, hash, (result) => {
+            if (result instanceof Error) {
+                send.message = Config.wording.not_found_phone;
                 return res.json(send)
-            })
+            }
 
+            send.status = Enum.res_type.SUCCESS
+            send.message = 'success';
+            return res.json(send)
         })
+
     })
 })
 
