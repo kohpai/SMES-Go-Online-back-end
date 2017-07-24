@@ -239,6 +239,8 @@ router.route('/users').post((req, res, next) => {
             return res.json({status: Enum.res_type.FAILURE, info:recaptcha, message: 'fail recaptcha.'})
         }
 
+        delete data.recaptcha
+
         var phone_no = data.phone_no
 
         var access_token = req.header('access_token')
