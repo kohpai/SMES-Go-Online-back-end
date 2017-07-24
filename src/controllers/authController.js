@@ -71,7 +71,7 @@ router.route('/*').all((req, res, next) => {
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
             if(err){
-                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.token_invalid})
             }
             return next()
         })
