@@ -106,7 +106,7 @@ const check_recaptcha = (response, done) => {
         if (error)
             done(error)
         else
-            done(body)
+            done(JSON.parse(body))
     });
 }
 

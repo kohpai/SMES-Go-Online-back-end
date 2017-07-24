@@ -612,6 +612,28 @@ const detailUser = (id, done) => {
     });
 }
 
+const addImport = (ts, type, filename, done) => {
+    var importInfo = {
+        import_id: ts,
+        import_type: type,
+        import_filename: filename,
+        create_datetime: new Date(),
+    };
+    var queryOption = {
+        sql: 'INSERT INTO import SET ?',
+        timeout: timeout, // 20s
+        values: [importInfo],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(results);
+        }
+    });
+}
+
 export default {
     authenUser,
     addUser,
@@ -630,4 +652,6 @@ export default {
     searchUsers,
     detailUser,
     updatePhone,
+    addImport,
+
 }

@@ -29,7 +29,7 @@ const seaweedfs = {
 };
 
 const recaptcha = {
-    enable: false,
+    enable: true,
 }
 
 const sms = {
