@@ -79,7 +79,7 @@ const getEnterpriseByUserId = (id, done) => {
 }
 
 const addUser = (input, user_id, create_channel, done) => {
-    var hashids = new Hashids(input.phone_no);
+    //var hashids = new Hashids(input.phone_no);
 
     if(input.phone_no.startsWith('66')){
         input.phone_no = '0'+input.phone_no.slice(2)
@@ -103,6 +103,7 @@ const addUser = (input, user_id, create_channel, done) => {
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
             return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
+
         } else {
 
             input.user_id = results.insertId;
@@ -634,6 +635,30 @@ const addImport = (ts, type, filename, done) => {
     });
 }
 
+const addImportDetail = (ts, row, result, error, done) => {
+    console.log(ts+':'+row+':'+result)
+    var importDetailInfo = {
+        import_id: ts,
+        import_row: row,
+        result: result,
+        error: error,
+        update_datetime: new Date(),
+    };
+    var queryOption = {
+        sql: 'INSERT INTO import_detail SET ?',
+        timeout: timeout, // 20s
+        values: [importDetailInfo],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(results);
+        }
+    });
+}
+
 export default {
     authenUser,
     addUser,
@@ -653,5 +678,5 @@ export default {
     detailUser,
     updatePhone,
     addImport,
-
+    addImportDetail,
 }

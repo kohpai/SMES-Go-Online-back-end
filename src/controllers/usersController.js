@@ -807,6 +807,8 @@ router.route('/users/import').post((req, res, next) => {
             ]
         }
 
+        var ts = new Date().getTime()
+
         csv.fromPath(result)
             .on("data", function(data){
 
@@ -945,13 +947,13 @@ router.route('/users/import').post((req, res, next) => {
                         }
                     }
 
-                    var sme_member_no = ''
+                    var id_no = ''
                     if(!isError) {
                         if (data[18].length == 13) {
-                            sme_member_no = data[18]
+                            id_no = data[18]
                         } else {
                             isError = true
-                            status_message = 'sme_member_no not empty or not 18 digit'
+                            status_message = 'id_no not empty or not 13 digit'
                         }
                     }
 
@@ -1076,10 +1078,11 @@ router.route('/users/import').post((req, res, next) => {
                     }
 
                     if(!isError){
+
                         var data = {
                             registration_type: registration_type,
                             enterprise_name: enterprise_name,
-                            id_no: data[2],
+                            id_no: id_no,
                             title: title,
                             name: name,
                             lastname: lastName,
@@ -1094,7 +1097,7 @@ router.route('/users/import').post((req, res, next) => {
                             subdistrict: subdistrict,
                             postal_code: postal_code,
                             phone_no: phone_no,
-                            sme_member_no: sme_member_no,
+                            sme_member_no: data[2],
                             email: data[19],
                             line_id: data[20],
                             facebook: data[21],
@@ -1113,6 +1116,7 @@ router.route('/users/import').post((req, res, next) => {
                             needed_help: {
                                 needed_help_ecommerce: needed_help_ecommerce,
                                 needed_help_investor: needed_help_investor,
+                                needed_help_supplier: needed_help_supplier,
                                 needed_help_payment: needed_help_payment,
                                 needed_help_online_marketing: needed_help_online_marketing,
                                 needed_help_tax: needed_help_tax,
@@ -1121,44 +1125,59 @@ router.route('/users/import').post((req, res, next) => {
                             }
                         }
 
+                        console.log(data)
+
                         var valid = ajv.validate(schema, data)
                         if (!valid){
                             isError = true
-                            status_message = 'bad request'
-                        }
+                            status_message = title+name+' '+lastName+', '+phone_no+' : '+'bad request'
 
-                        if(!isError){
-                            UsersModel.addUser(data, null, 'import', (result, error) => {
+                            // update import detail
+                            UsersModel.addImportDetail(ts, position, status_message, ajv.errors, (result) => {})
+
+                        }else{
+                            UsersModel.addUser(data, req.user_id, 'import', (result, error) => {
                                 if (error) {
                                     isError = true
-                                    status_message = 'can not add user'
-                                }
+                                    status_message = title+name+' '+lastName+', '+phone_no+' : '+result
 
-                                if(!isError){
+                                    // update import detail
+                                    UsersModel.addImportDetail(ts, position, status_message, error, (result) => {})
+
+                                }else{
                                     Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
                                         if(send_sms_result instanceof Error){
                                             isError = true
-                                            status_message = 'can\'t send sms'
-                                        }
+                                            status_message = title+name+' '+lastName+', '+phone_no+' : '+'can\'t send sms'
 
-                                        if(!isError){
+                                            // update import detail
+                                            UsersModel.addImportDetail(ts, position, status_message, send_sms_result, null, (result) => {})
+
+                                        }else{
                                             isError = false
-                                            status_message = 'success'
-                                        }
+                                            status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
 
+                                            // update import detail
+                                            UsersModel.addImportDetail(ts, position, status_message, null, (result) => {})
+                                        }
                                     })
                                 }
                             });
+
                         }
+                    }else{
+
+                        status_message = title+name+' '+lastName+', '+phone_no+' : '+status_message
+
+                        // update import detail
+                        UsersModel.addImportDetail(ts, position, status_message, null, (result) => {})
                     }
                 }
 
                 i++
             })
             .on("end", function(){
-
-                var ts = new Date().getTime()
-
+                console.log("end")
                 UsersModel.addImport(ts, 1, req.files.file.name, (result) => {
                     if(result instanceof Error){
                         send.status = Enum.res_type.FAILURE
