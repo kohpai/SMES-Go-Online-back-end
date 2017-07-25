@@ -1211,4 +1211,126 @@ var profile = (req, res, next) => {
 router.route('/profile').put(profile);
 router.route('/profile/:id').put(profile);
 
+// admin
+router.route('/admin/list').get((req, res, next) => {
+    var search = ''
+    if(req.params.search){
+        search = req.params.search
+    }
+    var page = parseInt(req.query.page, 0)
+    var limit = parseInt(req.query.limit, 0)
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    UsersModel.countAdmin(search, (count_users) => {
+        if (count_users instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed search an users';
+            send.info = count_users
+            return res.json(send);
+        }
+
+        UsersModel.searchAdmin(search, page*limit, limit, (result) => {
+            if (result instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = 'Failed search an users';
+                return res.json(send);
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result
+            send.pageinfo = {page: page, limit: limit, count: count_users.count}
+            return res.json(send)
+        });
+    });
+})
+
+router.route('/admin/:id').get((req, res, next) => {
+    var id = req.params.id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    UsersModel.detailUser(id, (user) => {
+        if (user instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = user;
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = user;
+        return res.json(send)
+    });
+});
+
+router.route('/admin/:id').post((req, res, next) => {
+    var id = req.params.id
+    var data = req.body
+    var schema = {
+        'additionalProperties': false,
+        'properties': {
+            'title': {
+                'type': 'string'
+            },
+            'name': {
+                'type': 'string'
+            },
+            'lastname': {
+                'type': 'string'
+            },
+            'role_id': {
+                'type': 'number'
+            },
+            'phone_no': {
+             'type': 'string'
+             }
+        },
+        'required': [
+            'title', 'name', 'lastname', 'role_id', 'phone_no'
+        ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(id && !req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    UsersModel.addAdmin(data, (result, error) => {
+        if (error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = result
+            send.info = error
+            return res.json(send);
+        }
+
+        Util.send_sms(data.phone_no, Config.wording.register_success, (send_sms_result) => {
+            send.status = Enum.res_type.SUCCESS
+            send.info = result;
+            return res.json(send)
+        })
+    })
+
+})
+
 export default router

@@ -29,6 +29,7 @@ router.route('/*').all((req, res, next) => {
         (req.path.startsWith('/faq') && req.method != 'GET') ||
         req.path.startsWith('/users/import') ||
         (req.path.startsWith('/users') && req.method != 'POST') ||
+        req.path.startsWith('/admin') ||
         req.path.startsWith('/set_phone') ||
         req.path.startsWith('/change_password')
     ){

@@ -79,7 +79,6 @@ const getEnterpriseByUserId = (id, done) => {
 }
 
 const addUser = (input, user_id, create_channel, done) => {
-    //var hashids = new Hashids(input.phone_no);
 
     if(input.phone_no.startsWith('66')){
         input.phone_no = '0'+input.phone_no.slice(2)
@@ -88,11 +87,10 @@ const addUser = (input, user_id, create_channel, done) => {
     }
 
     var userInfo = {
-        //user_id: hashids.encode(1, 2, 3, 4, 5),
         username: input.phone_no,
-        //password: hashids.encode(6, 7, 8),
         full_name: input.title+" "+input.name+" "+input.lastname,
         role: 'user',
+        updated_at: new Date()
     };
     var queryOption = {
         sql: 'INSERT INTO user SET ?',
@@ -237,16 +235,10 @@ const addUser = (input, user_id, create_channel, done) => {
 
 const updateUser = (id, input, user_id, done) => {
 
-    /*if(input.phone_no.startsWith('66')){
-        input.phone_no = '0'+input.phone_no.slice(2)
-    }else if(input.phone_no.startsWith('+66')){
-        input.phone_no = '0'+input.phone_no.slice(3)
-    }*/
-
     var userInfo = {
-        // username: input.phone_no,
         full_name: input.title+" "+input.name+" "+input.lastname,
-        role: 'user'
+        role: 'user',
+        updated_at: new Date()
     };
     var queryOption = {
         sql: 'UPDATE user SET ? WHERE user_id = ?',
@@ -537,7 +529,7 @@ const updatePassMachine = (token, done) => {
 
 const countUsers = (search, done) => {
     var queryOption = {
-        sql: 'SELECT COUNT(*) AS count FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 && user.is_admin = 0 && ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' );',
+        sql: 'SELECT COUNT(*) AS count FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 AND user.is_admin = 0 AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' );',
         timeout: timeout, // 20s
         values: [search],
     };
@@ -564,7 +556,7 @@ const searchUsers = (search, offset, limit, done) => {
         };
     }else{
         queryOption = {
-            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 && ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
             values: [limit, offset],
         };
@@ -669,26 +661,109 @@ const getImport = (id, done) => {
     DB.get().query(queryOption, function(error, import_result, fields) {
         if (error) {
             return done(error);
-        } else if(import_result.length){
-            import_result = import_result[0]
+        } else {
+
+            if(import_result)
+
+            var queryOption = {
+                sql: 'SELECT * FROM import_detail WHERE import_id = ?;',
+                timeout: timeout, // 20s
+                values: [id],
+            };
+
+            DB.get().query(queryOption, function(error, import_detail_result, fields) {
+                if (error) {
+                    return done(error);
+                } else {
+
+                    import_result.rows = import_detail_result
+                    return done(import_result)
+                }
+            })
         }
-
-        var queryOption = {
-            sql: 'SELECT * FROM import_detail WHERE import_id = ?;',
-            timeout: timeout, // 20s
-            values: [id],
-        };
-
-        DB.get().query(queryOption, function(error, import_detail_result, fields) {
-            if (error) {
-                return done(error);
-            } else {
-
-                import_result.rows = import_detail_result
-                return done(import_result)
-            }
-        })
     });
+}
+
+const countAdmin = (search, done) => {
+    var queryOption = {
+        sql: 'SELECT COUNT(*) AS count FROM user WHERE is_admin = 1 AND ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' );',
+        timeout: timeout, // 20s
+        values: [search],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if(results.length){
+            return done(results[0]);
+        }else{
+            return done(results);
+        }
+    });
+}
+
+const searchAdmin = (search, offset, limit, done) => {
+    var queryOption = {};
+
+    if(search.length == 0){
+        queryOption = {
+            sql: 'SELECT * FROM user WHERE is_admin = 1 LIMIT ? OFFSET ?;',
+            timeout: timeout, // 20s
+            values: [limit, offset],
+        };
+    }else{
+        queryOption = {
+            sql: 'SELECT * FROM user is_admin = 1 AND ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
+            timeout: timeout, // 20s
+            values: [limit, offset],
+        };
+    }
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+
+            for(var i in results){
+                delete results[i].password
+                delete results[i].otp
+                delete results[i].otp_ref
+            }
+
+            return done(results);
+        }
+    });
+}
+
+const addAdmin = (input, done) => {
+
+    if (input.phone_no.startsWith('66')) {
+        input.phone_no = '0' + input.phone_no.slice(2)
+    } else if (input.phone_no.startsWith('+66')) {
+        input.phone_no = '0' + input.phone_no.slice(3)
+    }
+
+    var userInfo = {
+        username: input.phone_no,
+        full_name: input.title + " " + input.name + " " + input.lastname,
+        role: 'admin',
+        role_id: input.role_id,
+        is_admin: 1,
+        updated_at: new Date()
+    };
+    var queryOption = {
+        sql: 'INSERT INTO user SET ?',
+        timeout: timeout, // 20s
+        values: [userInfo],
+    };
+
+    DB.get().query(queryOption, function (error, results, fields) {
+        if (error) {
+            return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
+        } else {
+            return done(results, null)
+        }
+    })
 }
 
 export default {
@@ -712,4 +787,7 @@ export default {
     addImport,
     addImportDetail,
     getImport,
+    countAdmin,
+    searchAdmin,
+    addAdmin,
 }
