@@ -1295,9 +1295,19 @@ router.route('/admin/:id').get((req, res, next) => {
             return res.json(send);
         }
 
-        send.status = Enum.res_type.SUCCESS
-        send.info = user;
-        return res.json(send)
+        UsersModel.detailRole(user.role_id, (role) => {
+            if (role instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = user;
+                return res.json(send);
+            }
+
+            user.role = role
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = user;
+            return res.json(send)
+        })
     });
 });
 

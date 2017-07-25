@@ -812,6 +812,23 @@ const getRole = (done) => {
     });
 }
 
+const detailRole = (id, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM role WHERE role_id = ?;',
+        timeout: timeout, // 20s
+        values: [id]
+    };
+
+    DB.get().query(queryOption, function(error, result, fields) {
+        if (error) {
+            return done(error);
+        } else if(result.length){
+            return done(result[0]);
+        }
+        return done(result);
+    });
+}
+
 export default {
     authenUser,
     addUser,
@@ -837,5 +854,6 @@ export default {
     searchAdmin,
     addAdmin,
     updateAdmin,
-    getRole
+    getRole,
+    detailRole
 }
