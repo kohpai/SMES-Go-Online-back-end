@@ -10,11 +10,7 @@ const ajv = new Ajv()
 import HttpStatus from './../helper/http_status.js'
 import ProductsModel from '../models/productsModel.js'
 import { Util, Enum } from '../helper'
-
 import FileModel from '../models/fileModel.js'
-
-const fileUpload = require('express-fileupload')
-router.use(fileUpload())
 
 var search = (req, res, next) => {
     var search = ''

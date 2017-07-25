@@ -3,6 +3,8 @@
 // import
 import { Router } from 'express'
 
+const fileUpload = require('express-fileupload')
+
 // using
 import AuthController from './controllers/authController.js'
 import UsersController from './controllers/usersController.js'
@@ -17,6 +19,8 @@ import FileController from './controllers/fileController.js'
 var router = new Router();
 
 var api_version = '/api/dev';
+
+router.use(fileUpload())
 
 router.use(api_version, AuthController);
 router.use(api_version, UsersController);

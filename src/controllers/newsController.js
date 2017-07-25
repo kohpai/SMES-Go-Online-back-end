@@ -12,9 +12,6 @@ import NewsModel from '../models/newsModel.js'
 import { Util, Enum } from '../helper'
 import FileModel from "../models/fileModel";
 
-const fileUpload = require('express-fileupload')
-router.use(fileUpload())
-
 router.route('/').get((req, res, next) => {
 
     var page = parseInt(req.query.page, 0)

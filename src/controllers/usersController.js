@@ -11,15 +11,11 @@ import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
 import { Util, Enum } from '../helper'
 import Config from '../config.js'
+import FileModel from '../models/fileModel.js'
 
 var fs = require('fs')
 var path = require("path")
 var csv = require("fast-csv");
-
-import FileModel from '../models/fileModel.js'
-
-const fileUpload = require('express-fileupload')
-router.use(fileUpload())
 
 var search = (req, res, next) => {
     var search = ''
