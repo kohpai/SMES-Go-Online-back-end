@@ -66,12 +66,11 @@ router.route('/users/list/').get(search)
 
 router.route('/users/import/:id').get((req, res, next) => {
     var id = req.params.id
-    console.log(id)
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
     }
-    console.log(req.user)
+
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
@@ -627,8 +626,6 @@ router.route('/users/import').post((req, res, next) => {
                             }
                         }
 
-                        console.log(data)
-
                         var valid = ajv.validate(schema, data)
                         if (!valid){
                             isError = true
@@ -679,7 +676,6 @@ router.route('/users/import').post((req, res, next) => {
                 i++
             })
             .on("end", function(){
-                console.log("end")
                 UsersModel.addImport(ts, 1, req.files.file.name, (result) => {
                     if(result instanceof Error){
                         send.status = Enum.res_type.FAILURE
