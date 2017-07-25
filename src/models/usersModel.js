@@ -797,6 +797,21 @@ const updateAdmin = (id, input, done) => {
     })
 }
 
+const getRole = (done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM role;',
+        timeout: timeout, // 20s
+    };
+
+    DB.get().query(queryOption, function(error, result, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(result);
+        }
+    });
+}
+
 export default {
     authenUser,
     addUser,
@@ -822,4 +837,5 @@ export default {
     searchAdmin,
     addAdmin,
     updateAdmin,
+    getRole
 }

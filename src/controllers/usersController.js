@@ -1212,6 +1212,30 @@ router.route('/profile').put(profile);
 router.route('/profile/:id').put(profile);
 
 // admin
+router.route('/admin/role').get((req, res, next) => {
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    UsersModel.getRole((roles) => {
+        if (roles instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed get role';
+            send.info = roles
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = roles
+        return res.json(send)
+    });
+})
+
 router.route('/admin/list').get((req, res, next) => {
     var search = ''
     if(req.params.search){
