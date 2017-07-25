@@ -1277,8 +1277,7 @@ router.route('/admin/:id').get((req, res, next) => {
     });
 });
 
-router.route('/admin/:id').post((req, res, next) => {
-    var id = req.params.id
+router.route('/admin').post((req, res, next) => {
     var data = req.body
     var schema = {
         'additionalProperties': false,
@@ -1312,7 +1311,7 @@ router.route('/admin/:id').post((req, res, next) => {
         info: {}
     }
 
-    if(id && !req.user.is_admin){
+    if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
@@ -1328,6 +1327,68 @@ router.route('/admin/:id').post((req, res, next) => {
             send.status = Enum.res_type.SUCCESS
             send.info = result;
             return res.json(send)
+        })
+    })
+
+})
+
+router.route('/admin/:id').put((req, res, next) => {
+    var id = req.params.id
+    var data = req.body
+    var schema = {
+        'additionalProperties': false,
+        'properties': {
+            'title': {
+                'type': 'string'
+            },
+            'name': {
+                'type': 'string'
+            },
+            'lastname': {
+                'type': 'string'
+            },
+            'role_id': {
+                'type': 'number'
+            }
+        },
+        'required': [
+            'title', 'name', 'lastname', 'role_id'
+        ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    UsersModel.findUser(id, (user) => {
+        if (user instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'not found admin'
+            send.info = user
+            return res.json(send);
+        }
+
+        UsersModel.updateAdmin(id, data, (result, error) => {
+            if (error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = result
+                send.info = error
+                return res.json(send);
+            }
+
+            Util.send_sms(user.username, Config.wording.profile_success, (send_sms_result) => {
+                send.status = Enum.res_type.SUCCESS
+                send.info = result;
+                return res.json(send)
+            })
         })
     })
 

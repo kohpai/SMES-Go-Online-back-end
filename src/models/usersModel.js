@@ -766,6 +766,37 @@ const addAdmin = (input, done) => {
     })
 }
 
+const updateAdmin = (id, input, done) => {
+
+    // if (input.phone_no.startsWith('66')) {
+    //     input.phone_no = '0' + input.phone_no.slice(2)
+    // } else if (input.phone_no.startsWith('+66')) {
+    //     input.phone_no = '0' + input.phone_no.slice(3)
+    // }
+
+    var userInfo = {
+        // username: input.phone_no,
+        full_name: input.title + " " + input.name + " " + input.lastname,
+        role: 'admin',
+        role_id: input.role_id,
+        is_admin: 1,
+        updated_at: new Date()
+    };
+    var queryOption = {
+        sql: 'UPDATE user SET ? WHERE user_id = ?',
+        timeout: timeout, // 20s
+        values: [userInfo, id],
+    };
+
+    DB.get().query(queryOption, function (error, results, fields) {
+        if (error) {
+            return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
+        } else {
+            return done(results, null)
+        }
+    })
+}
+
 export default {
     authenUser,
     addUser,
@@ -790,4 +821,5 @@ export default {
     countAdmin,
     searchAdmin,
     addAdmin,
+    updateAdmin,
 }
