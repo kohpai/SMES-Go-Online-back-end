@@ -526,4 +526,23 @@ router.route('/:id').delete((req, res, next) => {
     });
 });
 
+router.route('/import').post((req, res, next) => {
+    var id = req.params.id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    console.log(req.files)
+
+    if(!req.files || !req.files.file){
+        send.status = Enum.res_type.FAILURE
+        send.message = 'File not found.'
+        return res.json(send)
+    }
+
+
+})
+
 export default router
