@@ -659,6 +659,38 @@ const addImportDetail = (ts, row, result, error, done) => {
     });
 }
 
+const getImport = (id, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM import WHERE import_id = ?;',
+        timeout: timeout, // 20s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, import_result, fields) {
+        if (error) {
+            return done(error);
+        } else if(import_result.length){
+            import_result = import_result[0]
+        }
+
+        var queryOption = {
+            sql: 'SELECT * FROM import_detail WHERE import_id = ?;',
+            timeout: timeout, // 20s
+            values: [id],
+        };
+
+        DB.get().query(queryOption, function(error, import_detail_result, fields) {
+            if (error) {
+                return done(error);
+            } else {
+
+                import_result.rows = import_detail_result
+                return done(import_result)
+            }
+        })
+    });
+}
+
 export default {
     authenUser,
     addUser,
@@ -679,4 +711,5 @@ export default {
     updatePhone,
     addImport,
     addImportDetail,
+    getImport,
 }

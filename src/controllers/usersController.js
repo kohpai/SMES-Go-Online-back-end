@@ -21,483 +21,6 @@ import FileModel from '../models/fileModel.js'
 const fileUpload = require('express-fileupload')
 router.use(fileUpload())
 
-router.route('/users').post((req, res, next) => {
-    var data = req.body
-    var schema = {
-        'additionalProperties': false,
-        'properties': {
-            'registration_type': {
-                'type': 'number'
-            },
-            'enterprise_name': {
-                'type': 'string'
-            },
-            'title': {
-                'type': 'string'
-            },
-            'name': {
-                'type': 'string'
-            },
-            'lastname': {
-                'type': 'string'
-            },
-            'age': {
-                'type': 'number'
-            },
-            'id_no': {
-                'type': 'string'
-            },
-            'house_no': {
-                'type': 'string'
-            },
-            'village_no': {
-                'type': 'string'
-            },
-            'alley': {
-                'type': 'string'
-            },
-            'village_title': {
-                'type': 'string'
-            },
-            'road': {
-                'type': 'string'
-            },
-            'subdistrict_code': {
-                'type': 'number'
-            },
-            'subdistrict': {
-                'type': 'string'
-            },
-            'district': {
-                'type': 'string'
-            },
-            'province': {
-                'type': 'string'
-            },
-            'postal_code': {
-                'type': 'string'
-            },
-            'legal_title': {
-                'type': 'string'
-            },
-            'legal_name': {
-                'type': 'string'
-            },
-            'legal_id': {
-                'type': 'string'
-            },
-            /*'contact_info': {
-                'type': 'object',
-                'properties': {
-                    'title': {
-                        'type': 'string'
-                    },
-                    'name': {
-                        'type': 'string'
-                    },
-                    'lastname': {
-                        'type': 'string'
-                    },
-                    'id_no': {
-                        'type': 'string'
-                    },
-                    'house_no': {
-                        'type': 'string'
-                    },
-                    'village_no': {
-                        'type': 'string'
-                    },
-                    'alley': {
-                        'type': 'string'
-                    },
-                    'village_title': {
-                        'type': 'string'
-                    },
-                    'road': {
-                        'type': 'string'
-                    },
-                    'subdistrict_code': {
-                        'type': 'number'
-                    },
-                    'subdistrict': {
-                        'type': 'string'
-                    },
-                    'district': {
-                        'type': 'string'
-                    },
-                    'province': {
-                        'type': 'string'
-                    },
-                    'postal_code': {
-                        'type': 'string'
-                    },
-                },
-                'required': [
-                    'title', 'name', 'lastname', 'id_no', 'house_no', 'village_no',
-                    'subdistrict', 'district', 'province', 'postal_code'
-                ]
-            },*/
-            'phone_no': {
-                'type': 'string'
-            },
-            'email': {
-                'type': 'string'
-            },
-            'line_id': {
-                'type': 'string'
-            },
-            'facebook': {
-                'type': 'string'
-            },
-            'enterprise_type': {
-                'type': 'object',
-                'minProperties': 1,
-                'maxProperties': 5,
-                'properties': {
-                    'agricultural_product': {
-                        'type': 'string'
-                    },
-                    'industrial_product': {
-                        'type': 'string'
-                    },
-                    'selling': {
-                        'type': 'string'
-                    },
-                    'service': {
-                        'type': 'string'
-                    },
-                    'other': {
-                        'type': 'string'
-                    },
-                }
-            },
-            'sme_member_no': {
-                'type': 'string'
-            },
-            'is_otop_product': {
-                'type': 'boolean'
-            },
-            'needed_help': {
-                'type': 'object',
-                'minProperties': 1,
-                'maxProperties': 8,
-                'properties': {
-                    'needed_help_ecommerce': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_investor': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_supplier': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_payment': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_logistics': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_brand': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_online_marketing': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_tax': {
-                        'type': 'boolean'
-                    }
-                }
-            },
-            'on_ecommerce': {
-                'type': 'boolean'
-            },
-            'recaptcha': {
-                'type': 'string'
-            }
-        },
-        'required': [
-            'registration_type', 'enterprise_name', 'title', 'name', 'lastname', 'id_no',
-            'house_no', 'village_no', 'subdistrict', 'district', 'province',
-            'postal_code', 'phone_no', 'enterprise_type', 'needed_help'
-        ]
-    }
-    var valid = ajv.validate(schema, data)
-    if (!valid)
-        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    Util.check_recaptcha(data.recaptcha, (recaptcha) => {
-        if(recaptcha instanceof Error){
-            return res.json({status: Enum.res_type.FAILURE, info:recaptcha, message: 'fail recaptcha.'})
-        }
-
-        if(recaptcha.success != true){
-            return res.json({status: Enum.res_type.FAILURE, info:recaptcha, message: 'fail recaptcha.'})
-        }
-
-        delete data.recaptcha
-
-        var phone_no = data.phone_no
-
-        var access_token = req.header('access_token')
-        jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
-            if(err && access_token){
-                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
-            }
-
-            if(access_token){
-                UsersModel.findUser(decode.user_id, (user) => {
-                    if(user instanceof Error){
-                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
-                    }else if(!user.is_admin){
-                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
-                    }
-                    UsersModel.addUser(data, user.user_id, 'admin', (result, error) => {
-                        if (error) {
-                            send.status = Enum.res_type.FAILURE;
-                            send.message = result
-                            send.info = error
-                            return res.json(send);
-                        }
-
-                        Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
-                            send.status = Enum.res_type.SUCCESS
-                            send.info = result;
-                            return res.json(send)
-                        })
-                    });
-                })
-
-            }else{
-                UsersModel.addUser(data, null, 'web', (result, error) => {
-                    if (error) {
-                        send.status = Enum.res_type.FAILURE;
-                        send.message = result
-                        send.info = error
-                        return res.json(send);
-                    }
-
-                    Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
-                        send.status = Enum.res_type.SUCCESS
-                        send.info = result;
-                        return res.json(send)
-                    })
-                });
-            }
-        })
-
-    })
-});
-
-var profile = (req, res, next) => {
-    var id = req.params.id
-    var data = req.body
-    var schema = {
-        'additionalProperties': false,
-        'properties': {
-            'registration_type': {
-                'type': 'number'
-            },
-            'enterprise_name': {
-                'type': 'string'
-            },
-            'title': {
-                'type': 'string'
-            },
-            'name': {
-                'type': 'string'
-            },
-            'lastname': {
-                'type': 'string'
-            },
-            'age': {
-                'type': 'number'
-            },
-            'id_no': {
-                'type': 'string'
-            },
-            'house_no': {
-                'type': 'string'
-            },
-            'village_no': {
-                'type': 'string'
-            },
-            'alley': {
-                'type': 'string'
-            },
-            'village_title': {
-                'type': 'string'
-            },
-            'road': {
-                'type': 'string'
-            },
-            'subdistrict_code': {
-                'type': 'number'
-            },
-            'subdistrict': {
-                'type': 'string'
-            },
-            'district': {
-                'type': 'string'
-            },
-            'province': {
-                'type': 'string'
-            },
-            'postal_code': {
-                'type': 'string'
-            },
-            'legal_title': {
-                'type': 'string'
-            },
-            'legal_name': {
-                'type': 'string'
-            },
-            'legal_id': {
-                'type': 'string'
-            },
-            /*'phone_no': {
-             'type': 'string'
-             },*/
-            'email': {
-                'type': 'string'
-            },
-            'line_id': {
-                'type': 'string'
-            },
-            'facebook': {
-                'type': 'string'
-            },
-            'enterprise_type': {
-                'type': 'object',
-                'minProperties': 1,
-                'maxProperties': 5,
-                'properties': {
-                    'agricultural_product': {
-                        'type': 'string'
-                    },
-                    'industrial_product': {
-                        'type': 'string'
-                    },
-                    'selling': {
-                        'type': 'string'
-                    },
-                    'service': {
-                        'type': 'string'
-                    },
-                    'other': {
-                        'type': 'string'
-                    },
-                }
-            },
-            'sme_member_no': {
-                'type': 'string'
-            },
-            'is_otop_product': {
-                'type': 'boolean'
-            },
-            'needed_help': {
-                'type': 'object',
-                'minProperties': 1,
-                'maxProperties': 8,
-                'properties': {
-                    'needed_help_ecommerce': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_investor': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_supplier': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_payment': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_logistics': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_brand': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_online_marketing': {
-                        'type': 'boolean'
-                    },
-                    'needed_help_tax': {
-                        'type': 'boolean'
-                    }
-                }
-            },
-            'on_ecommerce': {
-                'type': 'boolean'
-            }
-        },
-        'required': [
-            'registration_type', 'enterprise_name', 'title', 'name', 'lastname', 'id_no',
-            'house_no', 'village_no', 'subdistrict', 'district', 'province',
-            'postal_code', /*'phone_no',*/ 'enterprise_type', 'needed_help'
-        ]
-    }
-    var valid = ajv.validate(schema, data)
-    if (!valid)
-        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
-
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    if(id && !req.user.is_admin){
-        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
-    }
-
-    var user_id = ''
-    var update_user_id = ''
-    if(id){ // admin
-        user_id = id
-        update_user_id = req.user.user_id
-    }else{ // web
-        user_id = req.user.user_id
-        update_user_id = null
-    }
-
-    UsersModel.findUser(user_id, (user) => {
-        if(user instanceof Error){
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'user not found.'
-            send.info = user
-            return res.json(send);
-        }
-
-        var send_sms = ''
-        if(id){ // admin
-            send_sms = user.username
-        }else{ // web
-            send_sms = req.user.username
-        }
-
-        UsersModel.updateUser(user_id, data, req.user.user_id, (result, error) => {
-            if (error) {
-                send.status = Enum.res_type.FAILURE;
-                send.message = result
-                send.info = error
-                return res.json(send);
-            }
-
-            Util.send_sms(send_sms, Config.wording.profile_success, (send_sms_result) => {
-                send.status = Enum.res_type.SUCCESS
-                send.info = result;
-                return res.json(send)
-            })
-        });
-    })
-};
-
-router.route('/profile').put(profile);
-router.route('/profile/:id').put(profile);
-
 var search = (req, res, next) => {
     var search = ''
     if(req.params.search){
@@ -541,49 +64,28 @@ var search = (req, res, next) => {
 router.route('/users/list/:search').get(search)
 router.route('/users/list/').get(search)
 
-router.route('/users/:id').get((req, res, next) => {
+router.route('/users/import/:id').get((req, res, next) => {
     var id = req.params.id
-
+    console.log(id)
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
     }
-
+    console.log(req.user)
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
-    UsersModel.detailUser(id, (user) => {
-        if (user instanceof Error) {
+    UsersModel.getImport(id, (result) => {
+        if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
-            send.message = user;
+            send.message = 'not found import'
             return res.json(send);
         }
 
-        if(user.is_admin){
-            send.status = Enum.res_type.SUCCESS
-            send.info = user;
-            return res.json(send)
-        }
-
-        UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
-            if(ent instanceof Error){
-                send.status = Enum.res_type.FAILURE
-                send.message = ent
-                return res.json(send)
-            }
-
-            var date = new Date(ent.birthyear);
-            var now = new Date();
-
-            user.ent = ent
-            user.ent.age = now.getFullYear() - date.getFullYear()
-
-            send.status = Enum.res_type.SUCCESS
-            send.info = user;
-            return res.json(send)
-        })
-
+        send.status = Enum.res_type.SUCCESS
+        send.info = result
+        return res.json(send)
     });
 });
 
@@ -1193,5 +695,528 @@ router.route('/users/import').post((req, res, next) => {
             })
     });
 });
+
+router.route('/users').post((req, res, next) => {
+    var data = req.body
+    var schema = {
+        'additionalProperties': false,
+        'properties': {
+            'registration_type': {
+                'type': 'number'
+            },
+            'enterprise_name': {
+                'type': 'string'
+            },
+            'title': {
+                'type': 'string'
+            },
+            'name': {
+                'type': 'string'
+            },
+            'lastname': {
+                'type': 'string'
+            },
+            'age': {
+                'type': 'number'
+            },
+            'id_no': {
+                'type': 'string'
+            },
+            'house_no': {
+                'type': 'string'
+            },
+            'village_no': {
+                'type': 'string'
+            },
+            'alley': {
+                'type': 'string'
+            },
+            'village_title': {
+                'type': 'string'
+            },
+            'road': {
+                'type': 'string'
+            },
+            'subdistrict_code': {
+                'type': 'number'
+            },
+            'subdistrict': {
+                'type': 'string'
+            },
+            'district': {
+                'type': 'string'
+            },
+            'province': {
+                'type': 'string'
+            },
+            'postal_code': {
+                'type': 'string'
+            },
+            'legal_title': {
+                'type': 'string'
+            },
+            'legal_name': {
+                'type': 'string'
+            },
+            'legal_id': {
+                'type': 'string'
+            },
+            /*'contact_info': {
+             'type': 'object',
+             'properties': {
+             'title': {
+             'type': 'string'
+             },
+             'name': {
+             'type': 'string'
+             },
+             'lastname': {
+             'type': 'string'
+             },
+             'id_no': {
+             'type': 'string'
+             },
+             'house_no': {
+             'type': 'string'
+             },
+             'village_no': {
+             'type': 'string'
+             },
+             'alley': {
+             'type': 'string'
+             },
+             'village_title': {
+             'type': 'string'
+             },
+             'road': {
+             'type': 'string'
+             },
+             'subdistrict_code': {
+             'type': 'number'
+             },
+             'subdistrict': {
+             'type': 'string'
+             },
+             'district': {
+             'type': 'string'
+             },
+             'province': {
+             'type': 'string'
+             },
+             'postal_code': {
+             'type': 'string'
+             },
+             },
+             'required': [
+             'title', 'name', 'lastname', 'id_no', 'house_no', 'village_no',
+             'subdistrict', 'district', 'province', 'postal_code'
+             ]
+             },*/
+            'phone_no': {
+                'type': 'string'
+            },
+            'email': {
+                'type': 'string'
+            },
+            'line_id': {
+                'type': 'string'
+            },
+            'facebook': {
+                'type': 'string'
+            },
+            'enterprise_type': {
+                'type': 'object',
+                'minProperties': 1,
+                'maxProperties': 5,
+                'properties': {
+                    'agricultural_product': {
+                        'type': 'string'
+                    },
+                    'industrial_product': {
+                        'type': 'string'
+                    },
+                    'selling': {
+                        'type': 'string'
+                    },
+                    'service': {
+                        'type': 'string'
+                    },
+                    'other': {
+                        'type': 'string'
+                    },
+                }
+            },
+            'sme_member_no': {
+                'type': 'string'
+            },
+            'is_otop_product': {
+                'type': 'boolean'
+            },
+            'needed_help': {
+                'type': 'object',
+                'minProperties': 1,
+                'maxProperties': 8,
+                'properties': {
+                    'needed_help_ecommerce': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_investor': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_supplier': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_payment': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_logistics': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_brand': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_online_marketing': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_tax': {
+                        'type': 'boolean'
+                    }
+                }
+            },
+            'on_ecommerce': {
+                'type': 'boolean'
+            },
+            'recaptcha': {
+                'type': 'string'
+            }
+        },
+        'required': [
+            'registration_type', 'enterprise_name', 'title', 'name', 'lastname', 'id_no',
+            'house_no', 'village_no', 'subdistrict', 'district', 'province',
+            'postal_code', 'phone_no', 'enterprise_type', 'needed_help'
+        ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    Util.check_recaptcha(data.recaptcha, (recaptcha) => {
+        if(recaptcha instanceof Error){
+            return res.json({status: Enum.res_type.FAILURE, info:recaptcha, message: 'fail recaptcha.'})
+        }
+
+        if(recaptcha.success != true){
+            return res.json({status: Enum.res_type.FAILURE, info:recaptcha, message: 'fail recaptcha.'})
+        }
+
+        delete data.recaptcha
+
+        var phone_no = data.phone_no
+
+        var access_token = req.header('access_token')
+        jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
+            if(err && access_token){
+                return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+            }
+
+            if(access_token){
+                UsersModel.findUser(decode.user_id, (user) => {
+                    if(user instanceof Error){
+                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                    }else if(!user.is_admin){
+                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
+                    }
+                    UsersModel.addUser(data, user.user_id, 'admin', (result, error) => {
+                        if (error) {
+                            send.status = Enum.res_type.FAILURE;
+                            send.message = result
+                            send.info = error
+                            return res.json(send);
+                        }
+
+                        Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
+                            send.status = Enum.res_type.SUCCESS
+                            send.info = result;
+                            return res.json(send)
+                        })
+                    });
+                })
+
+            }else{
+                UsersModel.addUser(data, null, 'web', (result, error) => {
+                    if (error) {
+                        send.status = Enum.res_type.FAILURE;
+                        send.message = result
+                        send.info = error
+                        return res.json(send);
+                    }
+
+                    Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
+                        send.status = Enum.res_type.SUCCESS
+                        send.info = result;
+                        return res.json(send)
+                    })
+                });
+            }
+        })
+
+    })
+});
+
+router.route('/users/:id').get((req, res, next) => {
+    var id = req.params.id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    UsersModel.detailUser(id, (user) => {
+        if (user instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = user;
+            return res.json(send);
+        }
+
+        if(user.is_admin){
+            send.status = Enum.res_type.SUCCESS
+            send.info = user;
+            return res.json(send)
+        }
+
+        UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
+            if(ent instanceof Error){
+                send.status = Enum.res_type.FAILURE
+                send.message = ent
+                return res.json(send)
+            }
+
+            var date = new Date(ent.birthyear);
+            var now = new Date();
+
+            user.ent = ent
+            user.ent.age = now.getFullYear() - date.getFullYear()
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = user;
+            return res.json(send)
+        })
+
+    });
+});
+
+var profile = (req, res, next) => {
+    var id = req.params.id
+    var data = req.body
+    var schema = {
+        'additionalProperties': false,
+        'properties': {
+            'registration_type': {
+                'type': 'number'
+            },
+            'enterprise_name': {
+                'type': 'string'
+            },
+            'title': {
+                'type': 'string'
+            },
+            'name': {
+                'type': 'string'
+            },
+            'lastname': {
+                'type': 'string'
+            },
+            'age': {
+                'type': 'number'
+            },
+            'id_no': {
+                'type': 'string'
+            },
+            'house_no': {
+                'type': 'string'
+            },
+            'village_no': {
+                'type': 'string'
+            },
+            'alley': {
+                'type': 'string'
+            },
+            'village_title': {
+                'type': 'string'
+            },
+            'road': {
+                'type': 'string'
+            },
+            'subdistrict_code': {
+                'type': 'number'
+            },
+            'subdistrict': {
+                'type': 'string'
+            },
+            'district': {
+                'type': 'string'
+            },
+            'province': {
+                'type': 'string'
+            },
+            'postal_code': {
+                'type': 'string'
+            },
+            'legal_title': {
+                'type': 'string'
+            },
+            'legal_name': {
+                'type': 'string'
+            },
+            'legal_id': {
+                'type': 'string'
+            },
+            /*'phone_no': {
+             'type': 'string'
+             },*/
+            'email': {
+                'type': 'string'
+            },
+            'line_id': {
+                'type': 'string'
+            },
+            'facebook': {
+                'type': 'string'
+            },
+            'enterprise_type': {
+                'type': 'object',
+                'minProperties': 1,
+                'maxProperties': 5,
+                'properties': {
+                    'agricultural_product': {
+                        'type': 'string'
+                    },
+                    'industrial_product': {
+                        'type': 'string'
+                    },
+                    'selling': {
+                        'type': 'string'
+                    },
+                    'service': {
+                        'type': 'string'
+                    },
+                    'other': {
+                        'type': 'string'
+                    },
+                }
+            },
+            'sme_member_no': {
+                'type': 'string'
+            },
+            'is_otop_product': {
+                'type': 'boolean'
+            },
+            'needed_help': {
+                'type': 'object',
+                'minProperties': 1,
+                'maxProperties': 8,
+                'properties': {
+                    'needed_help_ecommerce': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_investor': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_supplier': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_payment': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_logistics': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_brand': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_online_marketing': {
+                        'type': 'boolean'
+                    },
+                    'needed_help_tax': {
+                        'type': 'boolean'
+                    }
+                }
+            },
+            'on_ecommerce': {
+                'type': 'boolean'
+            }
+        },
+        'required': [
+            'registration_type', 'enterprise_name', 'title', 'name', 'lastname', 'id_no',
+            'house_no', 'village_no', 'subdistrict', 'district', 'province',
+            'postal_code', /*'phone_no',*/ 'enterprise_type', 'needed_help'
+        ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(id && !req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    var user_id = ''
+    var update_user_id = ''
+    if(id){ // admin
+        user_id = id
+        update_user_id = req.user.user_id
+    }else{ // web
+        user_id = req.user.user_id
+        update_user_id = null
+    }
+
+    UsersModel.findUser(user_id, (user) => {
+        if(user instanceof Error){
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'user not found.'
+            send.info = user
+            return res.json(send);
+        }
+
+        var send_sms = ''
+        if(id){ // admin
+            send_sms = user.username
+        }else{ // web
+            send_sms = req.user.username
+        }
+
+        UsersModel.updateUser(user_id, data, req.user.user_id, (result, error) => {
+            if (error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = result
+                send.info = error
+                return res.json(send);
+            }
+
+            Util.send_sms(send_sms, Config.wording.profile_success, (send_sms_result) => {
+                send.status = Enum.res_type.SUCCESS
+                send.info = result;
+                return res.json(send)
+            })
+        });
+    })
+};
+
+router.route('/profile').put(profile);
+router.route('/profile/:id').put(profile);
 
 export default router
