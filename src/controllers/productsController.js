@@ -637,8 +637,6 @@ router.route('/import/:id').post((req, res, next) => {
             var i = 0
             var ts = new Date().getTime()
 
-            console.log(zip+'/products.csv')
-
             csv.fromPath(zip+'/products.csv')
                 .on("data", function(data){
 
@@ -722,13 +720,12 @@ router.route('/import/:id').post((req, res, next) => {
                                 isError = true
                                 status_message = title+', '+sku+' : '+'bad request'
 
-                                console.log(ajv.errors)
-
                                 // update import detail
                                 ImportModel.addImportDetail(ts, position, status_message, ajv.errors, (result) => {})
 
                             }else{
                                 ProductsModel.addProduct(d, id, req.user.user_id, (result_product) => {
+
                                     if (result_product instanceof Error) {
                                         isError = true
                                         status_message = title+', '+sku+' : '+' : '+'fail'
@@ -744,7 +741,7 @@ router.route('/import/:id').post((req, res, next) => {
                                         ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
 
                                         // upload image
-                                        for(var j = 18; j <= 26; j++){
+                                        for(var j = 25; j <= 33; j++){
                                             if(data[j].length){
                                                 var position = j
                                                 FileModel.saveFilePath(zip+'/'+data[position], (weed_info) => {
@@ -765,6 +762,22 @@ router.route('/import/:id').post((req, res, next) => {
                                             }
                                         }
 
+                                        // add emarket
+                                        var emarkets = []
+
+                                        for(var j = 18; j <= 24; j++){
+                                            if(data[j].length){
+                                                emarkets.push(data[j])
+                                            }
+                                        }
+
+                                        ProductsModel.addEmarket(result_product.insertId, emarkets, (result) => {
+                                            if (result instanceof Error) {
+
+                                            }else{
+
+                                            }
+                                        })
                                     }
                                 });
 
