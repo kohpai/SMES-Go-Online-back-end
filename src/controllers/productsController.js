@@ -9,8 +9,14 @@ const ajv = new Ajv()
 // using
 import HttpStatus from './../helper/http_status.js'
 import ProductsModel from '../models/productsModel.js'
+import ImportModel from '../models/importModel.js'
+import UsersModel from '../models/usersModel.js'
 import { Util, Enum } from '../helper'
 import FileModel from '../models/fileModel.js'
+
+var fs = require('fs')
+var path = require("path")
+var csv = require("fast-csv");
 
 var search = (req, res, next) => {
     var search = ''
@@ -526,12 +532,15 @@ router.route('/:id').delete((req, res, next) => {
     });
 });
 
-router.route('/import').post((req, res, next) => {
+router.route('/import/:id').post((req, res, next) => {
     var id = req.params.id
-
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
     if(!req.files || !req.files.file){
@@ -540,7 +549,254 @@ router.route('/import').post((req, res, next) => {
         return res.json(send)
     }
 
+    UsersModel.detailUser(id, (user) => {
+        if(user instanceof Error){
+            send.status = Enum.res_type.FAILURE
+            send.message = 'User not found.'
+            return res.json(send)
+        }
 
+        FileModel.unzipFile(req.files.file, (zip) => {
+            if(zip == null){
+                send.status = Enum.res_type.FAILURE
+                send.message = 'File not found.'
+                return res.json(send)
+            }
+
+            var schema = {
+                'additionalProperties': false,
+                'properties': {
+                    'title': {
+                        'type': 'string'
+                    },
+                    'sku': {
+                        'type': 'string'
+                    },
+                    'unspsc': {
+                        'type': 'string'
+                    },
+                    'category': {
+                        'type': 'string'
+                    },
+                    'no_of_pieces': {
+                        'type': 'string'
+                    },
+                    'price': {
+                        'type': 'number'
+                    },
+                    'barcode': {
+                        'type': 'string'
+                    },
+                    'description': {
+                        'type': 'string'
+                    },
+                    'amount': {
+                        'type': 'number'
+                    },
+                    'cert_q': {
+                        'type': 'string'
+                    },
+                    'cert_food_and_drug': {
+                        'type': 'string'
+                    },
+                    'cert_iso': {
+                        'type': 'string'
+                    },
+                    'cert_halan': {
+                        'type': 'string'
+                    },
+                    'cert_organic': {
+                        'type': 'string'
+                    },
+                    'cert_safefood': {
+                        'type': 'string'
+                    },
+                    'cert_other': {
+                        'type': 'string'
+                    },
+                    'using_platforms': {
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    'subcategory': {
+                        'type': 'string'
+                    },
+                    'subcategory_code': {
+                        'type': 'string'
+                    },
+                    'user_id': {
+                        'type': 'string'
+                    }
+                },
+                'required': [
+                    'title', 'sku', 'category', 'price'
+                ]
+            }
+
+            var i = 0
+            var ts = new Date().getTime()
+
+            console.log(zip+'/products.csv')
+
+            csv.fromPath(zip+'/products.csv')
+                .on("data", function(data){
+
+                    var position = i
+                    var status_message = ''
+                    var status_info = {}
+
+                    if(position == 0 || position == 1){
+
+                    }else{
+                        var isError = false
+
+                        var title = ''
+                        if(!isError){
+                            if(data[0].length){
+                                title = data[0]
+                            }else{
+                                isError = true
+                                status_message = 'title not empty'
+                            }
+                        }
+
+                        var sku = ''
+                        if(!isError){
+                            if(data[1].length){
+                                sku = data[1]
+                            }else{
+                                isError = true
+                                status_message = 'sku not empty'
+                            }
+                        }
+
+                        var category = ''
+                        if(!isError){
+                            if(data[3].length){
+                                category = data[3]
+                            }else{
+                                isError = true
+                                status_message = 'category not empty'
+                            }
+                        }
+
+                        var price = 0
+                        if(!isError){
+                            var parsePrice = parseFloat(data[8])
+                            if(!isNaN(parsePrice)){
+                                price = parsePrice
+                            }else{
+                                isError = true
+                                status_message = 'price not empty or price number'
+                            }
+                        }
+
+                        if(!isError){
+
+                            var d = {
+                                title: title,
+                                sku: sku,
+                                unspsc: data[2],
+                                category: data[3],
+                                no_of_pieces: data[6],
+                                price: price,
+                                barcode: data[7],
+                                description: data[10],
+                                amount: parseInt(data[9]),
+                                cert_q: data[11],
+                                cert_food_and_drug: data[12],
+                                cert_iso: data[13],
+                                cert_halan: data[14],
+                                cert_organic: data[15],
+                                cert_safefood: data[16],
+                                cert_other: data[17],
+                                //using_platforms: data.using_platforms,
+                                subcategory: data[4],
+                                subcategory_code: data[5],
+                                user_id: id,
+                            }
+
+                            var valid = ajv.validate(schema, d)
+                            if (!valid){
+                                isError = true
+                                status_message = title+', '+sku+' : '+'bad request'
+
+                                console.log(ajv.errors)
+
+                                // update import detail
+                                ImportModel.addImportDetail(ts, position, status_message, ajv.errors, (result) => {})
+
+                            }else{
+                                ProductsModel.addProduct(d, id, req.user.user_id, (result_product) => {
+                                    if (result_product instanceof Error) {
+                                        isError = true
+                                        status_message = title+', '+sku+' : '+' : '+'fail'
+
+                                        // update import detail
+                                        ImportModel.addImportDetail(ts, position, status_message, result_product, (result) => {})
+
+                                    }else{
+                                        isError = false
+                                        status_message = title+', '+sku+' : '+' : '+'success'
+
+                                        // update import detail
+                                        ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
+
+                                        // upload image
+                                        for(var j = 18; j <= 26; j++){
+                                            if(data[j].length){
+                                                var position = j
+                                                FileModel.saveFilePath(zip+'/'+data[position], (weed_info) => {
+                                                    if (weed_info == null) {
+
+                                                    }else{
+                                                        ProductsModel.addImage(result_product.insertId, weed_info.fid, data[position], 0, (result) => {
+                                                            if (result == null) {
+
+                                                            } else if (result instanceof Error) {
+
+                                                            }else{
+
+                                                            }
+                                                        })
+                                                    }
+                                                })
+                                            }
+                                        }
+
+                                    }
+                                });
+
+                            }
+                        }else{
+
+                            status_message = title+', '+sku+' : '+status_message
+
+                            // update import detail
+                            ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
+                        }
+                    }
+
+                    i++
+                })
+                .on("end", function(){
+                    ImportModel.addImport(ts, 2, req.files.file.name, req.user.user_id, (result) => {
+                        if(result instanceof Error){
+                            send.status = Enum.res_type.FAILURE
+                            send.message = 'can\'t add import'
+                            return res.json(send)
+                        }
+
+                        send.status = Enum.res_type.SUCCESS
+                        send.info = { import_id: ts }
+                        return res.json(send)
+                    })
+
+                })
+        })
+
+    })
 })
 
 export default router

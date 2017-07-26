@@ -9,6 +9,7 @@ var jwt = require("jsonwebtoken")
 
 import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
+import ImportModel from '../models/importModel.js'
 import { Util, Enum } from '../helper'
 import Config from '../config.js'
 import FileModel from '../models/fileModel.js'
@@ -71,7 +72,7 @@ router.route('/users/import/:id').get((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
-    UsersModel.getImport(id, (result) => {
+    ImportModel.getImport(id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.message = 'not found import'
@@ -98,8 +99,6 @@ router.route('/users/import').post((req, res, next) => {
         send.message = 'File not found.'
         return res.json(send)
     }
-
-    var i = 0
 
     FileModel.saveFileLocal(req.files.file, (result) => {
         if (result == null) {
@@ -304,6 +303,7 @@ router.route('/users/import').post((req, res, next) => {
             ]
         }
 
+        var i = 0
         var ts = new Date().getTime()
 
         csv.fromPath(result)
@@ -576,7 +576,7 @@ router.route('/users/import').post((req, res, next) => {
 
                     if(!isError){
 
-                        var data = {
+                        var d = {
                             registration_type: registration_type,
                             enterprise_name: enterprise_name,
                             id_no: id_no,
@@ -622,22 +622,22 @@ router.route('/users/import').post((req, res, next) => {
                             }
                         }
 
-                        var valid = ajv.validate(schema, data)
+                        var valid = ajv.validate(schema, d)
                         if (!valid){
                             isError = true
                             status_message = title+name+' '+lastName+', '+phone_no+' : '+'bad request'
 
                             // update import detail
-                            UsersModel.addImportDetail(ts, position, status_message, ajv.errors, (result) => {})
+                            ImportModel.addImportDetail(ts, position, status_message, ajv.errors, (result) => {})
 
                         }else{
-                            UsersModel.addUser(data, req.user_id, 'import', (result, error) => {
+                            UsersModel.addUser(d, req.user_id, 'import', (result, error) => {
                                 if (error) {
                                     isError = true
                                     status_message = title+name+' '+lastName+', '+phone_no+' : '+result
 
                                     // update import detail
-                                    UsersModel.addImportDetail(ts, position, status_message, error, (result) => {})
+                                    ImportModel.addImportDetail(ts, position, status_message, error, (result) => {})
 
                                 }else{
                                     Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
@@ -646,14 +646,14 @@ router.route('/users/import').post((req, res, next) => {
                                             status_message = title+name+' '+lastName+', '+phone_no+' : '+'can\'t send sms'
 
                                             // update import detail
-                                            UsersModel.addImportDetail(ts, position, status_message, send_sms_result, null, (result) => {})
+                                            ImportModel.addImportDetail(ts, position, status_message, send_sms_result, null, (result) => {})
 
                                         }else{
                                             isError = false
                                             status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
 
                                             // update import detail
-                                            UsersModel.addImportDetail(ts, position, status_message, null, (result) => {})
+                                            ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
                                         }
                                     })
                                 }
@@ -665,14 +665,14 @@ router.route('/users/import').post((req, res, next) => {
                         status_message = title+name+' '+lastName+', '+phone_no+' : '+status_message
 
                         // update import detail
-                        UsersModel.addImportDetail(ts, position, status_message, null, (result) => {})
+                        ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
                     }
                 }
 
                 i++
             })
             .on("end", function(){
-                UsersModel.addImport(ts, 1, req.files.file.name, (result) => {
+                ImportModel.addImport(ts, 1, req.files.file.name, req.user.user_id, (result) => {
                     if(result instanceof Error){
                         send.status = Enum.res_type.FAILURE
                         send.message = 'can\'t add import'

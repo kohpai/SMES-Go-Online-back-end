@@ -1,6 +1,7 @@
 'use strict'
 
 import Config from '../config.js'
+import * as unzip from "unzip";
 
 var fs = require('fs')
 var path = require("path")
@@ -62,6 +63,28 @@ const saveFile = (file, done) => {
     })
 }
 
+const saveFilePath = (path, done) => {
+
+    if (!path) {
+        return done(null);
+    }
+
+    if (!fs.existsSync(path)){
+        return done(null)
+    }
+
+    seaweedfs.write(path).then(function (fileInfo) {
+        fs.unlink(path)
+        return done(fileInfo)
+
+    }).then(function (Buffer) {
+    }).catch(function (err) {
+        fs.unlink(path)
+        return done(null)
+
+    })
+}
+
 const readFile = (id, name, done) => {
 
     if (!fs.existsSync('./temp/')){
@@ -105,10 +128,44 @@ const deleteFile = (id, done) => {
     })
 }
 
+const unzipFile = (file, done) => {
+
+    if (!file) {
+        return done(null);
+    }
+
+    if (!fs.existsSync('./temp/')){
+        fs.mkdirSync('./temp/')
+    }
+
+    let fileName = './temp/' + file.name
+    file.mv(fileName, function (err) {
+        if (err) {
+            return done(null)
+        }
+
+        let destDir = fileName+'_unzip'
+
+        if (!fs.existsSync(destDir)){
+            fs.mkdirSync(destDir)
+        }
+
+        fs.createReadStream(fileName).pipe(unzip.Extract({ path: destDir }));
+
+        // var readStream = fs.createReadStream(fileName);
+        // var writeStream = fstream.Writer(destDir);
+        // readStream.pipe(unzip.Parse()).pipe(writeStream)
+
+        return done(destDir)
+    })
+}
+
 export default {
     saveFile,
     deleteFile,
     readFile,
     deleteTempFile,
     saveFileLocal,
+    unzipFile,
+    saveFilePath,
 }
