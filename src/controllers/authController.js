@@ -55,16 +55,24 @@ router.route('/*').all((req, res, next) => {
                 req.user = user
 
                 if(user.is_admin){
-                    return next()
-                }
-                UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
-                    if(ent instanceof Error){
-                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.not_found_enterprise})
-                    }
+                    UsersModel.detailRole(user.role_id, (role) => {
+                        if (role instanceof Error) {
+                            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'not found role'})
+                        }
 
-                    req.user.ent = ent
-                    return next()
-                })
+                        req.user.role = role
+                        return next()
+                    })
+                }else{
+                    UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
+                        if(ent instanceof Error){
+                            return res.json({status: Enum.res_type.FAILURE, info:{}, message: Config.wording.not_found_enterprise})
+                        }
+
+                        req.user.ent = ent
+                        return next()
+                    })
+                }
             })
         })
 
@@ -122,29 +130,39 @@ router.route('/status').get((req, res, next) => {
             delete user.otp
 
             if(user.is_admin){
-                send.status = Enum.res_type.SUCCESS
-                send.info = { user: user, access_token: access_token, otp_pass: decode.otp_pass };
-                return res.json(send)
-            }
+                UsersModel.detailRole(user.role_id, (role) => {
+                    if (role instanceof Error) {
+                        send.status = Enum.res_type.FAILURE;
+                        send.message = user;
+                        return res.json(send);
+                    }
 
-            UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
-                if(ent instanceof Error){
-                    send.status = Enum.res_type.FAILURE
-                    send.message = ent
+                    user.role = role
+
+                    send.status = Enum.res_type.SUCCESS
+                    send.info = { user: user, access_token: access_token, otp_pass: decode.otp_pass };
                     return res.json(send)
-                }
+                })
 
-                var date = new Date(ent.birthyear);
-                var now = new Date();
+            }else{
+                UsersModel.getEnterpriseByUserId(user.user_id, (ent) => {
+                    if(ent instanceof Error){
+                        send.status = Enum.res_type.FAILURE
+                        send.message = ent
+                        return res.json(send)
+                    }
 
-                user.ent = ent
-                user.ent.age = now.getFullYear() - date.getFullYear()
+                    var date = new Date(ent.birthyear);
+                    var now = new Date();
 
-                send.status = Enum.res_type.SUCCESS
-                send.info = { user: user, access_token: access_token, ent_id: decode.ent_id, otp_pass: decode.otp_pass };
-                return res.json(send)
-            })
+                    user.ent = ent
+                    user.ent.age = now.getFullYear() - date.getFullYear()
 
+                    send.status = Enum.res_type.SUCCESS
+                    send.info = { user: user, access_token: access_token, ent_id: decode.ent_id, otp_pass: decode.otp_pass };
+                    return res.json(send)
+                })
+            }
         })
     })
 })
@@ -224,7 +242,7 @@ router.route('/login').post((req, res, next) => {
                     }
                     UsersModel.addMachine(insert_machine, (result) => {
                         if (result instanceof Error) {
-                            console.log(result)
+
                         }
                     })
 
@@ -239,7 +257,7 @@ router.route('/login').post((req, res, next) => {
                     // update machine
                     UsersModel.updateMachine(machine_token, user.user_id, otp_pass, (result) => {
                         if (result instanceof Error) {
-                            console.log(result)
+
                         }
                     })
                 }

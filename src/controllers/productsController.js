@@ -534,8 +534,6 @@ router.route('/import').post((req, res, next) => {
         info: {}
     }
 
-    console.log(req.files)
-
     if(!req.files || !req.files.file){
         send.status = Enum.res_type.FAILURE
         send.message = 'File not found.'
