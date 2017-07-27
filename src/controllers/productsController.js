@@ -743,12 +743,12 @@ router.route('/import/:id').post((req, res, next) => {
                                         // upload image
                                         for(var j = 25; j <= 33; j++){
                                             if(data[j].length){
-                                                var position = j
-                                                FileModel.saveFilePath(zip+'/'+data[position], (weed_info) => {
+                                                var p = j
+                                                FileModel.saveFilePath(zip+'/'+data[p], (weed_info) => {
                                                     if (weed_info == null) {
 
                                                     }else{
-                                                        ProductsModel.addImage(result_product.insertId, weed_info.fid, data[position], 0, (result) => {
+                                                        ProductsModel.addImage(result_product.insertId, weed_info.fid, data[p], 0, (result) => {
                                                             if (result == null) {
 
                                                             } else if (result instanceof Error) {
