@@ -25,6 +25,12 @@ router.route('/topics').get((req, res, next) => {
         user_id = req.user.user_id
     }
 
+    if(req.user.is_admin && !req.user.role.is_manage_consult){
+        send.status = Enum.res_type.FAILURE;
+        send.message = 'Permission denied';
+        return res.json(send);
+    }
+
     ConsultTopicModel.countTopic(user_id, (count_topic) => {
         if (count_topic instanceof Error) {
             send.status = Enum.res_type.FAILURE;
@@ -103,19 +109,36 @@ router.route('/topics').delete((req, res, next) => {
         status: Enum.res_type.FAILURE,
         info: {}
     }
-    ConsultTopicModel.deleteTopic(data.consult_id, req.user.user_id, (result, error) => {
-        if (error) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = result
-            send.info = error
+
+    ConsultTopicModel.getTopicsById(data.consult_id, (topics) => {
+        if (topics == null) {
+            send.message = 'not found topics';
+            return res.json(send);
+        } else if (topics instanceof Error) {
+            send.message = 'error topic';
+            console.log(topics)
             return res.json(send);
         }
 
-        send.status = Enum.res_type.SUCCESS
-        send.info = result;
-        return res.json(send)
-    });
+        if (topics.user_id != req.user.user_id && !req.user.role.is_manage_consult) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Permission denied';
+            return res.json(send);
+        }
 
+        ConsultTopicModel.deleteTopic(data.consult_id, req.user.user_id, (result, error) => {
+            if (error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = result
+                send.info = error
+                return res.json(send);
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result;
+            return res.json(send)
+        });
+    })
 });
 
 router.route('/topics/:id').get((req, res, next) => {
@@ -134,6 +157,13 @@ router.route('/topics/:id').get((req, res, next) => {
             console.log(topics)
             return res.json(send);
         }
+
+        if(topics.user_id != req.user.user_id && !req.user.role.is_manage_consult){
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Permission denied';
+            return res.json(send);
+        }
+
         send.status = Enum.res_type.SUCCESS;
         send.info = {topics: topics};
         return res.json(send)
@@ -162,35 +192,51 @@ router.route('/topics/msg/:id').post((req, res, next) => {
         info: {}
     }
 
-    ConsultTopicModel.addMsg(id, data.message, req.user.user_id, req.user.is_admin, req.user.ent.enterprise_id, (result) => {
-        if (result instanceof Error) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = result
+    ConsultTopicModel.getTopicsById(id, (topics) => {
+        if (topics == null) {
+            send.message = 'not found topics';
+            return res.json(send);
+        } else if (topics instanceof Error) {
+            send.message = 'error topic';
+            console.log(topics)
             return res.json(send);
         }
 
-        var is_admin_reply = 0, is_admin_read = 0
-
-        if(req.user.is_admin){
-            is_admin_reply = 1
-            is_admin_read = 1
-        }else{
-            is_admin_reply = 0
-            is_admin_read = 0
+        if (topics.user_id != req.user.user_id && !req.user.role.is_manage_consult) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Permission denied';
+            return res.json(send);
         }
-        ConsultTopicModel.updateTopic(id, is_admin_read, is_admin_reply, (update_result) => {
-            if(update_result instanceof Error){
+
+        ConsultTopicModel.addMsg(id, data.message, req.user.user_id, req.user.is_admin, (result) => {
+            if (result instanceof Error) {
                 send.status = Enum.res_type.FAILURE;
-                send.info = update_result
+                send.message = result
                 return res.json(send);
             }
 
-            send.status = Enum.res_type.SUCCESS
-            send.info = result;
-            return res.json(send)
-        })
-    });
+            var is_admin_reply = 0, is_admin_read = 0
 
+            if (req.user.is_admin) {
+                is_admin_reply = 1
+                is_admin_read = 1
+            } else {
+                is_admin_reply = 0
+                is_admin_read = 0
+            }
+            ConsultTopicModel.updateTopic(id, is_admin_read, is_admin_reply, (update_result) => {
+                if (update_result instanceof Error) {
+                    send.status = Enum.res_type.FAILURE;
+                    send.info = update_result
+                    return res.json(send);
+                }
+
+                send.status = Enum.res_type.SUCCESS
+                send.info = result;
+                return res.json(send)
+            })
+        });
+    })
 });
 
 router.route('/topics/msg/:id').get((req, res, next) => {
@@ -205,6 +251,12 @@ router.route('/topics/msg/:id').get((req, res, next) => {
     ConsultTopicModel.getTopicsById(id, (topic) => {
         if(topic instanceof Error){
             send.message = 'not found topic';
+            return res.json(send);
+        }
+
+        if (topic.user_id != req.user.user_id && !req.user.role.is_manage_consult) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Permission denied';
             return res.json(send);
         }
 

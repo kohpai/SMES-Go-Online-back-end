@@ -113,13 +113,12 @@ const getMsgByTopic = (id, done) => {
     });
 }
 
-const addMsg = (id, message, user_id, is_admin ,ent_id, done) => {
+const addMsg = (id, message, user_id, is_admin, done) => {
 
     var topicInfo = {
         topic_id: id,
         user_id: user_id,
         is_admin: is_admin,
-        ent_id: ent_id,
         sent_time: new Date(),
         text: message,
     };
