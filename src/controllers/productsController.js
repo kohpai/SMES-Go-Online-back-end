@@ -36,6 +36,10 @@ var search = (req, res, next) => {
         user_id = req.user.user_id
     }
 
+    if(req.user.is_admin && !req.user.role.is_manage_product){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     if(user_id.length){
         user_id = parseInt(user_id, 0)
     }else{
@@ -117,13 +121,10 @@ router.route('/:id/image/:image_id').delete((req, res, next) => {
             return res.json(send);
         }
 
-        if (old_product.user_id == req.user.user_id) {
-
-        } else if (!req.user.is_admin) {
-            return res.json({status: Enum.res_type.FAILURE, info: {}, message: 'Not is admin.'})
-        } else {
-
+        if (old_product.user_id != req.user.user_id && !req.user.role.is_manage_product) {
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
+
 
         ProductsModel.deleteImage(id, image_id, (result) => {
             if (result == null) {
@@ -164,12 +165,8 @@ router.route('/:id/image').post((req, res, next) => {
             return res.json(send);
         }
 
-        if (old_product.user_id == req.user.user_id) {
-
-        } else if (!req.user.is_admin) {
-            return res.json({status: Enum.res_type.FAILURE, info: {}, message: 'Not is admin.'})
-        } else {
-
+        if (old_product.user_id != req.user.user_id && !req.user.role.is_manage_product) {
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
 
         FileModel.saveFile(req.files.image, (result) => {
@@ -282,17 +279,12 @@ router.route('/').post((req, res, next) => {
     var user_id = ''
     if(data.user_id){
         user_id = data.user_id
-
-        if(user_id == req.user.user_id){
-
-        }else if(!req.user.is_admin){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
-        }else{
-
-        }
-
     }else{
         user_id = req.user.user_id
+    }
+
+    if (req.user.is_admin && !req.user.role.is_manage_product) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     ProductsModel.addProduct(data, user_id, req.user.user_id, (result) => {
@@ -406,12 +398,8 @@ router.route('/:id').put((req, res, next) => {
             return res.json(send);
         }
 
-        if(old_product.user_id == req.user.user_id){
-
-        }else if(!req.user.is_admin){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
-        }else{
-
+        if (old_product.user_id != req.user.user_id && !req.user.role.is_manage_product) {
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
 
         ProductsModel.updateProduct(id, data, req.user.user_id, (result) => {
@@ -460,12 +448,8 @@ router.route('/:id').get((req, res, next) => {
             return res.json(send);
         }
 
-        if (product.user_id == req.user.user_id) {
-
-        } else if (!req.user.is_admin) {
-            return res.json({status: Enum.res_type.FAILURE, info: {}, message: 'Not is admin.'})
-        } else {
-
+        if (product.user_id != req.user.user_id && !req.user.role.is_manage_product) {
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
 
         ProductsModel.getImages(id, (result_images) => {
@@ -510,12 +494,8 @@ router.route('/:id').delete((req, res, next) => {
             return res.json(send);
         }
 
-        if (old_product.user_id == req.user.user_id) {
-
-        } else if (!req.user.is_admin) {
-            return res.json({status: Enum.res_type.FAILURE, info: {}, message: 'Not is admin.'})
-        } else {
-
+        if (old_product.user_id != req.user.user_id && !req.user.role.is_manage_product) {
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
 
         ProductsModel.deleteProduct(id, req.user.user_id, (result) => {
@@ -539,8 +519,8 @@ router.route('/import/:id').post((req, res, next) => {
         info: {}
     }
 
-    if(!req.user.is_admin){
-        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    if (req.user.is_admin && !req.user.role.is_manage_product) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     if(!req.files || !req.files.file){
