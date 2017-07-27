@@ -637,6 +637,12 @@ router.route('/import/:id').post((req, res, next) => {
             var i = 0
             var ts = new Date().getTime()
 
+            if(!fs.existsSync(zip+'/products.csv')){
+                send.status = Enum.res_type.FAILURE
+                send.message = 'File not found.'
+                return res.json(send)
+            }
+
             csv.fromPath(zip+'/products.csv')
                 .on("data", function(data){
 

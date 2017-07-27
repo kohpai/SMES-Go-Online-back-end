@@ -156,6 +156,8 @@ const unzipFile = (file, done) => {
         // var writeStream = fstream.Writer(destDir);
         // readStream.pipe(unzip.Parse()).pipe(writeStream)
 
+        deleteTempFile(fileName, (result) => {})
+
         return done(destDir)
     })
 }
