@@ -35,6 +35,10 @@ var search = (req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if (req.user.is_admin && !req.user.role.is_manage_users) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     UsersModel.countUsers(search, (count_users) => {
         if (count_users instanceof Error) {
             send.status = Enum.res_type.FAILURE;
@@ -72,6 +76,10 @@ router.route('/users/import/:id').get((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if (req.user.is_admin && !req.user.role.is_manage_users) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     ImportModel.getImport(id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
@@ -93,6 +101,10 @@ router.route('/users/import').post((req, res, next) => {
 
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if (req.user.is_admin && !req.user.role.is_manage_users) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     if(!req.files || !req.files.file){
