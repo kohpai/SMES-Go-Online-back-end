@@ -519,6 +519,10 @@ router.route('/import/:id').post((req, res, next) => {
         info: {}
     }
 
+    if(!req.user.is_admin && req.user.user_id != id ){
+        id = req.user.user_id
+    }
+
     if (req.user.is_admin && !req.user.role.is_manage_product) {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
