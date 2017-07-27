@@ -100,8 +100,11 @@ const addUser = (input, user_id, create_channel, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
-            return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
-
+            if(error.code == 'ER_DUP_ENTRY' && error.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'username'/i)){
+                return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
+            }else{
+                return done("เกิดข้อผิดพลาด", error);
+            }
         } else {
 
             input.user_id = results.insertId;
@@ -223,7 +226,20 @@ const addUser = (input, user_id, create_channel, done) => {
                     if (insertId instanceof Error) {
                         // delete user
                         deleteUser(input.user_id, (r) => { })
-                        return done('เลขที่จดทะเบียนนิติบุคคล หรือ เลขที่บัตรประชาชน หรือ เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
+
+                        if(insertId.code == 'ER_DUP_ENTRY' && insertId.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'registration_type'/i)){
+                            return done('เลขที่บัตรประชาชน มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
+
+                        }else if(insertId.code == 'ER_DUP_ENTRY' && insertId.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'sme_member_no'/i)){
+                            return done('เลขที่จดทะเบียนนิติบุคคล มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
+
+                        }else if(insertId.code == 'ER_DUP_ENTRY' && insertId.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'legal_id'/i)){
+                            return done('ลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
+
+                        }else{
+                            return done('เกิดข้อผิดพลาด', insertId)
+                        }
+
                     }else {
                         return done(input.user_id, null)
                     }
