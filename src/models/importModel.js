@@ -65,7 +65,9 @@ const getImport = (id, done) => {
             return done(error);
         } else {
 
-            if(import_result)
+            if(import_result.length){
+                import_result = import_result[0]
+            }
 
             var queryOption = {
                 sql: 'SELECT * FROM import_detail WHERE import_id = ?;',
