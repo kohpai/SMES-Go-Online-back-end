@@ -264,7 +264,11 @@ const updateUser = (id, input, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
-            return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
+            if(error.code == 'ER_DUP_ENTRY' && error.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'username'/i)){
+                return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
+            }else{
+                return done("เกิดข้อผิดพลาด", error);
+            }
         } else {
 
             // input.user_id = id;
@@ -354,7 +358,20 @@ const updateUser = (id, input, user_id, done) => {
 
             EnterpriseModel.updateEnterprise(id, input, function(result) {
                 if (result instanceof Error) {
-                    return done('เลขที่จดทะเบียนนิติบุคคล หรือ เลขที่บัตรประชาชน หรือ เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', id)
+
+                    if(result.code == 'ER_DUP_ENTRY' && result.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'registration_type'/i)){
+                        return done('เลขที่บัตรประชาชน มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', id)
+
+                    }else if(result.code == 'ER_DUP_ENTRY' && result.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'sme_member_no'/i)){
+                        return done('เลขที่จดทะเบียนนิติบุคคล มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', id)
+
+                    }else if(result.code == 'ER_DUP_ENTRY' && result.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'legal_id'/i)){
+                        return done('ลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', id)
+
+                    }else{
+                        return done('เกิดข้อผิดพลาด', result)
+                    }
+
                 }else {
                     return done(result, null)
                 }
