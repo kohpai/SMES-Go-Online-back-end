@@ -86,6 +86,10 @@ router.route('/').post((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if(req.user.is_admin && !req.user.role.is_manage_news){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     var valid = ajv.validate(schema, data)
     if (!valid)
         return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
@@ -110,10 +114,6 @@ router.route('/').post((req, res, next) => {
 
 router.route('/:id').get((req, res, next) => {
     var id = req.params.id
-
-    if(!req.user.is_admin){
-        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
-    }
 
     var send = {
         status: Enum.res_type.FAILURE,
@@ -155,6 +155,10 @@ router.route('/:id').put((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if(req.user.is_admin && !req.user.role.is_manage_news){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     var valid = ajv.validate(schema, data)
     if (!valid)
         return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
@@ -189,6 +193,10 @@ router.route('/:id').delete((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if(req.user.is_admin && !req.user.role.is_manage_news){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     NewsModel.deleteNews(id, req.user.user_id, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
@@ -212,6 +220,10 @@ router.route('/:id/image').post((req, res, next) => {
 
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if(req.user.is_admin && !req.user.role.is_manage_news){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     if(!req.files || !req.files.image){
