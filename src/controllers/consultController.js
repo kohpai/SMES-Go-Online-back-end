@@ -26,9 +26,7 @@ router.route('/topics').get((req, res, next) => {
     }
 
     if(req.user.is_admin && !req.user.role.is_manage_consult){
-        send.status = Enum.res_type.FAILURE;
-        send.message = 'Permission denied';
-        return res.json(send);
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     ConsultTopicModel.countTopic(user_id, (count_topic) => {
@@ -121,9 +119,7 @@ router.route('/topics').delete((req, res, next) => {
         }
 
         if (topics.user_id != req.user.user_id && !req.user.role.is_manage_consult) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'Permission denied';
-            return res.json(send);
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
 
         ConsultTopicModel.deleteTopic(data.consult_id, req.user.user_id, (result, error) => {
@@ -159,9 +155,7 @@ router.route('/topics/:id').get((req, res, next) => {
         }
 
         if(topics.user_id != req.user.user_id && !req.user.role.is_manage_consult){
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'Permission denied';
-            return res.json(send);
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
 
         send.status = Enum.res_type.SUCCESS;
@@ -203,9 +197,7 @@ router.route('/topics/msg/:id').post((req, res, next) => {
         }
 
         if (topics.user_id != req.user.user_id && !req.user.role.is_manage_consult) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'Permission denied';
-            return res.json(send);
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
 
         ConsultTopicModel.addMsg(id, data.message, req.user.user_id, req.user.is_admin, (result) => {
@@ -255,9 +247,7 @@ router.route('/topics/msg/:id').get((req, res, next) => {
         }
 
         if (topic.user_id != req.user.user_id && !req.user.role.is_manage_consult) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'Permission denied';
-            return res.json(send);
+            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
 
         ConsultTopicModel.getMsgByTopic(id, (msg) => {

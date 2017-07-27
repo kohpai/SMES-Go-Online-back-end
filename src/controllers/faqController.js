@@ -51,6 +51,10 @@ router.route('/').post((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if(req.user.is_admin && !req.user.role.is_manage_faq){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     var valid = ajv.validate(schema, data)
     if (!valid)
         return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
@@ -117,6 +121,10 @@ router.route('/:id').put((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if(req.user.is_admin && !req.user.role.is_manage_faq){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     var valid = ajv.validate(schema, data)
     if (!valid)
         return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
@@ -150,6 +158,10 @@ router.route('/:id').delete((req, res, next) => {
 
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if(req.user.is_admin && !req.user.role.is_manage_faq){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     FaqModel.deleteFaq(id, req.user.user_id, (result) => {
