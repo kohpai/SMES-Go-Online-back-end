@@ -65,7 +65,7 @@ var search = (req, res, next) => {
 router.route('/users/list/:search').get(search)
 router.route('/users/list/').get(search)
 
-router.route('/users/import/:id').get((req, res, next) => {
+router.route('/import/:id').get((req, res, next) => {
     var id = req.params.id
     var send = {
         status: Enum.res_type.FAILURE,
@@ -76,7 +76,7 @@ router.route('/users/import/:id').get((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
-    if (req.user.is_admin && !req.user.role.is_manage_users) {
+    if (req.user.is_admin && !req.user.role.is_history_import) {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 

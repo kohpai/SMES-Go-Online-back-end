@@ -802,28 +802,4 @@ router.route('/import/:id').post((req, res, next) => {
     })
 })
 
-router.route('/import/:id').get((req, res, next) => {
-    var id = req.params.id
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    ImportModel.getImport(id, (result) => {
-        if (result instanceof Error) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'not found import'
-            return res.json(send);
-        }
-
-        if(result.user_id != req.user.user_id && !req.user.role.is_manage_product){
-            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
-        }
-
-        send.status = Enum.res_type.SUCCESS
-        send.info = result
-        return res.json(send)
-    });
-});
-
 export default router
