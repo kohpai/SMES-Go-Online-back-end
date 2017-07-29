@@ -53,6 +53,41 @@ const addImportDetail = (ts, row, result, error, done) => {
     });
 }
 
+const getImportList = (import_type, offset, limit, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM import WHERE import_type = ? LIMIT ? OFFSET ?;',
+        timeout: timeout, // 20s
+        values: [import_type, limit, offset],
+    };
+
+    DB.get().query(queryOption, function(error, import_result, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(import_result)
+        }
+    });
+}
+
+const getImportCount = (import_type, done) => {
+    var queryOption = {
+        sql: 'SELECT COUNT(*) AS count FROM import WHERE import_type = ?;',
+        timeout: timeout, // 20s
+        values: [import_type],
+    };
+
+    DB.get().query(queryOption, function(error, import_result, fields) {
+        if (error) {
+            return done(error);
+        } else if(import_result.length){
+            return done(import_result[0])
+        }else{
+            return done(import_result)
+        }
+    });
+}
+
+
 const getImport = (id, done) => {
     var queryOption = {
         sql: 'SELECT * FROM import WHERE import_id = ?;',
@@ -92,4 +127,6 @@ export default {
     addImport,
     addImportDetail,
     getImport,
+    getImportList,
+    getImportCount
 }

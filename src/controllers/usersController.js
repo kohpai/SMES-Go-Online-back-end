@@ -74,34 +74,6 @@ var search = (req, res, next) => {
 router.route('/users/list/:search').get(search)
 router.route('/users/list/').get(search)
 
-router.route('/import/:id').get((req, res, next) => {
-    var id = req.params.id
-    var send = {
-        status: Enum.res_type.FAILURE,
-        info: {}
-    }
-
-    if(!req.user.is_admin){
-        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
-    }
-
-    if (req.user.is_admin && !req.user.role.is_history_import) {
-        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
-    }
-
-    ImportModel.getImport(id, (result) => {
-        if (result instanceof Error) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'not found import'
-            return res.json(send);
-        }
-
-        send.status = Enum.res_type.SUCCESS
-        send.info = result
-        return res.json(send)
-    });
-});
-
 router.route('/users/import').post((req, res, next) => {
     var send = {
         status: Enum.res_type.FAILURE,
@@ -1251,6 +1223,77 @@ var profile = (req, res, next) => {
 
 router.route('/profile').put(profile);
 router.route('/profile/:id').put(profile);
+
+
+router.route('/import').get((req, res, next) => {
+    var import_type = req.query.import_type
+    var page = parseInt(req.query.page, 0)
+    var limit = parseInt(req.query.limit, 0)
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if (req.user.is_admin && !req.user.role.is_history_import) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
+    ImportModel.getImportCount(import_type, (count_import) => {
+        if (count_import instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'not found import'
+            return res.json(send);
+        }
+
+        ImportModel.getImportList(import_type, page*limit, limit, (result) => {
+            if (result instanceof Error) {
+                console.log(result)
+                send.status = Enum.res_type.FAILURE;
+                send.message = 'not found import'
+                return res.json(send);
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result
+            send.pageinfo = {page: page, limit: limit, count: count_import.count}
+            return res.json(send)
+        });
+    })
+});
+
+router.route('/import/:id').get((req, res, next) => {
+    var id = req.params.id
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if (req.user.is_admin && !req.user.role.is_history_import) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
+    ImportModel.getImport(id, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'not found import'
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result
+        return res.json(send)
+    });
+});
+
 
 // admin
 router.route('/admin/role').get((req, res, next) => {
