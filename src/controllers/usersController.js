@@ -35,11 +35,20 @@ var search = (req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
-    if (req.user.is_admin && !req.user.role.is_manage_enterprise) {
+    if (req.user.is_admin && !req.user.role.is_manage_enterprise && !req.user.role.is_add_enterprise) {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
-    UsersModel.countUsers(search, (count_users) => {
+    var create_by
+    if(req.user.role.is_manage_enterprise){
+        create_by = '%'
+    }else if(req.user.role.is_add_enterprise){
+        create_by = req.user.user_id
+    }else{
+        create_by = '%'
+    }
+
+    UsersModel.countUsers(search, create_by, (count_users) => {
         if (count_users instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.message = 'Failed search an users';
@@ -47,7 +56,7 @@ var search = (req, res, next) => {
             return res.json(send);
         }
 
-        UsersModel.searchUsers(search, page*limit, limit, (result) => {
+        UsersModel.searchUsers(search, create_by, page*limit, limit, (result) => {
             if (result instanceof Error) {
                 send.status = Enum.res_type.FAILURE;
                 send.message = 'Failed search an users';
