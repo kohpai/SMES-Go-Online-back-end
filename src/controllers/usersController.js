@@ -35,7 +35,7 @@ var search = (req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
-    if (req.user.is_admin && !req.user.role.is_manage_users) {
+    if (req.user.is_admin && !req.user.role.is_manage_enterprise) {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
@@ -103,7 +103,7 @@ router.route('/users/import').post((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
-    if (req.user.is_admin && !req.user.role.is_manage_users) {
+    if (req.user.is_admin && !req.user.role.is_add_enterprise && !req.user.role.is_manage_enterprise) {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
@@ -935,20 +935,36 @@ router.route('/users').post((req, res, next) => {
                     }else if(!user.is_admin){
                         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'The token is invalid.'})
                     }
-                    UsersModel.addUser(data, user.user_id, 'admin', (result, error) => {
-                        if (error) {
-                            send.status = Enum.res_type.FAILURE;
-                            send.message = result
-                            send.info = error
-                            return res.json(send);
+
+                    if(!user.is_admin){
+                        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+                    }
+
+                    UsersModel.detailRole(user.role_id, (role) => {
+                        if (role instanceof Error) {
+                            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'not found role'})
                         }
 
-                        Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
-                            send.status = Enum.res_type.SUCCESS
-                            send.info = result;
-                            return res.json(send)
-                        })
-                    });
+                        if(user.is_admin && !role.is_add_enterprise && !role.is_manage_enterprise){
+                            return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+                        }
+
+
+                        UsersModel.addUser(data, user.user_id, 'admin', (result, error) => {
+                            if (error) {
+                                send.status = Enum.res_type.FAILURE;
+                                send.message = result
+                                send.info = error
+                                return res.json(send);
+                            }
+
+                            Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
+                                send.status = Enum.res_type.SUCCESS
+                                send.info = result;
+                                return res.json(send)
+                            })
+                        });
+                    })
                 })
 
             }else{
@@ -982,6 +998,10 @@ router.route('/users/:id').get((req, res, next) => {
 
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if (req.user.is_admin && !req.user.role.is_manage_enterprise) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     UsersModel.detailUser(id, (user) => {
@@ -1174,7 +1194,7 @@ var profile = (req, res, next) => {
         info: {}
     }
 
-    if(id && !req.user.is_admin){
+    if(id && !req.user.is_admin && !req.user.role.is_manage_enterprise){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
@@ -1234,6 +1254,10 @@ router.route('/admin/role').get((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if (req.user.is_admin && !req.user.role.is_manage_users) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     UsersModel.getRole((roles) => {
         if (roles instanceof Error) {
             send.status = Enum.res_type.FAILURE;
@@ -1263,6 +1287,10 @@ router.route('/admin/list').get((req, res, next) => {
 
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if (req.user.is_admin && !req.user.role.is_manage_users) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     UsersModel.countAdmin(search, (count_users) => {
@@ -1298,6 +1326,10 @@ router.route('/admin/:id').get((req, res, next) => {
 
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if (req.user.is_admin && !req.user.role.is_manage_users) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     UsersModel.detailUser(id, (user) => {
@@ -1361,6 +1393,10 @@ router.route('/admin').post((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
     }
 
+    if (req.user.is_admin && !req.user.role.is_manage_users) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
     UsersModel.addAdmin(data, (result, error) => {
         if (error) {
             send.status = Enum.res_type.FAILURE;
@@ -1412,6 +1448,10 @@ router.route('/admin/:id').put((req, res, next) => {
 
     if(!req.user.is_admin){
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if (req.user.is_admin && !req.user.role.is_manage_users) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
     UsersModel.findUser(id, (user) => {
