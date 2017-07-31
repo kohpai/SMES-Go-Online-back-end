@@ -22,11 +22,44 @@ const getTopics = (user_id, offset, limit, done) => {
     });
 }
 
+const getTopicsAll = (offset, limit, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM `consult_topic` LIMIT ? OFFSET ?;',
+        timeout: timeout, // 40s
+        values: [limit, offset],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else {
+            return done(results);
+        }
+    });
+}
+
 const countTopic = (user_id, done) => {
     var queryOption = {
         sql: 'SELECT COUNT(*) AS count FROM `consult_topic` WHERE `user_id` = ?;',
         timeout: timeout, // 40s
         values: [user_id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error) {
+            return done(error);
+        } else if(results.length){
+            return done(results[0]);
+        }else{
+            return done(results);
+        }
+    });
+}
+
+const countTopicAll = (done) => {
+    var queryOption = {
+        sql: 'SELECT COUNT(*) AS count FROM `consult_topic`;',
+        timeout: timeout, // 40s
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
@@ -179,4 +212,6 @@ export default {
     addMsg,
     updateTopic,
     updateTopicRead,
+    getTopicsAll,
+    countTopicAll,
 }

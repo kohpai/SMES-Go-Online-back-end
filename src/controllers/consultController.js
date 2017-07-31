@@ -29,27 +29,54 @@ router.route('/topics').get((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
-    ConsultTopicModel.countTopic(user_id, (count_topic) => {
-        if (count_topic instanceof Error) {
-            send.status = Enum.res_type.FAILURE;
-            send.message = 'Failed search an topics';
-            return res.json(send);
-        }
-
-        ConsultTopicModel.getTopics(user_id, page*limit, limit, (topics) => {
-            if (topics == null) {
-                send.message = 'not found topics';
-                return res.json(send);
-            }else if(topics instanceof Error){
-                send.message = 'error topic';
+    if(!req.user.is_admin){
+        // user
+        ConsultTopicModel.countTopic(user_id, (count_topic) => {
+            if (count_topic instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = 'Failed search an topics';
                 return res.json(send);
             }
-            send.status = Enum.res_type.SUCCESS;
-            send.info = {topics: topics};
-            send.pageinfo = {count: count_topic.count, page: page, limit: limit}
-            return res.json(send)
+
+            ConsultTopicModel.getTopics(user_id, page*limit, limit, (topics) => {
+                if (topics == null) {
+                    send.message = 'not found topics';
+                    return res.json(send);
+                }else if(topics instanceof Error){
+                    send.message = 'error topic';
+                    return res.json(send);
+                }
+                send.status = Enum.res_type.SUCCESS;
+                send.info = {topics: topics};
+                send.pageinfo = {count: count_topic.count, page: page, limit: limit}
+                return res.json(send)
+            })
         })
-    })
+    }else{
+        // admin show *
+        ConsultTopicModel.countTopicAll((count_topic) => {
+            if (count_topic instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = 'Failed search an topics';
+                return res.json(send);
+            }
+
+            ConsultTopicModel.getTopicsAll(page*limit, limit, (topics) => {
+                if (topics == null) {
+                    send.message = 'not found topics';
+                    return res.json(send);
+                }else if(topics instanceof Error){
+                    send.message = 'error topic';
+                    return res.json(send);
+                }
+                send.status = Enum.res_type.SUCCESS;
+                send.info = {topics: topics};
+                send.pageinfo = {count: count_topic.count, page: page, limit: limit}
+                return res.json(send)
+            })
+        })
+    }
+
 });
 
 router.route('/topics').post((req, res, next) => {
