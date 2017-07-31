@@ -209,6 +209,8 @@ const addImage = (id, id_image, name, weight, user_id, done) => {
         image: id_image,
         image_name: name,
         weight: weight,
+        create_datetime: new Date(),
+        create_user_id: user_id,
     };
     var queryOption = {
         sql: 'INSERT INTO prod_image SET ?',
@@ -224,7 +226,7 @@ const addImage = (id, id_image, name, weight, user_id, done) => {
             var productInfo = {
                 image: id_image,
                 update_datetime: new Date(),
-                update_user_id: new Date(),
+                update_user_id: user_id,
             };
             var queryOption = {
                 sql: 'UPDATE product SET ? WHERE prod_id = ? AND image IS NULL',
@@ -246,6 +248,7 @@ const addImage = (id, id_image, name, weight, user_id, done) => {
 const deleteImage = (id, id_image, user_id, done) => {
     var productImageInfo = {
         status: 0,
+        delete_user_id: user_id,
     };
     var queryOption = {
         sql: 'UPDATE prod_image SET ? WHERE prod_id = ? AND image = ?',
