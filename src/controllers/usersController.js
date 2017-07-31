@@ -40,10 +40,10 @@ var search = (req, res, next) => {
     }
 
     var create_by
-    if(req.user.role.is_manage_enterprise){
-        create_by = '%'
-    }else if(req.user.role.is_add_enterprise){
+    if(req.user.role.is_add_enterprise){
         create_by = req.user.user_id
+    }else if(req.user.role.is_manage_enterprise){
+        create_by = '%'
     }else{
         create_by = '%'
     }
