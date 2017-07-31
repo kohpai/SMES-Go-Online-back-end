@@ -203,7 +203,7 @@ const findImage = (id, image_id, done) => {
     });
 }
 
-const addImage = (id, id_image, name, weight, done) => {
+const addImage = (id, id_image, name, weight, user_id, done) => {
     var productImageInfo = {
         prod_id: id,
         image: id_image,
@@ -220,12 +220,30 @@ const addImage = (id, id_image, name, weight, done) => {
         if (error) {
             return done(error);
         } else {
-            return done(results);
+            // set product image
+            var productInfo = {
+                image: id_image,
+                update_datetime: new Date(),
+                update_user_id: new Date(),
+            };
+            var queryOption = {
+                sql: 'UPDATE product SET ? WHERE prod_id = ? AND image IS NULL',
+                timeout: timeout, // 20s
+                values: [productInfo, id],
+            };
+
+            DB.get_product().query(queryOption, function(error, results_update_image, fields) {
+                if (error) {
+                    return done(error);
+                } else {
+                    return done(results);
+                }
+            })
         }
     });
 }
 
-const deleteImage = (id, id_image, done) => {
+const deleteImage = (id, id_image, user_id, done) => {
     var productImageInfo = {
         status: 0,
     };
@@ -239,7 +257,42 @@ const deleteImage = (id, id_image, done) => {
         if (error) {
             return done(error);
         } else {
-            return done(results);
+
+          // find product image
+          var queryOption = {
+              sql: 'SELECT * FROM prod_image WHERE prod_id = ? AND image <> ? AND status = 1 LIMIT 1',
+              timeout: timeout, // 20s
+              values: [id, id_image],
+          };
+
+          DB.get_product().query(queryOption, function(error, results_image, fields) {
+              if (error) {
+                  return done(error);
+              } else {
+                  console.log(results_image[0].image)
+
+                  // set product image
+                  var productInfo = {
+                      image: results_image[0].image,
+                      update_datetime: new Date(),
+                      update_user_id: user_id,
+                  };
+
+                  var queryOption = {
+                      sql: 'UPDATE product SET ? WHERE prod_id = ? AND image = ?',
+                      timeout: timeout, // 20s
+                      values: [productInfo, id, id_image],
+                  };
+
+                  DB.get_product().query(queryOption, function(error, results_update_image, fields) {
+                      if (error) {
+                          return done(error);
+                      } else {
+                          return done(results);
+                      }
+                  })
+              }
+          })
         }
     });
 }

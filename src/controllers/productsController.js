@@ -126,7 +126,7 @@ router.route('/:id/image/:image_id').delete((req, res, next) => {
         }
 
 
-        ProductsModel.deleteImage(id, image_id, (result) => {
+        ProductsModel.deleteImage(id, image_id, req.user.user_id, (result) => {
             if (result == null) {
                 send.status = Enum.res_type.FAILURE
                 send.message = 'file not found'
@@ -176,7 +176,7 @@ router.route('/:id/image').post((req, res, next) => {
                 return res.json(send)
             }
 
-            ProductsModel.addImage(id, result.fid, req.files.image.name, 0, (result) => {
+            ProductsModel.addImage(id, result.fid, req.files.image.name, 0, req.user.user_id, (result) => {
                 if (result == null) {
                     send.status = Enum.res_type.FAILURE
                     send.message = 'file not found'
@@ -738,7 +738,7 @@ router.route('/import/:id').post((req, res, next) => {
                                                     if (weed_info == null) {
 
                                                     }else{
-                                                        ProductsModel.addImage(result_product.insertId, weed_info.fid, data[p], 0, (result) => {
+                                                        ProductsModel.addImage(result_product.insertId, weed_info.fid, data[p], 0, req.user.user_id, (result) => {
                                                             if (result == null) {
 
                                                             } else if (result instanceof Error) {
