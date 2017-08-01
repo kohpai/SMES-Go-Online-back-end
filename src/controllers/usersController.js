@@ -1532,4 +1532,29 @@ router.route('/admin/:id').put((req, res, next) => {
 
 })
 
+router.route('/users/name/:id').get((req, res, next) => {
+    var id = req.params.id
+    
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    UsersModel.detailUser(id, (user) => {
+        if (user instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = user;
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = { name: user.full_name };
+        return res.json(send)
+    });
+});
+
 export default router
