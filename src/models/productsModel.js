@@ -246,7 +246,7 @@ const addImage = (id, id_image, name, weight, user_id, done) => {
     });
 }
 
-const deleteImage = (id, id_image, user_id, done) => {
+const deleteImage = (id, id_image, is_change_image, user_id, done) => {
     var productImageInfo = {
         status: 0,
         delete_user_id: user_id,
@@ -262,6 +262,10 @@ const deleteImage = (id, id_image, user_id, done) => {
             return done(error);
         } else {
 
+          if(!is_change_image){
+              return done(results)
+          }
+
           // find product image
           var queryOption = {
               sql: 'SELECT * FROM prod_image WHERE prod_id = ? AND image <> ? AND status = 1 LIMIT 1',
@@ -273,11 +277,15 @@ const deleteImage = (id, id_image, user_id, done) => {
               if (error) {
                   return done(error);
               } else {
-                  console.log(results_image[0].image)
+
+                  var new_image_id = null
+                  if(results_image != null && results_image.length){
+                      new_image_id = results_image[0].image
+                  }
 
                   // set product image
                   var productInfo = {
-                      image: results_image[0].image,
+                      image: new_image_id,
                       update_datetime: new Date(),
                       update_user_id: user_id,
                   };

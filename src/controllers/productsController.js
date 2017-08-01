@@ -114,7 +114,7 @@ router.route('/:id/image/:image_id').delete((req, res, next) => {
     }
 
     ProductsModel.detailProduct(id, (old_product) => {
-        if (old_product instanceof Error) {
+        if (old_product == null || old_product instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.info = old_product
             send.message = 'Not found product.'
@@ -124,16 +124,17 @@ router.route('/:id/image/:image_id').delete((req, res, next) => {
         if (old_product.user_id != req.user.user_id && !req.user.role.is_manage_product) {
             return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
         }
+        
+        var is_change_image = false
+        if(old_product.image == image_id){
+            is_change_image = true
+        }
 
-
-        ProductsModel.deleteImage(id, image_id, req.user.user_id, (result) => {
-            if (result == null) {
+        ProductsModel.deleteImage(id, image_id, is_change_image, req.user.user_id, (result) => {
+            if (result == null || result instanceof Error) {
                 send.status = Enum.res_type.FAILURE
                 send.message = 'file not found'
-                return res.json(send)
-            } else if (result instanceof Error) {
-                send.status = Enum.res_type.FAILURE
-                send.message = result
+                send.info = result
                 return res.json(send)
             }
             send.status = 'success'
