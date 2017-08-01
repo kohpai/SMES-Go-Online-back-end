@@ -8,7 +8,7 @@ import EnterpriseModel from './enterpriseModel.js';
 
 const timeout = 20000;
 
-const addProduct = (input, user_id, create_user_id, done) => {
+const addProduct = (input, user_id, create_user_id, create_channel, done) => {
     var productInfo = {
         title: input.title,
         sku: input.sku,
@@ -31,6 +31,7 @@ const addProduct = (input, user_id, create_user_id, done) => {
         subcategory_code: input.subcategory_code,
         create_user_id: create_user_id,
         create_datetime: new Date(),
+        create_channel: create_channel,
     };
     var queryOption = {
         sql: 'INSERT INTO product SET ?',
