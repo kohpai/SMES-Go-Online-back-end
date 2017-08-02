@@ -5,6 +5,11 @@ const server = {
     port: process.env.HOST_PORT || 5000
 };
 
+const syslog = {
+    host: "52.220.162.246",
+    port: 514
+}
+
 const mysql = {
     host     : 'smeregister.gsoftbiz.com',
     port     : 4000,
@@ -74,6 +79,7 @@ const ajv = {
 
 export default {
     server,
+    syslog,
     mysql,
     mysql_product,
     seaweedfs,

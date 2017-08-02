@@ -7,10 +7,13 @@ import Http from 'http'
 // using
 import Config from './config.js'
 import Api from './api.js'
+import Syslog from './log.js'
 import MySql from './db.js'
 
 // server setup
 var server = Http.createServer(Api)
+
+Syslog.connect()
 
 MySql.connect((err) => {
     if(!err){
@@ -29,6 +32,7 @@ server.on('listening', () => {
         ? 'Pipe ' + addr
         : 'Port ' + addr.port
     console.log('Server listening on port ' + bind)
+    Syslog.info('Server listening on port ' + bind)
 })
 
 // on server error

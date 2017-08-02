@@ -6,6 +6,8 @@ import Ajv from 'ajv'
 const router = new Router()
 const ajv = new Ajv()
 
+import Syslog from '../log.js'
+
 const crypto = require('crypto');
 
 var jwt = require("jsonwebtoken")
@@ -20,7 +22,8 @@ router.route('/*').all((req, res, next) => {
     const access_token = req.header('access_token')
     const otp_token = req.header('otp_token')
 
-    console.log('['+req.method+'] '+req.path)
+    console.log(req.method+' : '+req.path)
+    Syslog.info(req.method+' : '+req.path)
 
     if(req.path.startsWith('/products') ||
         req.path.startsWith('/news') ||

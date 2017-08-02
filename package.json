@@ -39,6 +39,7 @@
     "mysql": "github:mysqljs/mysql",
     "node-seaweedfs": "^1.3.0",
     "request": "^2.81.0",
+    "syslog-client": "^1.1.1",
     "unzip": "^0.1.11",
     "windows-874": "^1.0.0"
   },
