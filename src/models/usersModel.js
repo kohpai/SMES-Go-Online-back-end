@@ -88,7 +88,7 @@ const addUser = (input, user_id, create_channel, done) => {
 
     var userInfo = {
         username: input.phone_no,
-        full_name: input.title+" "+input.name+" "+input.lastname,
+        full_name: input.title+"&nbsp;"+input.name+"&nbsp;"+input.lastname,
         role: 'user',
         updated_at: new Date()
     };
@@ -252,7 +252,7 @@ const addUser = (input, user_id, create_channel, done) => {
 const updateUser = (id, input, user_id, done) => {
 
     var userInfo = {
-        full_name: input.title+" "+input.name+" "+input.lastname,
+        full_name: input.title+"&nbsp;"+input.name+"&nbsp;"+input.lastname,
         role: 'user',
         updated_at: new Date()
     };
@@ -622,17 +622,21 @@ const detailUser = (id, done) => {
         if (error) {
             return done(error);
         } else if(results.length) {
-
-            delete results[0].password
-            delete results[0].otp
-            delete results[0].otp_ref
-
-            return done(results[0]);
+            results = results[0]
         }
 
         delete results.password
         delete results.otp
         delete results.otp_ref
+
+        var full_name = results.full_name.split("&nbsp;")
+        if(full_name.length == 3){
+            results.title = full_name[0]
+            results.name = full_name[1]
+            results.lastname = full_name[2]
+
+            delete results.full_name
+        }
 
         return done(results);
     });
@@ -699,7 +703,7 @@ const addAdmin = (input, done) => {
 
     var userInfo = {
         username: input.phone_no,
-        full_name: input.title + " " + input.name + " " + input.lastname,
+        full_name: input.title + "&nbsp;" + input.name + "&nbsp;" + input.lastname,
         role: 'admin',
         role_id: input.role_id,
         is_admin: 1,
@@ -730,7 +734,7 @@ const updateAdmin = (id, input, done) => {
 
     var userInfo = {
         // username: input.phone_no,
-        full_name: input.title + " " + input.name + " " + input.lastname,
+        full_name: input.title + "&nbsp;" + input.name + "&nbsp;" + input.lastname,
         role: 'admin',
         role_id: input.role_id,
         is_admin: 1,
