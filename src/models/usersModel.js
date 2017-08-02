@@ -88,7 +88,7 @@ const addUser = (input, user_id, create_channel, done) => {
 
     var userInfo = {
         username: input.phone_no,
-        full_name: input.title+"&nbsp;"+input.name+"&nbsp;"+input.lastname,
+        full_name: input.title+" "+input.name+" "+input.lastname,
         role: 'user',
         updated_at: new Date()
     };
@@ -252,7 +252,7 @@ const addUser = (input, user_id, create_channel, done) => {
 const updateUser = (id, input, user_id, done) => {
 
     var userInfo = {
-        full_name: input.title+"&nbsp;"+input.name+"&nbsp;"+input.lastname,
+        full_name: input.title+" "+input.name+" "+input.lastname,
         role: 'user',
         updated_at: new Date()
     };
@@ -629,14 +629,21 @@ const detailUser = (id, done) => {
         delete results.otp
         delete results.otp_ref
 
-        var full_name = results.full_name.split("&nbsp;")
-        if(full_name.length == 3){
+        var full_name = results.full_name.split(" ")
+        if(full_name.length > 0)
             results.title = full_name[0]
-            results.name = full_name[1]
-            results.lastname = full_name[2]
+        else
+            results.title = ''
 
-            delete results.full_name
-        }
+        if(full_name.length > 1)
+            results.name = full_name[1]
+        else
+            results.name = ''
+
+        if(full_name.length > 2)
+            results.lastname = full_name[2]
+        else
+            results.lastname = ''
 
         return done(results);
     });
