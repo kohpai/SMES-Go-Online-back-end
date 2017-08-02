@@ -562,9 +562,9 @@ const updatePassMachine = (token, done) => {
 
 const countUsers = (search, create_by, done) => {
     var queryOption = {
-        sql: 'SELECT COUNT(*) AS count FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 AND user.is_admin = 0 AND enterprise.create_user_id LIKE ? AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' );',
+        sql: 'SELECT COUNT(*) AS count FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 AND user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+' AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' );',
         timeout: timeout, // 20s
-        values: [create_by],
+        values: [],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
@@ -583,15 +583,15 @@ const searchUsers = (search, create_by, offset, limit, done) => {
 
     if(search.length == 0){
         queryOption = {
-            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 AND enterprise.create_user_id LIKE ? LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+' LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
-            values: [create_by, limit, offset],
+            values: [limit, offset],
         };
     }else{
         queryOption = {
-            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 AND enterprise.create_user_id LIKE ? AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+' AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
-            values: [create_by, limit, offset],
+            values: [limit, offset],
         };
     }
 

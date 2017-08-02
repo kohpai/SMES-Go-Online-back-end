@@ -39,13 +39,13 @@ var search = (req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
-    var create_by
+    var create_by = null
     if(req.user.role.is_add_enterprise){
         create_by = req.user.user_id
     }else if(req.user.role.is_manage_enterprise){
-        create_by = '%'
+        create_by = null
     }else{
-        create_by = '%'
+        create_by = null
     }
 
     UsersModel.countUsers(search, create_by, (count_users) => {
@@ -1534,7 +1534,7 @@ router.route('/admin/:id').put((req, res, next) => {
 
 router.route('/users/name/:id').get((req, res, next) => {
     var id = req.params.id
-    
+
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
