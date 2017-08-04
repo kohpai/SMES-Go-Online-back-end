@@ -55,7 +55,7 @@ const addImportDetail = (ts, row, result, error, done) => {
 
 const getImportList = (import_type, offset, limit, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM import WHERE import_type = ? LIMIT ? OFFSET ?;',
+        sql: 'SELECT * FROM import WHERE import_type = ? ORDER BY import_id DESC LIMIT ? OFFSET ?;',
         timeout: timeout, // 20s
         values: [import_type, limit, offset],
     };
