@@ -513,15 +513,14 @@ router.route('/:id').delete((req, res, next) => {
     });
 });
 
-router.route('/import/:id').post((req, res, next) => {
-    var id = req.params.id
+router.route('/import').post((req, res, next) => {
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
     }
 
-    if(!req.user.is_admin && req.user.user_id != id ){
-        id = req.user.user_id
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is Admin'})
     }
 
     if (req.user.is_admin && !req.user.role.is_manage_product) {
@@ -534,302 +533,293 @@ router.route('/import/:id').post((req, res, next) => {
         return res.json(send)
     }
 
-    UsersModel.detailUser(id, (user) => {
-        if(user instanceof Error){
+    FileModel.unzipFile(req.files.file, (zip) => {
+        if(zip == null){
             send.status = Enum.res_type.FAILURE
-            send.message = 'User not found.'
+            send.message = 'File not found.'
             return res.json(send)
         }
 
-        FileModel.unzipFile(req.files.file, (zip) => {
-            if(zip == null){
-                send.status = Enum.res_type.FAILURE
-                send.message = 'File not found.'
-                return res.json(send)
-            }
-
-            var schema = {
-                'additionalProperties': false,
-                'properties': {
-                    'title': {
-                        'type': 'string'
-                    },
-                    'sku': {
-                        'type': 'string'
-                    },
-                    'unspsc': {
-                        'type': 'string'
-                    },
-                    'category': {
-                        'type': 'string'
-                    },
-                    'no_of_pieces': {
-                        'type': 'string'
-                    },
-                    'price': {
-                        'type': 'number'
-                    },
-                    'barcode': {
-                        'type': 'string'
-                    },
-                    'description': {
-                        'type': 'string'
-                    },
-                    'amount': {
-                        'type': 'number'
-                    },
-                    'cert_q': {
-                        'type': 'string'
-                    },
-                    'cert_food_and_drug': {
-                        'type': 'string'
-                    },
-                    'cert_iso': {
-                        'type': 'string'
-                    },
-                    'cert_halan': {
-                        'type': 'string'
-                    },
-                    'cert_organic': {
-                        'type': 'string'
-                    },
-                    'cert_safefood': {
-                        'type': 'string'
-                    },
-                    'cert_other': {
-                        'type': 'string'
-                    },
-                    'using_platforms': {
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    'subcategory': {
-                        'type': 'string'
-                    },
-                    'subcategory_code': {
-                        'type': 'string'
-                    },
-                    'user_id': {
-                        'type': 'string'
+        var schema = {
+            'additionalProperties': false,
+            'properties': {
+                'title': {
+                    'type': 'string'
+                },
+                'sku': {
+                    'type': 'string'
+                },
+                'unspsc': {
+                    'type': 'string'
+                },
+                'category': {
+                    'type': 'string'
+                },
+                'no_of_pieces': {
+                    'type': 'string'
+                },
+                'price': {
+                    'type': 'number'
+                },
+                'barcode': {
+                    'type': 'string'
+                },
+                'description': {
+                    'type': 'string'
+                },
+                'amount': {
+                    'type': 'number'
+                },
+                'cert_q': {
+                    'type': 'string'
+                },
+                'cert_food_and_drug': {
+                    'type': 'string'
+                },
+                'cert_iso': {
+                    'type': 'string'
+                },
+                'cert_halan': {
+                    'type': 'string'
+                },
+                'cert_organic': {
+                    'type': 'string'
+                },
+                'cert_safefood': {
+                    'type': 'string'
+                },
+                'cert_other': {
+                    'type': 'string'
+                },
+                'using_platforms': {
+                    "items": {
+                        "type": "string"
                     }
                 },
-                'required': [
-                    'title', 'sku', 'category', 'price'
-                ]
-            }
+                'subcategory': {
+                    'type': 'string'
+                },
+                'subcategory_code': {
+                    'type': 'string'
+                },
+                'user_id': {
+                    'type': 'string'
+                }
+            },
+            'required': [
+                'title', 'sku', 'category', 'price'
+            ]
+        }
 
-            var i = 0
-            var ts = new Date().getTime()
+        var i = 0
+        var ts = new Date().getTime()
 
-            if(!fs.existsSync(zip+'/products.csv')){
-                send.status = Enum.res_type.FAILURE
-                send.message = 'File not found.'
-                return res.json(send)
-            }
+        if(!fs.existsSync(zip+'/products.csv')){
+            send.status = Enum.res_type.FAILURE
+            send.message = 'File not found.'
+            return res.json(send)
+        }
 
-            csv.fromPath(zip+'/products.csv')
-                .on("data", function(data){
+        csv.fromPath(zip+'/products.csv')
+            .on("data", function(data){
 
-                    var position = i
-                    var status_message = ''
-                    var status_info = {}
+                var position = i
+                var status_message = ''
+                var status_info = {}
 
-                    if(position == 0 || position == 1){
+                if(position == 0 || position == 1){
 
-                    }else{
-                        var isError = false
+                }else{
+                    var isError = false
 
-                        if(data[0].startsWith('66')){
-                            data[0] = '0'+data[0].slice(2)
-                        }else if(data[0].startsWith('+66')){
-                            data[0] = '0'+data[0].slice(3)
-                        }else if(data[0].startsWith('6') || data[0].startsWith('8') || data[0].startsWith('9')){
-                            data[0] = '0'+data[0]
-                        }
-
-                        UsersModel.findUserByUsername(data[0], (select_user) => {
-                            if(select_user instanceof Error || !select_user.user_id){
-                                isError = true
-                                status_message = 'user not found : '+data[0]
-
-                                // update import detail
-                                ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
-
-                            }else{
-
-                                  var title = ''
-                                  if(!isError){
-                                      if(data[1].length){
-                                          title = data[1]
-                                      }else{
-                                          isError = true
-                                          status_message = 'title not empty'
-                                      }
-                                  }
-
-                                  var sku = ''
-                                  if(!isError){
-                                      if(data[2].length){
-                                          sku = data[2]
-                                      }else{
-                                          isError = true
-                                          status_message = 'sku not empty'
-                                      }
-                                  }
-
-                                  var category = ''
-                                  if(!isError){
-                                      if(data[4].length){
-                                          category = data[4]
-                                      }else{
-                                          isError = true
-                                          status_message = 'category not empty'
-                                      }
-                                  }
-
-                                  var price = 0
-                                  if(!isError){
-                                      var parsePrice = parseFloat(data[6])
-                                      if(!isNaN(parsePrice)){
-                                          price = parsePrice
-                                      }else{
-                                          isError = true
-                                          status_message = 'price not empty or price number'
-                                      }
-                                  }
-
-                                  if(!isError){
-
-                                      var d = {
-                                          title: title,
-                                          sku: sku,
-                                          unspsc: data[3],
-                                          category: category,
-                                          subcategory: data[5],
-                                          // subcategory_code: null,
-                                          no_of_pieces: data[6],
-                                          price: price,
-                                          amount: parseInt(data[7]),
-                                          barcode: data[8],
-                                          description: data[9],
-                                          cert_q: data[10],
-                                          cert_food_and_drug: data[11],
-                                          cert_iso: data[12],
-                                          cert_halan: data[13],
-                                          cert_organic: data[14],
-                                          cert_safefood: data[15],
-                                          cert_other: data[16],
-                                          // using_platforms: data.using_platforms,
-                                          user_id: id,
-                                      }
-
-                                      var valid = ajv.validate(schema, d)
-                                      if (!valid){
-                                          isError = true
-                                          status_message = title+', '+sku+' : '+'bad request'
-
-                                          console.log(ajv.errors)
-
-                                          // update import detail
-                                          ImportModel.addImportDetail(ts, position, status_message, ajv.errors, (result) => {})
-
-                                      }else{
-                                          ProductsModel.addProduct(d, id, req.user.user_id, 'import', (result_product) => {
-
-                                              if (result_product instanceof Error) {
-                                                  isError = true
-                                                  status_message = title+', '+sku+' : '+' : '+'fail'
-
-                                                  // update import detail
-                                                  ImportModel.addImportDetail(ts, position, status_message, result_product, (result) => {})
-
-                                              }else{
-                                                  isError = false
-                                                  status_message = title+', '+sku+' : '+' : '+'success'
-
-                                                  // update import detail
-                                                  ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
-
-                                                  // upload image
-                                                  for(var j = 24; j <= 32; j++){
-                                                      if(data[j].length){
-                                                          var p = j
-                                                          FileModel.saveFilePath(zip+'/'+data[p], (weed_info) => {
-                                                              if (weed_info == null) {
-
-                                                              }else{
-                                                                  ProductsModel.addImage(result_product.insertId, weed_info.fid, data[p], 0, req.user.user_id, (result) => {
-                                                                      if (result == null) {
-
-                                                                      } else if (result instanceof Error) {
-
-                                                                      }else{
-
-                                                                      }
-                                                                  })
-                                                              }
-                                                          })
-                                                      }
-                                                  }
-
-                                                  // add emarket
-                                                  var emarkets = []
-
-                                                  if(data[17] == 'Y' || data[17] == 'y'){
-                                                      emarkets.push('lazada')
-                                                  }
-                                                  if(data[18] == 'Y' || data[18] == 'y'){
-                                                      emarkets.push('tarad.com')
-                                                  }
-                                                  if(data[19] == 'Y' || data[19] == 'y'){
-                                                      emarkets.push('Lnwshop')
-                                                  }
-                                                  if(data[20] == 'Y' || data[20] == 'y'){
-                                                      emarkets.push('11street')
-                                                  }
-                                                  if(data[21] == 'Y' || data[21] == 'y'){
-                                                      emarkets.push('weloveshopping')
-                                                  }
-                                                  if(data[22] == 'Y' || data[22] == 'y'){
-                                                      emarkets.push('s-shopee')
-                                                  }
-                                                  if(data[23] == 'Y' || data[23] == 'y'){
-                                                      emarkets.push('PChomeThai')
-                                                  }
-
-                                                  ProductsModel.addEmarket(result_product.insertId, emarkets, (result) => {
-                                                      if (result instanceof Error) {
-
-                                                      }else{
-
-                                                      }
-                                                  })
-                                              }
-                                          });
-                                      }
-                                  }
-
-                              }
-                        })
+                    if(data[0].startsWith('66')){
+                        data[0] = '0'+data[0].slice(2)
+                    }else if(data[0].startsWith('+66')){
+                        data[0] = '0'+data[0].slice(3)
+                    }else if(data[0].startsWith('6') || data[0].startsWith('8') || data[0].startsWith('9')){
+                        data[0] = '0'+data[0]
                     }
-                    i++
-                })
-                .on("end", function(){
-                    ImportModel.addImport(ts, 2, req.files.file.name, req.user.user_id, (result) => {
-                        if(result instanceof Error){
-                            send.status = Enum.res_type.FAILURE
-                            send.message = 'can\'t add import'
-                            return res.json(send)
+
+                    UsersModel.findUserByUsername(data[0], (select_user) => {
+                        if(select_user instanceof Error || !select_user.user_id){
+                            isError = true
+                            status_message = 'user not found : '+data[0]
+
+                            // update import detail
+                            ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
+
+                        }else{
+
+                            var title = ''
+                            if(!isError){
+                                if(data[1].length){
+                                    title = data[1]
+                                }else{
+                                    isError = true
+                                    status_message = 'title not empty'
+                                }
+                            }
+
+                            var sku = ''
+                            if(!isError){
+                                if(data[2].length){
+                                    sku = data[2]
+                                }else{
+                                    isError = true
+                                    status_message = 'sku not empty'
+                                }
+                            }
+
+                            var category = ''
+                            if(!isError){
+                                if(data[4].length){
+                                    category = data[4]
+                                }else{
+                                    isError = true
+                                    status_message = 'category not empty'
+                                }
+                            }
+
+                            var price = 0
+                            if(!isError){
+                                var parsePrice = parseFloat(data[6])
+                                if(!isNaN(parsePrice)){
+                                    price = parsePrice
+                                }else{
+                                    isError = true
+                                    status_message = 'price not empty or price number'
+                                }
+                            }
+
+                            if(!isError){
+
+                                var d = {
+                                    title: title,
+                                    sku: sku,
+                                    unspsc: data[3],
+                                    category: category,
+                                    subcategory: data[5],
+                                    // subcategory_code: null,
+                                    no_of_pieces: data[6],
+                                    price: price,
+                                    amount: parseInt(data[7]),
+                                    barcode: data[8],
+                                    description: data[9],
+                                    cert_q: data[10],
+                                    cert_food_and_drug: data[11],
+                                    cert_iso: data[12],
+                                    cert_halan: data[13],
+                                    cert_organic: data[14],
+                                    cert_safefood: data[15],
+                                    cert_other: data[16],
+                                    // using_platforms: data.using_platforms,
+                                    user_id: id,
+                                }
+
+                                var valid = ajv.validate(schema, d)
+                                if (!valid){
+                                    isError = true
+                                    status_message = title+', '+sku+' : '+'bad request'
+
+                                    console.log(ajv.errors)
+
+                                    // update import detail
+                                    ImportModel.addImportDetail(ts, position, status_message, ajv.errors, (result) => {})
+
+                                }else{
+                                    ProductsModel.addProduct(d, id, req.user.user_id, 'import', (result_product) => {
+
+                                        if (result_product instanceof Error) {
+                                            isError = true
+                                            status_message = title+', '+sku+' : '+' : '+'fail'
+
+                                            // update import detail
+                                            ImportModel.addImportDetail(ts, position, status_message, result_product, (result) => {})
+
+                                        }else{
+                                            isError = false
+                                            status_message = title+', '+sku+' : '+' : '+'success'
+
+                                            // update import detail
+                                            ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
+
+                                            // upload image
+                                            for(var j = 24; j <= 32; j++){
+                                                if(data[j].length){
+                                                    var p = j
+                                                    FileModel.saveFilePath(zip+'/'+data[p], (weed_info) => {
+                                                        if (weed_info == null) {
+
+                                                        }else{
+                                                            ProductsModel.addImage(result_product.insertId, weed_info.fid, data[p], 0, req.user.user_id, (result) => {
+                                                                if (result == null) {
+
+                                                                } else if (result instanceof Error) {
+
+                                                                }else{
+
+                                                                }
+                                                            })
+                                                        }
+                                                    })
+                                                }
+                                            }
+
+                                            // add emarket
+                                            var emarkets = []
+
+                                            if(data[17] == 'Y' || data[17] == 'y'){
+                                                emarkets.push('lazada')
+                                            }
+                                            if(data[18] == 'Y' || data[18] == 'y'){
+                                                emarkets.push('tarad.com')
+                                            }
+                                            if(data[19] == 'Y' || data[19] == 'y'){
+                                                emarkets.push('Lnwshop')
+                                            }
+                                            if(data[20] == 'Y' || data[20] == 'y'){
+                                                emarkets.push('11street')
+                                            }
+                                            if(data[21] == 'Y' || data[21] == 'y'){
+                                                emarkets.push('weloveshopping')
+                                            }
+                                            if(data[22] == 'Y' || data[22] == 'y'){
+                                                emarkets.push('s-shopee')
+                                            }
+                                            if(data[23] == 'Y' || data[23] == 'y'){
+                                                emarkets.push('PChomeThai')
+                                            }
+
+                                            ProductsModel.addEmarket(result_product.insertId, emarkets, (result) => {
+                                                if (result instanceof Error) {
+
+                                                }else{
+
+                                                }
+                                            })
+                                        }
+                                    });
+                                }
+                            }
+
                         }
-
-                        send.status = Enum.res_type.SUCCESS
-                        send.info = { import_id: ts }
-                        return res.json(send)
                     })
-                })
-        })
+                }
+                i++
+            })
+            .on("end", function(){
+                ImportModel.addImport(ts, 2, req.files.file.name, req.user.user_id, (result) => {
+                    if(result instanceof Error){
+                        send.status = Enum.res_type.FAILURE
+                        send.message = 'can\'t add import'
+                        return res.json(send)
+                    }
 
+                    send.status = Enum.res_type.SUCCESS
+                    send.info = { import_id: ts }
+                    return res.json(send)
+                })
+            })
     })
 })
 
