@@ -40,6 +40,7 @@ const recaptcha = {
 const sms = {
     url: 'http://smeregister.gsoftbiz.com:5080/sms.php',
     enable: true,
+    import_enable: false,
 }
 
 const wording = {

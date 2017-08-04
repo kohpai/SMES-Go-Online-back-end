@@ -633,22 +633,34 @@ router.route('/users/import').post((req, res, next) => {
                                     ImportModel.addImportDetail(ts, position, status_message, error, (result) => {})
 
                                 }else{
-                                    Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
-                                        if(send_sms_result instanceof Error){
-                                            isError = true
-                                            status_message = title+name+' '+lastName+', '+phone_no+' : '+'can\'t send sms'
 
-                                            // update import detail
-                                            ImportModel.addImportDetail(ts, position, status_message, send_sms_result, null, (result) => {})
+                                    if(Config.sms.import_enable){
+                                        Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
+                                            if(send_sms_result instanceof Error){
+                                                isError = true
+                                                status_message = title+name+' '+lastName+', '+phone_no+' : '+'can\'t send sms'
 
-                                        }else{
-                                            isError = false
-                                            status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
+                                                // update import detail
+                                                ImportModel.addImportDetail(ts, position, status_message, send_sms_result, null, (result) => {})
 
-                                            // update import detail
-                                            ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
-                                        }
-                                    })
+                                            }else{
+                                                isError = false
+                                                status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
+
+                                                // update import detail
+                                                ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
+                                            }
+                                        })
+
+                                    }else{
+
+                                        isError = false
+                                        status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
+
+                                        // update import detail
+                                        ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
+                                    }
+
                                 }
                             });
 
