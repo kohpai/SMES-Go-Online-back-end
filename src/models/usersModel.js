@@ -710,7 +710,7 @@ const addAdmin = (input, done) => {
 
     var userInfo = {
         username: input.phone_no,
-        full_name: input.title + "&nbsp;" + input.name + "&nbsp;" + input.lastname,
+        full_name: input.title + " " + input.name + " " + input.lastname,
         role: 'admin',
         role_id: input.role_id,
         is_admin: 1,
@@ -741,7 +741,7 @@ const updateAdmin = (id, input, done) => {
 
     var userInfo = {
         // username: input.phone_no,
-        full_name: input.title + "&nbsp;" + input.name + "&nbsp;" + input.lastname,
+        full_name: input.title + " " + input.name + " " + input.lastname,
         role: 'admin',
         role_id: input.role_id,
         is_admin: 1,

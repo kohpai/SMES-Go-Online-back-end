@@ -29,11 +29,12 @@ const addImport = (ts, type, filename, user_id, done) => {
     });
 }
 
-const addImportDetail = (ts, row, result, error, done) => {
+const addImportDetail = (ts, row, success, result, error, done) => {
     console.log(ts+':'+row+':'+result)
     var importDetailInfo = {
         import_id: ts,
         import_row: row,
+        success:success,
         result: result,
         error: error,
         update_datetime: new Date(),

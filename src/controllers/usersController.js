@@ -338,12 +338,12 @@ router.route('/users/import').post((req, res, next) => {
 
                     var title = ''
                     if(!isError){
-                        if(data[4] == 'นาย' || data[4] == 'นาง' || data[4] == 'นางสาว'){
+                        //if(data[4] == 'นาย' || data[4] == 'นาง' || data[4] == 'นางสาว'){
                             title = data[4]
-                        }else{
-                            isError = true
-                            status_message = 'title unknown'
-                        }
+                        //}else{
+                        //    isError = true
+                        //    status_message = 'title unknown'
+                        //}
                     }
 
                     var name = ''
@@ -372,8 +372,7 @@ router.route('/users/import').post((req, res, next) => {
                         if(!isNaN(parseAge)){
                             age = parseAge
                         }else{
-                            isError = true
-                            status_message = 'age not empty or not number'
+                            age = 0
                         }
                     }
 
@@ -621,16 +620,16 @@ router.route('/users/import').post((req, res, next) => {
                             status_message = title+name+' '+lastName+', '+phone_no+' : '+'bad request'
 
                             // update import detail
-                            ImportModel.addImportDetail(ts, position, status_message, ajv.errors, (result) => {})
+                            ImportModel.addImportDetail(ts, position,0 , status_message, ajv.errors, (result) => {})
 
                         }else{
-                            UsersModel.addUser(d, req.user_id, 'import', (result, error) => {
+                            UsersModel.addUser(d, false, 'import', (result, error) => {
                                 if (error) {
                                     isError = true
                                     status_message = title+name+' '+lastName+', '+phone_no+' : '+result
 
                                     // update import detail
-                                    ImportModel.addImportDetail(ts, position, status_message, error, (result) => {})
+                                    ImportModel.addImportDetail(ts, position, 0, status_message, error, (result) => {})
 
                                 }else{
 
@@ -641,14 +640,14 @@ router.route('/users/import').post((req, res, next) => {
                                                 status_message = title+name+' '+lastName+', '+phone_no+' : '+'can\'t send sms'
 
                                                 // update import detail
-                                                ImportModel.addImportDetail(ts, position, status_message, send_sms_result, null, (result) => {})
+                                                ImportModel.addImportDetail(ts, position, 0, status_message, send_sms_result, null, (result) => {})
 
                                             }else{
                                                 isError = false
                                                 status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
 
                                                 // update import detail
-                                                ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
+                                                ImportModel.addImportDetail(ts, position, 1, status_message, null, (result) => {})
                                             }
                                         })
 
@@ -658,7 +657,7 @@ router.route('/users/import').post((req, res, next) => {
                                         status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
 
                                         // update import detail
-                                        ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
+                                        ImportModel.addImportDetail(ts, position, 0, status_message, null, (result) => {})
                                     }
 
                                 }
@@ -670,7 +669,7 @@ router.route('/users/import').post((req, res, next) => {
                         status_message = title+name+' '+lastName+', '+phone_no+' : '+status_message
 
                         // update import detail
-                        ImportModel.addImportDetail(ts, position, status_message, null, (result) => {})
+                        ImportModel.addImportDetail(ts, position, 0, status_message, null, (result) => {})
                     }
                 }
 
