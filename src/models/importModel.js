@@ -89,7 +89,7 @@ const getImportCount = (import_type, done) => {
 }
 
 
-const getImport = (id, done) => {
+const getImport = (id, offset, limit, done) => {
     var queryOption = {
         sql: 'SELECT * FROM import WHERE import_id = ?;',
         timeout: timeout, // 20s
@@ -106,9 +106,9 @@ const getImport = (id, done) => {
             }
 
             var queryOption = {
-                sql: 'SELECT * FROM import_detail WHERE import_id = ?;',
+                sql: 'SELECT * FROM import_detail WHERE import_id = ? LIMIT ? OFFSET ?;',
                 timeout: timeout, // 20s
-                values: [id],
+                values: [id, limit, offset],
             };
 
             DB.get().query(queryOption, function(error, import_detail_result, fields) {

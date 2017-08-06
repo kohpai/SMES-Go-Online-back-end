@@ -1279,6 +1279,10 @@ router.route('/import').get((req, res, next) => {
 
 router.route('/import/:id').get((req, res, next) => {
     var id = req.params.id
+
+    var page = parseInt(req.query.page, 0)
+    var limit = parseInt(req.query.limit, 0)
+
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
@@ -1292,7 +1296,7 @@ router.route('/import/:id').get((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
-    ImportModel.getImport(id, (result) => {
+    ImportModel.getImport(id, page*limit, limit, (result) => {
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.message = 'not found import'
