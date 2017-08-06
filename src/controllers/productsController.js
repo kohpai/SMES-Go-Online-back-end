@@ -646,7 +646,7 @@ router.route('/import').post((req, res, next) => {
                             status_message = 'user not found : '+data[0]
 
                             // update import detail
-                            ImportModel.addImportDetail(ts, position, 0, status_message, null, (result) => {})
+                            ImportModel.addImportDetail(ts, position+1, 0, status_message, null, (result) => {})
 
                         }else{
 
@@ -724,7 +724,7 @@ router.route('/import').post((req, res, next) => {
                                     console.log(ajv.errors)
 
                                     // update import detail
-                                    ImportModel.addImportDetail(ts, position, 0, status_message, ajv.errors, (result) => {})
+                                    ImportModel.addImportDetail(ts, position+1, 0, status_message, ajv.errors, (result) => {})
 
                                 }else{
                                     ProductsModel.addProduct(d, id, req.user.user_id, 'import', (result_product) => {
@@ -734,14 +734,14 @@ router.route('/import').post((req, res, next) => {
                                             status_message = title+', '+sku+' : '+' : '+'fail'
 
                                             // update import detail
-                                            ImportModel.addImportDetail(ts, position, 0, status_message, result_product, (result) => {})
+                                            ImportModel.addImportDetail(ts, position+1, 0, status_message, result_product, (result) => {})
 
                                         }else{
                                             isError = false
                                             status_message = title+', '+sku+' : '+' : '+'success'
 
                                             // update import detail
-                                            ImportModel.addImportDetail(ts, position, 1, status_message, null, (result) => {})
+                                            ImportModel.addImportDetail(ts, position+1, 1, status_message, null, (result) => {})
 
                                             // upload image
                                             for(var j = 24; j <= 32; j++){

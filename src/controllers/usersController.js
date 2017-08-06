@@ -620,7 +620,7 @@ router.route('/users/import').post((req, res, next) => {
                             status_message = title+name+' '+lastName+', '+phone_no+' : '+'bad request'
 
                             // update import detail
-                            ImportModel.addImportDetail(ts, position,0 , status_message, ajv.errors, (result) => {})
+                            ImportModel.addImportDetail(ts, position+1, 0, status_message, ajv.errors, (result) => {})
 
                         }else{
                             UsersModel.addUser(d, false, 'import', (result, error) => {
@@ -629,7 +629,7 @@ router.route('/users/import').post((req, res, next) => {
                                     status_message = title+name+' '+lastName+', '+phone_no+' : '+result
 
                                     // update import detail
-                                    ImportModel.addImportDetail(ts, position, 0, status_message, error, (result) => {})
+                                    ImportModel.addImportDetail(ts, position+1, 0, status_message, error, (result) => {})
 
                                 }else{
 
@@ -640,14 +640,14 @@ router.route('/users/import').post((req, res, next) => {
                                                 status_message = title+name+' '+lastName+', '+phone_no+' : '+'can\'t send sms'
 
                                                 // update import detail
-                                                ImportModel.addImportDetail(ts, position, 0, status_message, send_sms_result, null, (result) => {})
+                                                ImportModel.addImportDetail(ts, position+1, 0, status_message, send_sms_result, null, (result) => {})
 
                                             }else{
                                                 isError = false
                                                 status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
 
                                                 // update import detail
-                                                ImportModel.addImportDetail(ts, position, 1, status_message, null, (result) => {})
+                                                ImportModel.addImportDetail(ts, position+1, 1, status_message, null, (result) => {})
                                             }
                                         })
 
@@ -657,7 +657,7 @@ router.route('/users/import').post((req, res, next) => {
                                         status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
 
                                         // update import detail
-                                        ImportModel.addImportDetail(ts, position, 0, status_message, null, (result) => {})
+                                        ImportModel.addImportDetail(ts, position+1, 0, status_message, null, (result) => {})
                                     }
 
                                 }
@@ -669,13 +669,14 @@ router.route('/users/import').post((req, res, next) => {
                         status_message = title+name+' '+lastName+', '+phone_no+' : '+status_message
 
                         // update import detail
-                        ImportModel.addImportDetail(ts, position, 0, status_message, null, (result) => {})
+                        ImportModel.addImportDetail(ts, position+1, 0, status_message, null, (result) => {})
                     }
                 }
 
                 i++
             })
             .on("end", function(){
+
                 ImportModel.addImport(ts, 1, req.files.file.name, req.user.user_id, (result) => {
                     if(result instanceof Error){
                         send.status = Enum.res_type.FAILURE
@@ -689,6 +690,7 @@ router.route('/users/import').post((req, res, next) => {
                 })
 
             })
+
     });
 });
 
@@ -883,6 +885,9 @@ router.route('/users').post((req, res, next) => {
                 'type': 'boolean'
             },
             'recaptcha': {
+                'type': 'string'
+            },
+            'create_by': { // addition
                 'type': 'string'
             }
         },
@@ -1169,6 +1174,9 @@ var profile = (req, res, next) => {
             },
             'on_ecommerce': {
                 'type': 'boolean'
+            },
+            'create_by': { // addition
+                'type': 'string'
             }
         },
         'required': [
@@ -1263,7 +1271,6 @@ router.route('/import').get((req, res, next) => {
 
         ImportModel.getImportList(import_type, page*limit, limit, (result) => {
             if (result instanceof Error) {
-                console.log(result)
                 send.status = Enum.res_type.FAILURE;
                 send.message = 'not found import'
                 return res.json(send);
