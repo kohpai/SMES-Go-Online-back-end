@@ -186,9 +186,7 @@ const addUser = (input, user_id, create_channel, done) => {
                 input.legal_id = null
             }
 
-            if(user_id){
-                input.create_user_id = user_id
-            }
+            input.create_user_id = user_id
 
             input.create_datetime = new Date()
 

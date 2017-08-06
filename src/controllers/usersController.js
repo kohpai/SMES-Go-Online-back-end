@@ -623,7 +623,7 @@ router.route('/users/import').post((req, res, next) => {
                             ImportModel.addImportDetail(ts, position+1, 0, status_message, ajv.errors, (result) => {})
 
                         }else{
-                            UsersModel.addUser(d, false, 'import', (result, error) => {
+                            UsersModel.addUser(d, req.user.user_id, 'import', (result, error) => {
                                 if (error) {
                                     isError = true
                                     status_message = title+name+' '+lastName+', '+phone_no+' : '+result
