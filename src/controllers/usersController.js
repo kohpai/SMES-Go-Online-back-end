@@ -1192,6 +1192,9 @@ var profile = (req, res, next) => {
     if (!valid)
         return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
+    // addition
+    delete data.create_by
+
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
