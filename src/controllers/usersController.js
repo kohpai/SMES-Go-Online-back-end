@@ -657,7 +657,7 @@ router.route('/users/import').post((req, res, next) => {
                                         status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
 
                                         // update import detail
-                                        ImportModel.addImportDetail(ts, position+1, 0, status_message, null, (result) => {})
+                                        ImportModel.addImportDetail(ts, position+1, 1, status_message, null, (result) => {})
                                     }
 
                                 }
