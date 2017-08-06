@@ -332,7 +332,7 @@ router.route('/users/import').post((req, res, next) => {
                             enterprise_name = data[3]
                         }else{
                             isError = true
-                            status_message = 'enterprise_name not empty'
+                            status_message = 'enterprise_name is empty'
                         }
                     }
 
@@ -352,7 +352,7 @@ router.route('/users/import').post((req, res, next) => {
                             name = data[5]
                         }else{
                             isError = true
-                            status_message = 'name not empty'
+                            status_message = 'name is empty'
                         }
                     }
 
@@ -362,7 +362,7 @@ router.route('/users/import').post((req, res, next) => {
                             lastName = data[6]
                         }else{
                             isError = true
-                            status_message = 'lastName not empty'
+                            status_message = 'lastName is empty'
                         }
                     }
 
@@ -382,7 +382,7 @@ router.route('/users/import').post((req, res, next) => {
                             house_no = data[8]
                         }else{
                             isError = true
-                            status_message = 'house_no not empty'
+                            status_message = 'house_no is empty'
                         }
                     }
 
@@ -392,7 +392,7 @@ router.route('/users/import').post((req, res, next) => {
                             province = data[13]
                         }else{
                             isError = true
-                            status_message = 'province not empty'
+                            status_message = 'province is empty'
                         }
                     }
 
@@ -402,7 +402,7 @@ router.route('/users/import').post((req, res, next) => {
                             district = data[14]
                         }else{
                             isError = true
-                            status_message = 'district not empty'
+                            status_message = 'district is empty'
                         }
                     }
 
@@ -412,7 +412,7 @@ router.route('/users/import').post((req, res, next) => {
                             subdistrict = data[15]
                         }else{
                             isError = true
-                            status_message = 'subdistrict not empty'
+                            status_message = 'subdistrict is empty'
                         }
                     }
 
@@ -422,7 +422,7 @@ router.route('/users/import').post((req, res, next) => {
                             postal_code = data[16]
                         } else {
                             isError = true
-                            status_message = 'postal_code not empty'
+                            status_message = 'postal_code is empty'
                         }
                     }
 
@@ -432,7 +432,7 @@ router.route('/users/import').post((req, res, next) => {
                             phone_no = data[17]
                         } else {
                             isError = true
-                            status_message = 'phone_no not empty or not 10 digit'
+                            status_message = 'phone_no is empty or not 10 digit'
                         }
                     }
 
@@ -442,7 +442,7 @@ router.route('/users/import').post((req, res, next) => {
                             id_no = data[18]
                         } else {
                             isError = true
-                            status_message = 'id_no not empty or not 13 digit'
+                            status_message = 'id_no is empty or not 13 digit'
                         }
                     }
 
@@ -452,7 +452,7 @@ router.route('/users/import').post((req, res, next) => {
                             legal_title = data[24]
                         } else {
                             isError = true
-                            status_message = 'legal_title not empty'
+                            status_message = 'legal_title is empty'
                         }
                     }
 
@@ -462,7 +462,7 @@ router.route('/users/import').post((req, res, next) => {
                             legal_name = data[25]
                         } else {
                             isError = true
-                            status_message = 'legal_name not empty'
+                            status_message = 'legal_name is empty'
                         }
                     }
 
@@ -472,7 +472,7 @@ router.route('/users/import').post((req, res, next) => {
                             legal_id = data[26]
                         } else {
                             isError = true
-                            status_message = 'legal_id not empty'
+                            status_message = 'legal_id is empty'
                         }
                     }
 
