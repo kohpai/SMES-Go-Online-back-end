@@ -70,7 +70,7 @@ const getImportList = (import_type, offset, limit, done) => {
     });
 }
 
-const getImportCount = (import_type, done) => {
+const getImportListCount = (import_type, done) => {
     var queryOption = {
         sql: 'SELECT COUNT(*) AS count FROM import WHERE import_type = ?;',
         timeout: timeout, // 20s
@@ -87,7 +87,6 @@ const getImportCount = (import_type, done) => {
         }
     });
 }
-
 
 const getImport = (id, offset, limit, done) => {
     var queryOption = {
@@ -124,10 +123,29 @@ const getImport = (id, offset, limit, done) => {
     });
 }
 
+const getImportCount = (id, done) => {
+    var queryOption = {
+        sql: 'SELECT COUNT(*) AS count FROM import_detail WHERE import_id = ?;',
+        timeout: timeout, // 20s
+        values: [id],
+    };
+
+    DB.get().query(queryOption, function(error, import_result, fields) {
+        if (error) {
+            return done(error);
+        } else if(import_result.length){
+            return done(import_result[0])
+        }else{
+            return done(import_result)
+        }
+    });
+}
+
 export default {
     addImport,
     addImportDetail,
     getImport,
+    getImportCount,
     getImportList,
-    getImportCount
+    getImportListCount
 }

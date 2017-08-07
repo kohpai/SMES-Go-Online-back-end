@@ -1268,7 +1268,7 @@ router.route('/import').get((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
-    ImportModel.getImportCount(import_type, (count_import) => {
+    ImportModel.getImportListCount(import_type, (count_import) => {
         if (count_import instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.message = 'not found import'
@@ -1309,17 +1309,28 @@ router.route('/import/:id').get((req, res, next) => {
         return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
     }
 
-    ImportModel.getImport(id, page*limit, limit, (result) => {
+    ImportModel.getImportCount(id, (result) => {
+
         if (result instanceof Error) {
             send.status = Enum.res_type.FAILURE;
             send.message = 'not found import'
             return res.json(send);
         }
 
-        send.status = Enum.res_type.SUCCESS
-        send.info = result
-        return res.json(send)
-    });
+        ImportModel.getImport(id, page*limit, limit, (result_import) => {
+            if (result_import instanceof Error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = 'not found import'
+                return res.json(send);
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result_import
+            send.pageinfo = {page: page, limit: limit, count: result.count}
+            return res.json(send)
+        });
+
+    })
 });
 
 
