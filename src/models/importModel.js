@@ -105,7 +105,7 @@ const getImport = (id, offset, limit, done) => {
             }
 
             var queryOption = {
-                sql: 'SELECT * FROM import_detail WHERE import_id = ? LIMIT ? OFFSET ?;',
+                sql: 'SELECT * FROM import_detail WHERE import_id = ? ORDER BY success, import_row LIMIT ? OFFSET ?;',
                 timeout: timeout, // 20s
                 values: [id, limit, offset],
             };
