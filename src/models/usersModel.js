@@ -809,6 +809,23 @@ const getOneSme = (last_ent_id, done) => {
     });
 }
 
+const updateSme = (ent_id, sme_member_no, done) => {
+    var queryOption = {
+        sql: 'UPDATE `enterprise` SET `sme_member_no` = ? WHERE `enterprise_id` = ?;',
+        timeout: timeout, // 20s
+        values: [sme_member_no, ent_id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error)
+            return done(error);
+        else if (results.length)
+            return done(results[0]);
+        else
+            return done(results);
+    });
+}
+
 export default {
     authenUser,
     addUser,
@@ -833,5 +850,6 @@ export default {
     updateAdmin,
     getRole,
     detailRole,
-    getOneSme
+    getOneSme,
+    updateSme
 }

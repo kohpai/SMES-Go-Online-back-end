@@ -1644,7 +1644,46 @@ router.route('/sme/:last_ent_id').get((req, res, next) => {
         return res.json(send)
 
     })
+})
 
+router.route('/sme/:ent_id').put((req, res, next) => {
+    var ent_id = req.params.ent_id
+
+    var data = req.body
+    var schema = {
+        'additionalProperties': false,
+        'properties': {
+            'sme_member_no': {
+                'type': 'string'
+            },
+        },
+        'required': [
+            'sme_member_no',
+        ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    UsersModel.updateSme(ent_id, data.sme_member_no, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'not found user'
+            return res.json(send);
+        }
+
+        console.log(result)
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result
+        return res.json(send)
+    })
 })
 
 export default router
