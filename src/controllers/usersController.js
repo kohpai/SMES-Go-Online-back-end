@@ -322,7 +322,7 @@ router.route('/users/import').post((req, res, next) => {
                     UsersModel.findUserByUsername(data[0], (select_user) => {
                         if (select_user instanceof Error || !select_user.user_id || !select_user.is_admin) {
                             isError = true
-                            status_message = 'user not found : ' + data[0]
+                            status_message = 'admin not found : ' + data[0]
 
                             // update import detail
                             ImportModel.addImportDetail(ts, position + 1, 0, status_message, null, (result) => {})
@@ -642,7 +642,7 @@ router.route('/users/import').post((req, res, next) => {
                                     })
 
                                 } else {
-                                    UsersModel.addUser(d, req.user.user_id, 'import', (result, error) => {
+                                    UsersModel.addUser(d, select_user.user_id, 'import', (result, error) => {
                                         if (error) {
                                             isError = true
                                             status_message = title + name + ' ' + lastName + ', ' + phone_no + ' : ' + result
@@ -1275,7 +1275,7 @@ var profile = (req, res, next) => {
 router.route('/profile').put(profile);
 router.route('/profile/:id').put(profile);
 
-
+// import
 router.route('/import').get((req, res, next) => {
     var import_type = req.query.import_type
     var page = parseInt(req.query.page, 0)
@@ -1356,6 +1356,114 @@ router.route('/import/:id').get((req, res, next) => {
             return res.json(send)
         });
 
+    })
+});
+
+router.route('/sme/import').post((req, res, next) => {
+    var secret = req.header("secret")
+
+    var data = req.body
+    var schema = {
+        'additionalProperties': false,
+        'properties': {
+            'import_id': {
+                'type': 'number'
+            },
+            'import_type': {
+                'type': 'number'
+            },
+            'import_filename': {
+                'type': 'string'
+            },
+        },
+        'required': [
+            'import_id', "import_type", "import_filename"
+        ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(secret != "IyMDE3LTA4LTAyVDA0OjAxOjIxLjk3MloiL"){
+        send.status = Enum.res_type.FAILURE;
+        send.message = 'incorrect secret'
+        return res.json(send);
+    }
+
+    ImportModel.addImport(data.import_id, data.import_type, data.import_filename, 0, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed add import';
+            send.info = result
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result
+        return res.json(send)
+    })
+
+});
+
+router.route('/sme/import/:id').post((req, res, next) => {
+    var id = req.params.id
+    var secret = req.header("secret")
+
+    var data = req.body
+    var schema = {
+        'additionalProperties': false,
+        'properties': {
+            'import_id': {
+                'type': 'number'
+            },
+            'import_row': {
+                'type': 'number'
+            },
+            'success': {
+                'type': 'number'
+            },
+            'result': {
+                'type': 'string'
+            },
+            'error': {
+                'type': 'string'
+            },
+        },
+        'required': [
+            'import_id', "import_row", "success", "result", "error"
+        ]
+    }
+    var valid = ajv.validate(schema, data)
+    if (!valid)
+        return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(secret != "IyMDE3LTA4LTAyVDA0OjAxOjIxLjk3MloiL"){
+        send.status = Enum.res_type.FAILURE;
+        send.message = 'incorrect secret'
+        return res.json(send);
+    }
+
+    ImportModel.addImportDetail(data.import_id, data.import_row, data.success, data.result, data.error, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'Failed add import detail';
+            send.info = result
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result
+        return res.json(send)
     })
 });
 
@@ -1626,10 +1734,17 @@ router.route('/users/name/:id').get((req, res, next) => {
 // sme
 router.route('/sme/:last_ent_id').get((req, res, next) => {
     var last_ent_id = req.params.last_ent_id
+    var secret = req.header("secret")
 
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
+    }
+
+    if(secret != "IyMDE3LTA4LTAyVDA0OjAxOjIxLjk3MloiL"){
+        send.status = Enum.res_type.FAILURE;
+        send.message = 'incorrect secret'
+        return res.json(send);
     }
 
     UsersModel.getOneSme(last_ent_id, (result) => {
@@ -1648,6 +1763,7 @@ router.route('/sme/:last_ent_id').get((req, res, next) => {
 
 router.route('/sme/:ent_id').put((req, res, next) => {
     var ent_id = req.params.ent_id
+    var secret = req.header("secret")
 
     var data = req.body
     var schema = {
@@ -1665,10 +1781,15 @@ router.route('/sme/:ent_id').put((req, res, next) => {
     if (!valid)
         return res.json({status: Enum.res_type.FAILURE, info:ajv.errors, message: 'bad request.'})
 
-
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
+    }
+
+    if(secret != "IyMDE3LTA4LTAyVDA0OjAxOjIxLjk3MloiL"){
+        send.status = Enum.res_type.FAILURE;
+        send.message = 'incorrect secret'
+        return res.json(send);
     }
 
     UsersModel.updateSme(ent_id, data.sme_member_no, (result) => {
