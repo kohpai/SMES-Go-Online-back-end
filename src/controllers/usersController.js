@@ -311,366 +311,392 @@ router.route('/users/import').post((req, res, next) => {
                 }else{
                     var isError = false
 
-                    var registration_type = 1
-                    if(!isError){
+                    if(data[0].startsWith('66')){
+                        data[0] = '0'+data[0].slice(2)
+                    }else if(data[0].startsWith('+66')){
+                        data[0] = '0'+data[0].slice(3)
+                    }else if(data[0].startsWith('6') || data[0].startsWith('8') || data[0].startsWith('9')){
+                        data[0] = '0'+data[0]
+                    }
 
-                        if(data[1] == 'บุคคลธรรมดา'){
-                            registration_type = 1
-                        }else if(data[1] == 'กลุ่มเครือข่าย'){
-                            registration_type = 2
-                        }else if(data[1] == 'นิติบุคคล'){
-                            registration_type = 3
-                        }else{
+                    UsersModel.findUserByUsername(data[0], (select_user) => {
+                        if (select_user instanceof Error || !select_user.user_id || !select_user.is_admin) {
                             isError = true
-                            status_message = 'registration_type unknown'
-                        }
-                    }
-
-                    var enterprise_name = ''
-                    if(!isError){
-                        if(data[3].length){
-                            enterprise_name = data[3]
-                        }else{
-                            isError = true
-                            status_message = 'enterprise_name is empty'
-                        }
-                    }
-
-                    var title = ''
-                    if(!isError){
-                        //if(data[4] == 'นาย' || data[4] == 'นาง' || data[4] == 'นางสาว'){
-                            title = data[4]
-                        //}else{
-                        //    isError = true
-                        //    status_message = 'title unknown'
-                        //}
-                    }
-
-                    var name = ''
-                    if(!isError){
-                        if(data[5].length){
-                            name = data[5]
-                        }else{
-                            isError = true
-                            status_message = 'name is empty'
-                        }
-                    }
-
-                    var lastName = ''
-                    if(!isError){
-                        if(data[6].length){
-                            lastName = data[6]
-                        }else{
-                            isError = true
-                            status_message = 'lastName is empty'
-                        }
-                    }
-
-                    var age = ''
-                    if(!isError){
-                        var parseAge = parseInt(data[7])
-                        if(!isNaN(parseAge)){
-                            age = parseAge
-                        }else{
-                            age = 0
-                        }
-                    }
-
-                    var house_no = ''
-                    if(!isError){
-                        if(data[8].length){
-                            house_no = data[8]
-                        }else{
-                            isError = true
-                            status_message = 'house_no is empty'
-                        }
-                    }
-
-                    var province = ''
-                    if(!isError){
-                        if(data[13].length){
-                            province = data[13]
-                        }else{
-                            isError = true
-                            status_message = 'province is empty'
-                        }
-                    }
-
-                    var district = ''
-                    if(!isError){
-                        if(data[14].length){
-                            district = data[14]
-                        }else{
-                            isError = true
-                            status_message = 'district is empty'
-                        }
-                    }
-
-                    var subdistrict = ''
-                    if(!isError){
-                        if(data[15].length){
-                            subdistrict = data[15]
-                        }else{
-                            isError = true
-                            status_message = 'subdistrict is empty'
-                        }
-                    }
-
-                    var postal_code = ''
-                    if(!isError) {
-                        if (data[16].length) {
-                            postal_code = data[16]
-                        } else {
-                            isError = true
-                            status_message = 'postal_code is empty'
-                        }
-                    }
-
-                    var phone_no = ''
-                    if(!isError) {
-                        if (data[17].length == 10) {
-                            phone_no = data[17]
-                        } else {
-                            isError = true
-                            status_message = 'phone_no is empty or not 10 digit'
-                        }
-                    }
-
-                    var id_no = ''
-                    if(!isError) {
-                        if (data[18].length == 13) {
-                            id_no = data[18]
-                        } else {
-                            isError = true
-                            status_message = 'id_no is empty or not 13 digit'
-                        }
-                    }
-
-                    var legal_title = ''
-                    if(!isError && registration_type == 3) {
-                        if (data[24].length) {
-                            legal_title = data[24]
-                        } else {
-                            isError = true
-                            status_message = 'legal_title is empty'
-                        }
-                    }
-
-                    var legal_name = ''
-                    if(!isError && registration_type == 3) {
-                        if (data[25].length) {
-                            legal_name = data[25]
-                        } else {
-                            isError = true
-                            status_message = 'legal_name is empty'
-                        }
-                    }
-
-                    var legal_id = ''
-                    if(!isError && registration_type == 3) {
-                        if (data[26].length) {
-                            legal_id = data[26]
-                        } else {
-                            isError = true
-                            status_message = 'legal_id is empty'
-                        }
-                    }
-
-                    var on_ecommerce = false
-                    if(!isError) {
-                        if (data[22].length) {
-                            on_ecommerce = true
-                        } else {
-                            on_ecommerce = false
-                        }
-                    }
-
-                    var is_otop_product = false
-                    if(!isError) {
-                        if (data[23] == 'Y' || data[23] == 'y') {
-                            is_otop_product = true
-                        } else {
-                            is_otop_product = false
-                        }
-                    }
-
-                    var needed_help_ecommerce = false
-                    if(!isError) {
-                        if (data[32] == 'Y' || data[32] == 'y') {
-                            needed_help_ecommerce = true
-                        } else {
-                            needed_help_ecommerce = false
-                        }
-                    }
-
-                    var needed_help_investor = false
-                    if(!isError) {
-                        if (data[33] == 'Y' || data[33] == 'y') {
-                            needed_help_investor = true
-                        } else {
-                            needed_help_investor = false
-                        }
-                    }
-
-                    var needed_help_supplier = false
-                    if(!isError) {
-                        if (data[34] == 'Y' || data[34] == 'y') {
-                            needed_help_supplier = true
-                        } else {
-                            needed_help_supplier = false
-                        }
-                    }
-
-                    var needed_help_payment = false
-                    if(!isError) {
-                        if (data[35] == 'Y' || data[35] == 'y') {
-                            needed_help_payment = true
-                        } else {
-                            needed_help_payment = false
-                        }
-                    }
-
-                    var needed_help_online_marketing = false
-                    if(!isError) {
-                        if (data[36] == 'Y' || data[36] == 'y') {
-                            needed_help_online_marketing = true
-                        } else {
-                            needed_help_online_marketing = false
-                        }
-                    }
-
-                    var needed_help_tax = false
-                    if(!isError) {
-                        if (data[37] == 'Y' || data[37] == 'y') {
-                            needed_help_tax = true
-                        } else {
-                            needed_help_tax = false
-                        }
-                    }
-
-                    var needed_help_brand = false
-                    if(!isError) {
-                        if (data[38] == 'Y' || data[38] == 'y') {
-                            needed_help_brand = true
-                        } else {
-                            needed_help_brand = false
-                        }
-                    }
-
-                    var needed_help_logistics = false
-                    if(!isError) {
-                        if (data[39] == 'Y' || data[39] == 'y') {
-                            needed_help_logistics = true
-                        } else {
-                            needed_help_logistics = false
-                        }
-                    }
-
-                    if(!isError){
-
-                        var d = {
-                            registration_type: registration_type,
-                            enterprise_name: enterprise_name,
-                            id_no: id_no,
-                            title: title,
-                            name: name,
-                            lastname: lastName,
-                            age: age,
-                            house_no: house_no,
-                            village_no: data[9],
-                            alley: data[10],
-                            village_title: data[11],
-                            road: data[12],
-                            province: province,
-                            district: district,
-                            subdistrict: subdistrict,
-                            postal_code: postal_code,
-                            phone_no: phone_no,
-                            sme_member_no: data[2],
-                            email: data[19],
-                            line_id: data[20],
-                            facebook: data[21],
-                            legal_title: legal_title,
-                            legal_name: legal_name,
-                            legal_id: legal_id,
-                            on_ecommerce: on_ecommerce,
-                            is_otop_product: is_otop_product,
-                            enterprise_type: {
-                                agricultural_product: data[27],
-                                industrial_product: data[28],
-                                selling: data[29],
-                                service: data[30],
-                                other: data[31],
-                            },
-                            needed_help: {
-                                needed_help_ecommerce: needed_help_ecommerce,
-                                needed_help_investor: needed_help_investor,
-                                needed_help_supplier: needed_help_supplier,
-                                needed_help_payment: needed_help_payment,
-                                needed_help_online_marketing: needed_help_online_marketing,
-                                needed_help_tax: needed_help_tax,
-                                needed_help_brand: needed_help_brand,
-                                needed_help_logistics: needed_help_logistics,
-                            }
-                        }
-
-                        var valid = ajv.validate(schema, d)
-                        if (!valid){
-                            isError = true
-                            status_message = title+name+' '+lastName+', '+phone_no+' : '+'bad request'
+                            status_message = 'user not found : ' + data[0]
 
                             // update import detail
-                            ImportModel.addImportDetail(ts, position+1, 0, status_message, ajv.errors, (result) => {})
+                            ImportModel.addImportDetail(ts, position + 1, 0, status_message, null, (result) => {})
 
-                        }else{
-                            UsersModel.addUser(d, req.user.user_id, 'import', (result, error) => {
-                                if (error) {
+                        } else {
+
+                            var registration_type = 1
+                            if (!isError) {
+
+                                if (data[1] == 'บุคคลธรรมดา') {
+                                    registration_type = 1
+                                } else if (data[1] == 'กลุ่มเครือข่าย') {
+                                    registration_type = 2
+                                } else if (data[1] == 'นิติบุคคล') {
+                                    registration_type = 3
+                                } else {
                                     isError = true
-                                    status_message = title+name+' '+lastName+', '+phone_no+' : '+result
+                                    status_message = 'registration_type unknown'
+                                }
+                            }
+
+                            var enterprise_name = ''
+                            if (!isError) {
+                                if (data[3].length) {
+                                    enterprise_name = data[3]
+                                } else {
+                                    isError = true
+                                    status_message = 'enterprise_name is empty'
+                                }
+                            }
+
+                            var title = ''
+                            if (!isError) {
+                                //if(data[4] == 'นาย' || data[4] == 'นาง' || data[4] == 'นางสาว'){
+                                title = data[4]
+                                //}else{
+                                //    isError = true
+                                //    status_message = 'title unknown'
+                                //}
+                            }
+
+                            var name = ''
+                            if (!isError) {
+                                if (data[5].length) {
+                                    name = data[5]
+                                } else {
+                                    isError = true
+                                    status_message = 'name is empty'
+                                }
+                            }
+
+                            var lastName = ''
+                            if (!isError) {
+                                if (data[6].length) {
+                                    lastName = data[6]
+                                } else {
+                                    isError = true
+                                    status_message = 'lastName is empty'
+                                }
+                            }
+
+                            var age = ''
+                            if (!isError) {
+                                var parseAge = parseInt(data[7])
+                                if (!isNaN(parseAge)) {
+                                    age = parseAge
+                                } else {
+                                    age = 0
+                                }
+                            }
+
+                            var house_no = ''
+                            if (!isError) {
+                                if (data[8].length) {
+                                    house_no = data[8]
+                                } else {
+                                    isError = true
+                                    status_message = 'house_no is empty'
+                                }
+                            }
+
+                            var province = ''
+                            if (!isError) {
+                                if (data[13].length) {
+                                    province = data[13]
+                                } else {
+                                    isError = true
+                                    status_message = 'province is empty'
+                                }
+                            }
+
+                            var district = ''
+                            if (!isError) {
+                                if (data[14].length) {
+                                    district = data[14]
+                                } else {
+                                    isError = true
+                                    status_message = 'district is empty'
+                                }
+                            }
+
+                            var subdistrict = ''
+                            if (!isError) {
+                                if (data[15].length) {
+                                    subdistrict = data[15]
+                                } else {
+                                    isError = true
+                                    status_message = 'subdistrict is empty'
+                                }
+                            }
+
+                            var postal_code = ''
+                            if (!isError) {
+                                if (data[16].length) {
+                                    postal_code = data[16]
+                                } else {
+                                    isError = true
+                                    status_message = 'postal_code is empty'
+                                }
+                            }
+
+                            var phone_no = ''
+                            if (!isError) {
+                                if (data[17].length == 10) {
+                                    phone_no = data[17]
+                                } else {
+                                    isError = true
+                                    status_message = 'phone_no is empty or not 10 digit'
+                                }
+                            }
+
+                            var id_no = ''
+                            if (!isError) {
+                                if (data[18].length == 13) {
+                                    id_no = data[18]
+                                } else {
+                                    isError = true
+                                    status_message = 'id_no is empty or not 13 digit'
+                                }
+                            }
+
+                            var legal_title = ''
+                            if (!isError && registration_type == 3) {
+                                if (data[24].length) {
+                                    legal_title = data[24]
+                                } else {
+                                    isError = true
+                                    status_message = 'legal_title is empty'
+                                }
+                            }
+
+                            var legal_name = ''
+                            if (!isError && registration_type == 3) {
+                                if (data[25].length) {
+                                    legal_name = data[25]
+                                } else {
+                                    isError = true
+                                    status_message = 'legal_name is empty'
+                                }
+                            }
+
+                            var legal_id = ''
+                            if (!isError && registration_type == 3) {
+                                if (data[26].length) {
+                                    legal_id = data[26]
+                                } else {
+                                    isError = true
+                                    status_message = 'legal_id is empty'
+                                }
+                            }
+
+                            var on_ecommerce = false
+                            if (!isError) {
+                                if (data[22].length) {
+                                    on_ecommerce = true
+                                } else {
+                                    on_ecommerce = false
+                                }
+                            }
+
+                            var is_otop_product = false
+                            if (!isError) {
+                                if (data[23] == 'Y' || data[23] == 'y') {
+                                    is_otop_product = true
+                                } else {
+                                    is_otop_product = false
+                                }
+                            }
+
+                            var needed_help_ecommerce = false
+                            if (!isError) {
+                                if (data[32] == 'Y' || data[32] == 'y') {
+                                    needed_help_ecommerce = true
+                                } else {
+                                    needed_help_ecommerce = false
+                                }
+                            }
+
+                            var needed_help_investor = false
+                            if (!isError) {
+                                if (data[33] == 'Y' || data[33] == 'y') {
+                                    needed_help_investor = true
+                                } else {
+                                    needed_help_investor = false
+                                }
+                            }
+
+                            var needed_help_supplier = false
+                            if (!isError) {
+                                if (data[34] == 'Y' || data[34] == 'y') {
+                                    needed_help_supplier = true
+                                } else {
+                                    needed_help_supplier = false
+                                }
+                            }
+
+                            var needed_help_payment = false
+                            if (!isError) {
+                                if (data[35] == 'Y' || data[35] == 'y') {
+                                    needed_help_payment = true
+                                } else {
+                                    needed_help_payment = false
+                                }
+                            }
+
+                            var needed_help_online_marketing = false
+                            if (!isError) {
+                                if (data[36] == 'Y' || data[36] == 'y') {
+                                    needed_help_online_marketing = true
+                                } else {
+                                    needed_help_online_marketing = false
+                                }
+                            }
+
+                            var needed_help_tax = false
+                            if (!isError) {
+                                if (data[37] == 'Y' || data[37] == 'y') {
+                                    needed_help_tax = true
+                                } else {
+                                    needed_help_tax = false
+                                }
+                            }
+
+                            var needed_help_brand = false
+                            if (!isError) {
+                                if (data[38] == 'Y' || data[38] == 'y') {
+                                    needed_help_brand = true
+                                } else {
+                                    needed_help_brand = false
+                                }
+                            }
+
+                            var needed_help_logistics = false
+                            if (!isError) {
+                                if (data[39] == 'Y' || data[39] == 'y') {
+                                    needed_help_logistics = true
+                                } else {
+                                    needed_help_logistics = false
+                                }
+                            }
+
+                            if (!isError) {
+
+                                var d = {
+                                    registration_type: registration_type,
+                                    enterprise_name: enterprise_name,
+                                    id_no: id_no,
+                                    title: title,
+                                    name: name,
+                                    lastname: lastName,
+                                    age: age,
+                                    house_no: house_no,
+                                    village_no: data[9],
+                                    alley: data[10],
+                                    village_title: data[11],
+                                    road: data[12],
+                                    province: province,
+                                    district: district,
+                                    subdistrict: subdistrict,
+                                    postal_code: postal_code,
+                                    phone_no: phone_no,
+                                    sme_member_no: data[2],
+                                    email: data[19],
+                                    line_id: data[20],
+                                    facebook: data[21],
+                                    legal_title: legal_title,
+                                    legal_name: legal_name,
+                                    legal_id: legal_id,
+                                    on_ecommerce: on_ecommerce,
+                                    is_otop_product: is_otop_product,
+                                    enterprise_type: {
+                                        agricultural_product: data[27],
+                                        industrial_product: data[28],
+                                        selling: data[29],
+                                        service: data[30],
+                                        other: data[31],
+                                    },
+                                    needed_help: {
+                                        needed_help_ecommerce: needed_help_ecommerce,
+                                        needed_help_investor: needed_help_investor,
+                                        needed_help_supplier: needed_help_supplier,
+                                        needed_help_payment: needed_help_payment,
+                                        needed_help_online_marketing: needed_help_online_marketing,
+                                        needed_help_tax: needed_help_tax,
+                                        needed_help_brand: needed_help_brand,
+                                        needed_help_logistics: needed_help_logistics,
+                                    }
+                                }
+
+                                var valid = ajv.validate(schema, d)
+                                if (!valid) {
+                                    isError = true
+                                    status_message = title + name + ' ' + lastName + ', ' + phone_no + ' : ' + 'bad request'
 
                                     // update import detail
-                                    ImportModel.addImportDetail(ts, position+1, 0, status_message, error, (result) => {})
+                                    ImportModel.addImportDetail(ts, position + 1, 0, status_message, ajv.errors, (result) => {
+                                    })
 
-                                }else{
+                                } else {
+                                    UsersModel.addUser(d, req.user.user_id, 'import', (result, error) => {
+                                        if (error) {
+                                            isError = true
+                                            status_message = title + name + ' ' + lastName + ', ' + phone_no + ' : ' + result
 
-                                    if(Config.sms.import_enable){
-                                        Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
-                                            if(send_sms_result instanceof Error){
-                                                isError = true
-                                                status_message = title+name+' '+lastName+', '+phone_no+' : '+'can\'t send sms'
+                                            // update import detail
+                                            ImportModel.addImportDetail(ts, position + 1, 0, status_message, error, (result) => {
+                                            })
 
-                                                // update import detail
-                                                ImportModel.addImportDetail(ts, position+1, 0, status_message, send_sms_result, null, (result) => {})
+                                        } else {
 
-                                            }else{
+                                            if (Config.sms.import_enable) {
+                                                Util.send_sms(phone_no, Config.wording.register_success, (send_sms_result) => {
+                                                    if (send_sms_result instanceof Error) {
+                                                        isError = true
+                                                        status_message = title + name + ' ' + lastName + ', ' + phone_no + ' : ' + 'can\'t send sms'
+
+                                                        // update import detail
+                                                        ImportModel.addImportDetail(ts, position + 1, 0, status_message, send_sms_result, null, (result) => {
+                                                        })
+
+                                                    } else {
+                                                        isError = false
+                                                        status_message = title + name + ' ' + lastName + ', ' + phone_no + ' : ' + 'success'
+
+                                                        // update import detail
+                                                        ImportModel.addImportDetail(ts, position + 1, 1, status_message, null, (result) => {
+                                                        })
+                                                    }
+                                                })
+
+                                            } else {
+
                                                 isError = false
-                                                status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
+                                                status_message = title + name + ' ' + lastName + ', ' + phone_no + ' : ' + 'success'
 
                                                 // update import detail
-                                                ImportModel.addImportDetail(ts, position+1, 1, status_message, null, (result) => {})
+                                                ImportModel.addImportDetail(ts, position + 1, 1, status_message, null, (result) => {
+                                                })
                                             }
-                                        })
 
-                                    }else{
-
-                                        isError = false
-                                        status_message = title+name+' '+lastName+', '+phone_no+' : '+'success'
-
-                                        // update import detail
-                                        ImportModel.addImportDetail(ts, position+1, 1, status_message, null, (result) => {})
-                                    }
+                                        }
+                                    });
 
                                 }
-                            });
+                            } else {
 
+                                status_message = title + name + ' ' + lastName + ', ' + phone_no + ' : ' + status_message
+
+                                // update import detail
+                                ImportModel.addImportDetail(ts, position + 1, 0, status_message, null, (result) => {
+                                })
+                            }
                         }
-                    }else{
-
-                        status_message = title+name+' '+lastName+', '+phone_no+' : '+status_message
-
-                        // update import detail
-                        ImportModel.addImportDetail(ts, position+1, 0, status_message, null, (result) => {})
-                    }
+                    })
                 }
 
                 i++
