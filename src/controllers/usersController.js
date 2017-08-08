@@ -1622,4 +1622,29 @@ router.route('/users/name/:id').get((req, res, next) => {
     });
 });
 
+
+// sme
+router.route('/sme/:last_ent_id').get((req, res, next) => {
+    var last_ent_id = req.params.last_ent_id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    UsersModel.getOneSme(last_ent_id, (result) => {
+        if (result instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'not found user'
+            return res.json(send);
+        }
+
+        send.status = Enum.res_type.SUCCESS
+        send.info = result
+        return res.json(send)
+
+    })
+
+})
+
 export default router

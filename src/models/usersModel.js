@@ -792,6 +792,23 @@ const detailRole = (id, done) => {
     });
 }
 
+const getOneSme = (last_ent_id, done) => {
+    var queryOption = {
+        sql: 'SELECT * FROM `enterprise` WHERE `sme_member_no` IS NULL AND `enterprise_id` > ? LIMIT 1;',
+        timeout: timeout, // 20s
+        values: [last_ent_id],
+    };
+
+    DB.get().query(queryOption, function(error, results, fields) {
+        if (error)
+            return done(error);
+        else if (results.length)
+            return done(results[0]);
+
+        return done(null);
+    });
+}
+
 export default {
     authenUser,
     addUser,
@@ -815,5 +832,6 @@ export default {
     addAdmin,
     updateAdmin,
     getRole,
-    detailRole
+    detailRole,
+    getOneSme
 }
