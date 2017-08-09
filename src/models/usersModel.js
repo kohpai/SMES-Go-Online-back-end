@@ -228,10 +228,10 @@ const addUser = (input, user_id, create_channel, done) => {
                         if(insertId.code == 'ER_DUP_ENTRY' && insertId.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'registration_type'/i)){
                             return done('เลขที่บัตรประชาชน มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
 
-                        }else if(insertId.code == 'ER_DUP_ENTRY' && insertId.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'sme_member_no'/i)){
+                        }else if(insertId.code == 'ER_DUP_ENTRY' && insertId.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'legal_id'/i)){
                             return done('เลขที่จดทะเบียนนิติบุคคล มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
 
-                        }else if(insertId.code == 'ER_DUP_ENTRY' && insertId.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'legal_id'/i)){
+                        }else if(insertId.code == 'ER_DUP_ENTRY' && insertId.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'sme_member_no'/i)){
                             return done('ลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', insertId)
 
                         }else{
