@@ -360,11 +360,11 @@ const updateUser = (id, input, user_id, done) => {
                     if(result.code == 'ER_DUP_ENTRY' && result.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'registration_type'/i)){
                         return done('เลขที่บัตรประชาชน มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', id)
 
-                    }else if(result.code == 'ER_DUP_ENTRY' && result.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'sme_member_no'/i)){
+                    }else if(result.code == 'ER_DUP_ENTRY' && result.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'legal_id'/i)){
                         return done('เลขที่จดทะเบียนนิติบุคคล มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', id)
 
-                    }else if(result.code == 'ER_DUP_ENTRY' && result.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'legal_id'/i)){
-                        return done('ลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', id)
+                    }else if(result.code == 'ER_DUP_ENTRY' && result.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'sme_member_no'/i)){
+                        return done('เลขสมาชิก สสว. มีการลงทะเบียนแล้ว กรุณาตรวจสอบ', id)
 
                     }else{
                         return done('เกิดข้อผิดพลาด', result)
