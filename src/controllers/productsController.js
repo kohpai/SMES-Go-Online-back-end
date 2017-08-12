@@ -713,7 +713,7 @@ router.route('/import').post((req, res, next) => {
                                     cert_safefood: data[15],
                                     cert_other: data[16],
                                     // using_platforms: data.using_platforms,
-                                    user_id: id,
+                                    // user_id: select_user.user_id,
                                 }
 
                                 var valid = ajv.validate(schema, d)
@@ -721,13 +721,11 @@ router.route('/import').post((req, res, next) => {
                                     isError = true
                                     status_message = title+', '+sku+' : '+'bad request'
 
-                                    console.log(ajv.errors)
-
                                     // update import detail
                                     ImportModel.addImportDetail(ts, position+1, 0, status_message, ajv.errors, (result) => {})
 
                                 }else{
-                                    ProductsModel.addProduct(d, id, req.user.user_id, 'import', (result_product) => {
+                                    ProductsModel.addProduct(d, select_user.user_id, req.user.user_id, 'import', (result_product) => {
 
                                         if (result_product instanceof Error) {
                                             isError = true
