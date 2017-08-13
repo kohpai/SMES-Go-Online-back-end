@@ -794,14 +794,14 @@ const detailRole = (id, done) => {
 
 const getOneSme = (last_ent_id, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM `enterprise` WHERE `sme_member_no` IS NULL AND `enterprise_id` > ? LIMIT 1;',
+        sql: 'SELECT * FROM `enterprise` LEFT JOIN `user` ON enterprise.user_id = user.user_id WHERE enterprise.sme_member_no IS NULL AND enterprise.enterprise_id > ? LIMIT 1;',
         timeout: timeout, // 20s
         values: [last_ent_id],
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error)
-            return done(error);
+            return done(error)
         else if (results.length)
             return done(results[0]);
 

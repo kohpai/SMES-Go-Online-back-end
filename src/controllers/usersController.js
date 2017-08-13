@@ -1754,6 +1754,11 @@ router.route('/sme/:last_ent_id').get((req, res, next) => {
             return res.json(send);
         }
 
+        delete result.password
+        delete result.otp
+        delete result.otp_ref
+        delete result.otp_gen
+
         send.status = Enum.res_type.SUCCESS
         send.info = result
         return res.json(send)
