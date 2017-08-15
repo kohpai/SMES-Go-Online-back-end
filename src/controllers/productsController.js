@@ -529,14 +529,14 @@ router.route('/import').post((req, res, next) => {
 
     if(!req.files || !req.files.file){
         send.status = Enum.res_type.FAILURE
-        send.message = 'File not found.'
+        send.message = 'File not found. 1'
         return res.json(send)
     }
 
     FileModel.unzipFile(req.files.file, (zip) => {
         if(zip == null){
             send.status = Enum.res_type.FAILURE
-            send.message = 'File not found.'
+            send.message = 'File not found. 2'
             return res.json(send)
         }
 
@@ -616,7 +616,7 @@ router.route('/import').post((req, res, next) => {
 
         if(!fs.existsSync(zip+'/products.csv')){
             send.status = Enum.res_type.FAILURE
-            send.message = 'File not found.'
+            send.message = 'File not found. 3'
             return res.json(send)
         }
 
