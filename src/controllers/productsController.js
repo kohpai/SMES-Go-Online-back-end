@@ -616,10 +616,6 @@ router.route('/import').post((req, res, next) => {
 
         var path_product = path.resolve(zip, 'products.csv')
 
-        console.log(path_product)
-
-
-
         if(!fs.existsSync(path_product)){
             send.status = Enum.res_type.FAILURE
             send.message = 'File not found. 3'

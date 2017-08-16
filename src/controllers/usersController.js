@@ -1695,11 +1695,49 @@ router.route('/admin/:id').put((req, res, next) => {
                 return res.json(send);
             }
 
-            Util.send_sms(user.username, Config.wording.profile_success, (send_sms_result) => {
-                send.status = Enum.res_type.SUCCESS
-                send.info = result;
-                return res.json(send)
-            })
+            send.status = Enum.res_type.SUCCESS
+            send.info = result;
+            return res.json(send)
+        })
+    })
+
+})
+
+router.route('/admin/:id').delete((req, res, next) => {
+    var id = req.params.id
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if (req.user.is_admin && !req.user.role.is_manage_users) {
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
+    UsersModel.findUser(id, (user) => {
+        if (user instanceof Error) {
+            send.status = Enum.res_type.FAILURE;
+            send.message = 'not found admin'
+            send.info = user
+            return res.json(send);
+        }
+
+        UsersModel.deleteAdmin(id, (result, error) => {
+            if (error) {
+                send.status = Enum.res_type.FAILURE;
+                send.message = result
+                send.info = error
+                return res.json(send);
+            }
+
+            send.status = Enum.res_type.SUCCESS
+            send.info = result;
+            return res.json(send)
         })
     })
 

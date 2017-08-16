@@ -649,7 +649,7 @@ const detailUser = (id, done) => {
 
 const countAdmin = (search, done) => {
     var queryOption = {
-        sql: 'SELECT COUNT(*) AS count FROM user WHERE is_admin = 1 AND ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' );',
+        sql: 'SELECT COUNT(*) AS count FROM user WHERE is_admin = 1 AND status = 1 AND ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' );',
         timeout: timeout, // 20s
         values: [search],
     };
@@ -670,13 +670,13 @@ const searchAdmin = (search, offset, limit, done) => {
 
     if(search.length == 0){
         queryOption = {
-            sql: 'SELECT * FROM user WHERE is_admin = 1 LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM user WHERE is_admin = 1 AND status = 1 LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
             values: [limit, offset],
         };
     }else{
         queryOption = {
-            sql: 'SELECT * FROM user is_admin = 1 AND ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM user is_admin = 1 AND status = 1 AND ( full_name LIKE \'%'+search+'%\' OR username LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
             values: [limit, offset],
         };
@@ -754,6 +754,25 @@ const updateAdmin = (id, input, done) => {
     DB.get().query(queryOption, function (error, results, fields) {
         if (error) {
             return done("หมายเลขโทรศัพท์ของท่านมีการลงทะเบียนแล้ว กรุณาตรวจสอบ", error);
+        } else {
+            return done(results, null)
+        }
+    })
+}
+
+const deleteAdmin = (id, done) => {
+    var userInfo = {
+        status: 0
+    };
+    var queryOption = {
+        sql: 'UPDATE user SET ? WHERE user_id = ?',
+        timeout: timeout, // 20s
+        values: [userInfo, id],
+    };
+
+    DB.get().query(queryOption, function (error, results, fields) {
+        if (error) {
+            return done(results, error);
         } else {
             return done(results, null)
         }
@@ -848,6 +867,7 @@ export default {
     searchAdmin,
     addAdmin,
     updateAdmin,
+    deleteAdmin,
     getRole,
     detailRole,
     getOneSme,
