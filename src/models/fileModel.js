@@ -7,6 +7,8 @@ var fs = require('fs')
 var path = require("path")
 var weedClient = require('node-seaweedfs')
 
+var DecompressZip = require('decompress-zip')
+
 const timeout = 20000;
 
 var seaweedfs = new weedClient({
@@ -150,15 +152,24 @@ const unzipFile = (file, done) => {
             fs.mkdirSync(destDir)
         }
 
-        fs.createReadStream(fileName).pipe(unzip.Extract({ path: destDir }));
+        var unzipper = new DecompressZip(fileName)
 
-        // var readStream = fs.createReadStream(fileName);
-        // var writeStream = fstream.Writer(destDir);
-        // readStream.pipe(unzip.Parse()).pipe(writeStream)
+        unzipper.on('error', function (err) {
 
-        deleteTempFile(fileName, (result) => {})
+            return done(null)
 
-        return done(destDir)
+        });
+
+        unzipper.on('extract', function (log) {
+
+            deleteTempFile(fileName, (result) => {})
+
+            return done(destDir)
+        });
+
+        unzipper.extract({
+            path: destDir
+        })
     })
 }
 
