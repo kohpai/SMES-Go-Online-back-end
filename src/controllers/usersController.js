@@ -1853,14 +1853,15 @@ router.route('/sme/:ent_id').put((req, res, next) => {
 // redirect
 router.route('/redirect').get((req, res, next) => {
 
-    console.log(req.param('data')+'&access_token='+req.cookies.access_token)
+    console.log(decodeURIComponent(req.param('data'))+'&access_token='+req.cookies.access_token)
 
-    res.redirect('https://oauth.gsoftbiz.com'+req.param('data')+'&access_token='+req.cookies.access_token)
+    res.redirect('https://oauth.gsoftbiz.com'+ decodeURIComponent(req.param('data')) +'&access_token='+req.cookies.access_token)
+    // res.redirect('http://localhost'+ decodeURIComponent(req.param('data')) +'&access_token='+req.cookies.access_token)
 })
 
 // userinfo
 router.route('/userinfo').get((req, res, next) => {
-    var access_token = req.params.access_token
+
     var secret = req.header("secret")
 
     var send = {
