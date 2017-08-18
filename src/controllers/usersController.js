@@ -1850,4 +1850,25 @@ router.route('/sme/:ent_id').put((req, res, next) => {
     })
 })
 
+// userinfo
+router.route('/userinfo').get((req, res, next) => {
+    var access_token = req.params.access_token
+    var secret = req.header("secret")
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    if(secret != "IyMDE3LTA4LTAyVDA0OjAxOjIxLjk3MloiL"){
+        send.status = Enum.res_type.FAILURE;
+        send.message = 'incorrect secret'
+        return res.json(send);
+    }
+
+    send.status = Enum.res_type.SUCCESS
+    send.info = req.user
+    return res.json(send)
+})
+
 export default router
