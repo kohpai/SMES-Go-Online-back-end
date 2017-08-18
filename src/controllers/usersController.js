@@ -1855,7 +1855,7 @@ router.route('/redirect').get((req, res, next) => {
 
     console.log(req.param('data')+'&access_token='+req.cookies.access_token)
 
-    res.redirect('http://localhost'+req.param('data')+'&access_token='+req.cookies.access_token)
+    res.redirect('https://oauth.gsoftbiz.com'+req.param('data')+'&access_token='+req.cookies.access_token)
 })
 
 // userinfo
