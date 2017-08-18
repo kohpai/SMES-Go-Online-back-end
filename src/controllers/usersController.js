@@ -1850,6 +1850,14 @@ router.route('/sme/:ent_id').put((req, res, next) => {
     })
 })
 
+// redirect
+router.route('/redirect').get((req, res, next) => {
+
+    console.log(req.param('data')+'&access_token='+req.cookies.access_token)
+
+    res.redirect('http://localhost'+req.param('data')+'&access_token='+req.cookies.access_token)
+})
+
 // userinfo
 router.route('/userinfo').get((req, res, next) => {
     var access_token = req.params.access_token

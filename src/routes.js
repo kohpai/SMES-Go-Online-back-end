@@ -3,6 +3,9 @@
 // import
 import { Router } from 'express'
 
+var express = require('express');
+var cookieParser = require('cookie-parser');
+
 const fileUpload = require('express-fileupload')
 
 // using
@@ -21,6 +24,8 @@ var router = new Router();
 var api_version = '/api/dev';
 
 router.use(fileUpload())
+
+router.use(cookieParser())
 
 router.use(api_version, AuthController);
 router.use(api_version, UsersController);
