@@ -7,6 +7,8 @@ import Ajv from 'ajv'
 const ajv = new Ajv()
 var jwt = require("jsonwebtoken")
 
+var url = require("url");
+
 import HttpStatus from './../helper/http_status.js'
 import UsersModel from '../models/usersModel.js'
 import ImportModel from '../models/importModel.js'
@@ -1851,9 +1853,17 @@ router.route('/sme/:ent_id').put((req, res, next) => {
 })
 
 // redirect
-router.route('/redirect').get((req, res, next) => {
-    console.log('redirect to : '+'https://oauth.gsoftbiz.com'+ req.originalUrl +'&access_token='+req.cookies.access_token)
-    res.redirect('https://oauth.gsoftbiz.com'+ req.originalUrl +'&access_token='+req.cookies.access_token)
+router.route('/redirect_authorize').get((req, res, next) => {
+
+    var parts = url.parse(req.url, true)
+    var query = "?"
+
+    for(var key in parts.query){
+        query += key + "=" + parts.query[key] + "&"
+    }
+
+    console.log('redirect to : '+'https://oauth.gsoftbiz.com/oauth2/authorize'+ query +'access_token='+req.cookies.access_token)
+    res.redirect('https://oauth.gsoftbiz.com/oauth2/authorize'+ query +'access_token='+req.cookies.access_token)
 })
 
 // userinfo
