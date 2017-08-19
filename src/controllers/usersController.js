@@ -1875,8 +1875,8 @@ router.route('/redirect_userinfo').get((req, res, next) => {
         query += key + "=" + encodeURIComponent(parts.query[key]) + "&"
     }
 
-    console.log('redirect to : '+'https://oauth.gsoftbiz.com/api/userinfo'+ query +'access_token='+req.cookies.access_token)
-    res.redirect('https://oauth.gsoftbiz.com/api/userinfo'+ query +'access_token='+req.cookies.access_token)
+    console.log('redirect to : '+'https://oauth.gsoftbiz.com/api/userinfo'+ query +'access_token_2='+req.cookies.access_token)
+    res.redirect('https://oauth.gsoftbiz.com/api/userinfo'+ query +'access_token_2='+req.cookies.access_token)
 })
 
 // userinfo
