@@ -1852,12 +1852,8 @@ router.route('/sme/:ent_id').put((req, res, next) => {
 
 // redirect
 router.route('/redirect').get((req, res, next) => {
-
-    console.log('https://oauth.gsoftbiz.com'+ req.param('data')+'&access_token='+req.cookies.access_token) //decodeURIComponent(
-    // console.log('http://localhost:8080'+ decodeURIComponent(req.param('data'))+'&access_token='+req.cookies.access_token)
-
-    res.redirect('https://oauth.gsoftbiz.com'+ req.param('data') +'&access_token='+req.cookies.access_token) //decodeURIComponent(
-    // res.redirect('http://localhost:8080'+ decodeURIComponent(req.param('data')) +'&access_token='+req.cookies.access_token)
+    console.log('redirect to : '+'https://oauth.gsoftbiz.com'+ req.originalUrl +'&access_token='+req.cookies.access_token)
+    res.redirect('https://oauth.gsoftbiz.com'+ req.originalUrl +'&access_token='+req.cookies.access_token)
 })
 
 // userinfo
