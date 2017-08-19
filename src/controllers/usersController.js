@@ -1859,7 +1859,7 @@ router.route('/redirect_authorize').get((req, res, next) => {
     var query = "?"
 
     for(var key in parts.query){
-        query += key + "=" + parts.query[key] + "&"
+        query += key + "=" + encodeURIComponent(parts.query[key]) + "&"
     }
 
     console.log('redirect to : '+'https://oauth.gsoftbiz.com/oauth2/authorize'+ query +'access_token='+req.cookies.access_token)
