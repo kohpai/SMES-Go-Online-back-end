@@ -1867,8 +1867,16 @@ router.route('/redirect_authorize').get((req, res, next) => {
 })
 
 router.route('/redirect_userinfo').get((req, res, next) => {
-    console.log('redirect to : '+'https://oauth.gsoftbiz.com/api/userinfo?access_token='+req.cookies.access_token)
-    res.redirect('https://oauth.gsoftbiz.com/api/userinfo?access_token='+req.cookies.access_token)
+
+    var parts = url.parse(req.url, true)
+    var query = "?"
+
+    for(var key in parts.query){
+        query += key + "=" + encodeURIComponent(parts.query[key]) + "&"
+    }
+
+    console.log('redirect to : '+'https://oauth.gsoftbiz.com/api/userinfo'+ query +'access_token='+req.cookies.access_token)
+    res.redirect('https://oauth.gsoftbiz.com/api/userinfo'+ query +'access_token='+req.cookies.access_token)
 })
 
 // userinfo
