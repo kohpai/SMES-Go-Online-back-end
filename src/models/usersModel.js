@@ -573,11 +573,21 @@ const updatePassMachine = (token, done) => {
 }
 
 const countUsers = (search, create_by, done) => {
-    var queryOption = {
-        sql: 'SELECT COUNT(*) AS count FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 AND user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+' AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' );',
-        timeout: timeout, // 20s
-        values: [],
-    };
+    var queryOption = {};
+
+    if(search.length == 0){
+        queryOption = {
+            sql: 'SELECT COUNT(*) AS count FROM user INNER JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 AND user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+';',
+            timeout: timeout, // 20s
+            values: [],
+        };
+    } else {
+        queryOption = {
+            sql: 'SELECT COUNT(*) AS count FROM user INNER JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 AND user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+' AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' );',
+            timeout: timeout, // 20s
+            values: [],
+        };
+    }
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
@@ -596,13 +606,13 @@ const searchUsers = (search, create_by, offset, limit, done) => {
 
     if(search.length == 0){
         queryOption = {
-            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+' LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM user INNER JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+' LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
             values: [limit, offset],
         };
     }else{
         queryOption = {
-            sql: 'SELECT * FROM user LEFT JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+' AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
+            sql: 'SELECT * FROM user INNER JOIN enterprise ON user.user_id = enterprise.user_id WHERE user.is_admin = 0 '+(create_by?'AND enterprise.create_user_id = '+create_by:'')+' AND ( user.full_name LIKE \'%'+search+'%\' OR user.username LIKE \'%'+search+'%\' OR enterprise.enterprise_name LIKE \'%'+search+'%\' ) LIMIT ? OFFSET ?;',
             timeout: timeout, // 20s
             values: [limit, offset],
         };
