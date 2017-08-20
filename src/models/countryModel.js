@@ -15,6 +15,7 @@ const getProvinces = (done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results);
@@ -33,6 +34,7 @@ const getAmphoes = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results);
@@ -51,6 +53,7 @@ const getTambons = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results);

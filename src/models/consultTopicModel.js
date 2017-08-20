@@ -15,6 +15,7 @@ const getTopics = (user_id, offset, limit, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -31,6 +32,7 @@ const getTopicsAll = (offset, limit, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -47,6 +49,7 @@ const countTopic = (user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(results.length){
             return done(results[0]);
@@ -64,6 +67,7 @@ const countTopicAll = (done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(results.length){
             return done(results[0]);
@@ -82,6 +86,7 @@ const getTopicsById = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if(error){
+            DB.check_connect(error)
             return done(error);
         }else if(results.length) {
             return done(results[0]);
@@ -106,6 +111,7 @@ const addTopic = (input, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -123,6 +129,7 @@ const deleteTopic = (id, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -139,6 +146,7 @@ const getMsgByTopic = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else{
             return done(results);
@@ -163,6 +171,7 @@ const addMsg = (id, message, user_id, is_admin, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -179,6 +188,7 @@ const updateTopic = (id, is_admin_read, is_admin_reply, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -195,6 +205,7 @@ const updateTopicRead = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);

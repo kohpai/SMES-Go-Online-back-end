@@ -12,9 +12,10 @@ const addContact = (input, done) => {
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
-        if (error)
+        if (error) {
+            DB.check_connect(error)
             return done(error);
-        else
+        }else
             return done(results.insertId);
     });
 }
@@ -27,9 +28,10 @@ const addEnterprise = (input, done) => {
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
-        if (error)
+        if (error) {
+            DB.check_connect(error)
             return done(error);
-        else
+        }else
             return done(results.insertId);
     });
 }
@@ -42,9 +44,10 @@ const updateEnterprise = (id, input, done) => {
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
-        if (error)
+        if (error) {
+            DB.check_connect(error)
             return done(error);
-        else
+        }else
             return done(results);
     });
 }

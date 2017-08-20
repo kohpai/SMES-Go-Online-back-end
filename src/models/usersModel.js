@@ -6,7 +6,7 @@ import DB from '../db.js';
 import Hashids from 'hashids';
 import EnterpriseModel from './enterpriseModel.js';
 
-const timeout = 20000;
+const timeout = 10000;
 
 const deleteUser = (id, done) => {
 
@@ -18,6 +18,7 @@ const deleteUser = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -35,6 +36,7 @@ const deleteContact = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -51,6 +53,7 @@ const getUserById = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             delete results[0].password;
@@ -69,9 +72,10 @@ const getEnterpriseByUserId = (id, done) => {
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
-        if (error)
+        if (error) {
+            DB.check_connect(error)
             return done(error);
-        else if (results.length)
+        }else if (results.length)
             return done(results[0]);
 
         return done(null);
@@ -387,6 +391,7 @@ const authenUser = (username, password, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -405,6 +410,7 @@ const findUser = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -423,6 +429,7 @@ const findUserByUsername = (username, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -441,6 +448,7 @@ const updateOtp = (username, otp, ref, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -459,6 +467,7 @@ const updatePin = (user_id, pin, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -477,6 +486,7 @@ const updatePhone = (user_id, phone_number, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -495,6 +505,7 @@ const findMachine = (token, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -513,6 +524,7 @@ const addMachine = (input, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -531,6 +543,7 @@ const updateMachine = (token, user_id, otp_pass, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -549,6 +562,7 @@ const updatePassMachine = (token, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if (results.length) {
             return done(results[0]);
@@ -567,6 +581,7 @@ const countUsers = (search, create_by, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(results.length){
             return done(results[0]);
@@ -595,6 +610,7 @@ const searchUsers = (search, create_by, offset, limit, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
 
@@ -618,6 +634,7 @@ const detailUser = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(results.length) {
             results = results[0]
@@ -656,6 +673,7 @@ const countAdmin = (search, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(results.length){
             return done(results[0]);
@@ -684,6 +702,7 @@ const searchAdmin = (search, offset, limit, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
 
@@ -772,6 +791,7 @@ const deleteAdmin = (id, done) => {
 
     DB.get().query(queryOption, function (error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(results, error);
         } else {
             return done(results, null)
@@ -787,6 +807,7 @@ const getRole = (done) => {
 
     DB.get().query(queryOption, function(error, result, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(result);
@@ -803,6 +824,7 @@ const detailRole = (id, done) => {
 
     DB.get().query(queryOption, function(error, result, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(result.length){
             return done(result[0]);
@@ -819,9 +841,10 @@ const getOneSme = (last_ent_id, done) => {
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
-        if (error)
+        if (error) {
+            DB.check_connect(error)
             return done(error)
-        else if (results.length)
+        }else if (results.length)
             return done(results[0]);
 
         return done(null);
@@ -836,9 +859,10 @@ const updateSme = (ent_id, sme_member_no, done) => {
     };
 
     DB.get().query(queryOption, function(error, results, fields) {
-        if (error)
+        if (error) {
+            DB.check_connect(error)
             return done(error);
-        else if (results.length)
+        }else if (results.length)
             return done(results[0]);
         else
             return done(results);

@@ -15,6 +15,7 @@ const getNews = (offset, limit, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -30,6 +31,7 @@ const countNews = (done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(results.length){
             return done(results[0]);
@@ -48,6 +50,7 @@ const detailNews = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(results.length){
             return done(results[0]);
@@ -73,6 +76,7 @@ const addNews = (news, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -96,6 +100,7 @@ const updateNews = (id, news, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -116,6 +121,7 @@ const deleteNews = (id, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -136,6 +142,7 @@ const updateImage = (id, fid, file_name, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -152,6 +159,7 @@ const findImage = (id, image_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         }else if(results.length){
             return done(results[0])

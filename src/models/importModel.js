@@ -22,6 +22,7 @@ const addImport = (ts, type, filename, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -47,6 +48,7 @@ const addImportDetail = (ts, row, success, result, error, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -63,6 +65,7 @@ const getImportList = (import_type, offset, limit, done) => {
 
     DB.get().query(queryOption, function(error, import_result, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(import_result)
@@ -79,6 +82,7 @@ const getImportListCount = (import_type, done) => {
 
     DB.get().query(queryOption, function(error, import_result, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(import_result.length){
             return done(import_result[0])
@@ -97,6 +101,7 @@ const getImport = (id, offset, limit, done) => {
 
     DB.get().query(queryOption, function(error, import_result, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
 
@@ -112,6 +117,7 @@ const getImport = (id, offset, limit, done) => {
 
             DB.get().query(queryOption, function(error, import_detail_result, fields) {
                 if (error) {
+                    DB.check_connect(error)
                     return done(error);
                 } else {
 
@@ -132,6 +138,7 @@ const getImportCount = (id, done) => {
 
     DB.get().query(queryOption, function(error, import_result, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(import_result.length){
             return done(import_result[0])

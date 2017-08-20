@@ -41,6 +41,7 @@ const addProduct = (input, user_id, create_user_id, create_channel, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else {
             return done(results);
@@ -79,6 +80,7 @@ const updateProduct = (id, input, update_user_id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else {
             return done(results);
@@ -95,6 +97,7 @@ const detailProduct = (id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else if(results.length) {
             return done(results[0]);
@@ -112,6 +115,7 @@ const getImages = (id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         }
 
@@ -134,6 +138,7 @@ const deleteProduct = (id, update_user_id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else {
             return done(results);
@@ -161,6 +166,7 @@ const searchProduct = (search, user_id, offset, limit, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else {
             return done(results);
@@ -177,6 +183,7 @@ const countProduct = (search, user_id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else if(results.length){
             return done(results[0]);
@@ -195,6 +202,7 @@ const findImage = (id, image_id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         }else if(results.length){
             return done(results[0])
@@ -221,6 +229,7 @@ const addImage = (id, id_image, name, weight, user_id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else {
             // set product image
@@ -259,6 +268,7 @@ const deleteImage = (id, id_image, is_change_image, user_id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else {
 
@@ -275,6 +285,7 @@ const deleteImage = (id, id_image, is_change_image, user_id, done) => {
 
           DB.get_product().query(queryOption, function(error, results_image, fields) {
               if (error) {
+                  DB.check_connect_product(error)
                   return done(error);
               } else {
 
@@ -325,6 +336,7 @@ const addEmarket = (id, emarkets, done) => {
         DB.get_product().query(queryOption, function(error, results, fields) {
             if(index == emarkets.length - 1){
                 if (error) {
+                    DB.check_connect_product(error)
                     return done(error);
                 } else {
                     return done(results);
@@ -344,6 +356,7 @@ const deleteEmarket = (id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else {
             return done(results);
@@ -361,6 +374,7 @@ const getEmarket = (id, done) => {
 
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect_product(error)
             return done(error);
         } else {
             return done(results);

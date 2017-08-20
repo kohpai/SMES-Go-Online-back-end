@@ -14,6 +14,7 @@ const getFaq = (done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -30,6 +31,7 @@ const detailFaq = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(results.length){
             return done(results[0]);
@@ -48,6 +50,7 @@ const getFaqById = (id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else if(results.length){
             return done(results[0]);
@@ -72,6 +75,7 @@ const addFaq = (faq, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -93,6 +97,7 @@ const updateFaq = (id, faq, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
@@ -113,6 +118,7 @@ const deleteFaq = (id, user_id, done) => {
 
     DB.get().query(queryOption, function(error, results, fields) {
         if (error) {
+            DB.check_connect(error)
             return done(error);
         } else {
             return done(results);
