@@ -14,7 +14,7 @@ const mysql = {
     host     : 'smeregister.gsoftbiz.com',
     port     : 4000,
     user     : 'root',
-    password : 'rootAuthP4ss',
+    password : 'rootP@ssw0rd',
     database : 'smesgoonline',
     multipleStatements: true,
 };
@@ -23,7 +23,7 @@ const mysql_product = {
     host     : 'smeregister.gsoftbiz.com',
     port     : 4000,
     user     : 'root',
-    password : 'rootAuthP4ss',
+    password : 'rootP@ssw0rd',
     database : 'smesgoproduct',
     multipleStatements: true,
 };
