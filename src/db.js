@@ -120,13 +120,14 @@ const reconnect_product = () => {
 }
 
 const check_connect = (err) => {
-    if (err) {
+    if (err && ( err.code == 'PROTOCOL_CONNECTION_LOST' || err.code == 'ECONNREFUSED' ) ) {
         connect((err) => {})
     }
 }
 
 const check_connect_product = (err) => {
-    if (err) {
+    if (err && ( err.code == 'PROTOCOL_CONNECTION_LOST' || err.code == 'ECONNREFUSED' ) ) {
+        console.log(err)
         connect_product((err) => {})
     }
 }
