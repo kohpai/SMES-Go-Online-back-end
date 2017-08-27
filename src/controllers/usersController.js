@@ -1871,24 +1871,16 @@ router.route('/redirect_authorize').get((req, res, next) => {
         query += key + "=" + encodeURIComponent(parts.query[key]) + "&"
     }
 
-    console.log('redirect to : '+'https://oauth.gsoftbiz.com/oauth2/authorize'+ query +'access_token_2='+req.cookies.access_token)
-    res.redirect('https://oauth.gsoftbiz.com/oauth2/authorize'+ query +'access_token_2='+req.cookies.access_token)
+    console.log('redirect to : '+Config.oauth.redirect_authorize_to + query +'access_token_2='+req.cookies.access_token)
+    res.redirect(Config.oauth.redirect_authorize_to + query +'access_token_2='+req.cookies.access_token)
 })
 
 // userinfo
 router.route('/userinfo').get((req, res, next) => {
 
-    var secret = req.header("secret")
-
     var send = {
         status: Enum.res_type.FAILURE,
         info: {}
-    }
-
-    if(secret != "IyMDE3LTA4LTAyVDA0OjAxOjIxLjk3MloiL"){
-        send.status = Enum.res_type.FAILURE;
-        send.message = 'incorrect secret'
-        return res.json(send);
     }
 
     send.status = Enum.res_type.SUCCESS

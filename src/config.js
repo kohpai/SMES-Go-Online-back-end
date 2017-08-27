@@ -74,6 +74,10 @@ const expire = {
     otp_token: 10 // m
 }
 
+const oauth = {
+    redirect_authorize_to: 'https://oauth.gsoftbiz.com/oauth2/authorize'
+}
+
 const ajv = {
     additionalProperties : false,
 };
@@ -89,5 +93,6 @@ export default {
     wording,
     pwd,
     expire,
-    recaptcha
+    recaptcha,
+    oauth
 };
