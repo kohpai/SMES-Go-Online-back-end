@@ -729,19 +729,19 @@ router.route('/import').post((req, res, next) => {
                                 ImportModel.addImportDetail(ts, position+1, 0, status_message, ajv.errors, (result) => {})
 
                             }else{
-                                ProductsModel.addProduct(d, select_user.user_id, req.user.user_id, 'import', (result_product) => {
+                                ProductsModel.addProduct(d, select_user.user_id, req.user.user_id, 'import', (result_product, error) => {
 
-                                    if (result_product instanceof Error) {
+                                    if (error) {
 
                                         isError = true
-                                        status_message = title+', '+sku+' : '+' : '+'fail'
+                                        status_message = title+', '+sku+' : '+result_product+' : '+'fail'
 
                                         // update import detail
                                         ImportModel.addImportDetail(ts, position+1, 0, status_message, result_product, (result) => {})
 
                                     }else{
                                         isError = false
-                                        status_message = title+', '+sku+' : '+' : '+'success'
+                                        status_message = title+', '+sku+' : '+result_product+' : '+'success'
 
                                         // update import detail
                                         ImportModel.addImportDetail(ts, position+1, 1, status_message, null, (result) => {})

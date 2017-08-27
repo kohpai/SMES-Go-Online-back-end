@@ -42,9 +42,15 @@ const addProduct = (input, user_id, create_user_id, create_channel, done) => {
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             DB.check_connect_product(error)
-            return done(error);
+
+            if(error.code == 'ER_DUP_ENTRY' && error.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'sku'/i)){
+                return done("รหัสสินค้า ถูกใช้งานแล้ว", error);
+            }else{
+                return done("เกิดข้อผิดพลาด", error);
+            }
+
         } else {
-            return done(results);
+            return done(results, null);
         }
     });
 }
@@ -81,9 +87,15 @@ const updateProduct = (id, input, update_user_id, done) => {
     DB.get_product().query(queryOption, function(error, results, fields) {
         if (error) {
             DB.check_connect_product(error)
-            return done(error);
+
+            if(error.code == 'ER_DUP_ENTRY' && error.sqlMessage.match(/Duplicate entry ([a-zA-Z0-9'-]+) for key 'sku'/i)){
+                return done("รหัสสินค้า ถูกใช้งานแล้ว", error);
+            }else{
+                return done("เกิดข้อผิดพลาด", error);
+            }
+
         } else {
-            return done(results);
+            return done(results, null);
         }
     });
 }
