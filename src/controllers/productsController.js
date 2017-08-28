@@ -531,14 +531,14 @@ router.route('/import').post((req, res, next) => {
 
     if(!req.files || !req.files.file){
         send.status = Enum.res_type.FAILURE
-        send.message = 'File not found. 1'
+        send.message = 'ไม่พบไฟล์ zip'
         return res.json(send)
     }
 
     FileModel.unzipFile(req.files.file, (zip) => {
         if(zip == null){
             send.status = Enum.res_type.FAILURE
-            send.message = 'File not found. 2'
+            send.message = 'ไฟล์ไม่สามารถเปิดได้'
             return res.json(send)
         }
 
@@ -620,7 +620,7 @@ router.route('/import').post((req, res, next) => {
 
         if(!fs.existsSync(path_product)){
             send.status = Enum.res_type.FAILURE
-            send.message = 'File not found. 3'
+            send.message = 'ไม่พบไฟล์ products.csv'
             return res.json(send)
         }
         
