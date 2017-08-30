@@ -37,7 +37,8 @@ router.route('/*').all((req, res, next) => {
         req.path.startsWith('/import') ||
         req.path.startsWith('/set_phone') ||
         req.path.startsWith('/change_password') ||
-        req.path.startsWith('/userinfo')
+        req.path.startsWith('/userinfo') ||
+        req.path.startsWith('/oauth')
     ){
 
         jwt.verify(access_token, Config.pwd.jwt_secret, (err, decode) => {
