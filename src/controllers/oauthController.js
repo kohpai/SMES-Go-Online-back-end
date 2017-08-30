@@ -7,10 +7,10 @@ const router = new Router()
 const ajv = new Ajv()
 
 var request = require('request');
-var querystring = require('querystring');
 
 import HttpStatus from './../helper/http_status.js'
 import { Util, Enum } from '../helper'
+import Config from '../config.js'
 
 router.route('/app').post((req, res, next) => {
     
@@ -67,9 +67,9 @@ router.route('/app').post((req, res, next) => {
 
     request({
         headers: {
-            secret: 'r5gYGVMfo5i0AGSKjNbw'
+            secret: Config.oauth.oauth_server_secret
         },
-        uri: 'http://localhost:8080/backend/app',
+        uri: Config.oauth.oauth_server+'/backend/app',
         json: {
             name: data.name,
             description: data.description,
@@ -151,9 +151,9 @@ router.route('/app/:id').put((req, res, next) => {
 
     request({
         headers: {
-            secret: 'r5gYGVMfo5i0AGSKjNbw'
+            secret: Config.oauth.oauth_server_secret
         },
-        uri: 'http://localhost:8080/backend/app/'+id,
+        uri: Config.oauth.oauth_server+'/backend/app/'+id,
         json: {
             name: data.name,
             description: data.description,
@@ -197,9 +197,9 @@ router.route('/app/:id').delete((req, res, next) => {
 
     request({
         headers: {
-            secret: 'r5gYGVMfo5i0AGSKjNbw'
+            secret: Config.oauth.oauth_server_secret
         },
-        uri: 'http://localhost:8080/backend/app/'+id,
+        uri: Config.oauth.oauth_server+'/backend/app/'+id,
         method: 'DELETE'
     }, function (err, response, body) {
         if(err instanceof Error){
@@ -234,9 +234,9 @@ router.route('/app').get((req, res, next) => {
 
     request({
         headers: {
-            secret: 'r5gYGVMfo5i0AGSKjNbw'
+            secret: Config.oauth.oauth_server_secret
         },
-        uri: 'http://localhost:8080/backend/app?page='+page+'&limit='+limit,
+        uri: Config.oauth.oauth_server+'/backend/app?page='+page+'&limit='+limit,
         method: 'GET'
     }, function (err, response, body) {
         if(err instanceof Error){
