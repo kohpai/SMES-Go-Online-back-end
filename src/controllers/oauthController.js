@@ -214,6 +214,42 @@ router.route('/app/:id').delete((req, res, next) => {
 
 });
 
+router.route('/app/:id').get((req, res, next) => {
+
+    var id = req.params.id
+
+    if(!req.user.is_admin){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Not is admin.'})
+    }
+
+    if(req.user.is_admin && !req.user.role.is_manage_oauth){
+        return res.json({status: Enum.res_type.FAILURE, info:{}, message: 'Permission denied'})
+    }
+
+    var send = {
+        status: Enum.res_type.FAILURE,
+        info: {}
+    }
+
+    request({
+        headers: {
+            secret: Config.oauth.oauth_server_secret
+        },
+        uri: Config.oauth.oauth_server+'/backend/app/'+id,
+        method: 'GET'
+    }, function (err, response, body) {
+        if(err instanceof Error){
+            send.status = Enum.res_type.FAILURE;
+            send.message = err;
+            return res.json(send);
+        }
+
+        res.set('Content-Type', 'application/json');
+        return res.send(body)
+    })
+
+});
+
 router.route('/app').get((req, res, next) => {
 
     var page = parseInt(req.query.page, 0)

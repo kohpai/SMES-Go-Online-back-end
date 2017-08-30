@@ -77,6 +77,7 @@ const expire = {
 const oauth = {
     redirect_authorize_to: 'https://oauth.gsoftbiz.com/oauth2/authorize',
     oauth_server: 'https://oauth.gsoftbiz.com',
+    // oauth_server: 'http://localhost:8080',
     oauth_server_secret: 'r5gYGVMfo5i0AGSKjNbw'
 }
 
