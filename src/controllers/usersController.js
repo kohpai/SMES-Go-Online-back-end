@@ -1871,8 +1871,15 @@ router.route('/redirect_authorize').get((req, res, next) => {
         query += key + "=" + encodeURIComponent(parts.query[key]) + "&"
     }
 
-    console.log('redirect to : '+Config.oauth.redirect_authorize_to + query +'access_token_2='+req.cookies.access_token)
-    res.redirect(Config.oauth.redirect_authorize_to + query +'access_token_2='+req.cookies.access_token)
+    var access_token = ''
+    if(req.cookies.access_token == 'undefined' || req.cookies.access_token == ''){
+        access_token = 'undefined'
+    }else{
+        access_token = req.cookies.access_token
+    }
+
+    console.log('redirect to : '+Config.oauth.redirect_authorize_to + query +'access_token_2='+access_token)
+    res.redirect(Config.oauth.redirect_authorize_to + query +'access_token_2='+access_token)
 })
 
 // userinfo
