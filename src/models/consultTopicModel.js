@@ -8,7 +8,7 @@ const timeout = 20000;
 
 const getTopics = (user_id, offset, limit, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM `consult_topic` WHERE `user_id` = ? LIMIT ? OFFSET ?;',
+        sql: 'SELECT consult_topic.*, user.full_name FROM `consult_topic` LEFT JOIN `user` ON user.user_id = consult_topic.user_id WHERE `user_id` = ? LIMIT ? OFFSET ?;',
         timeout: timeout, // 40s
         values: [user_id, limit, offset],
     };
@@ -25,7 +25,7 @@ const getTopics = (user_id, offset, limit, done) => {
 
 const getTopicsAll = (offset, limit, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM `consult_topic` ORDER BY is_admin_read, is_admin_reply LIMIT ? OFFSET ?;',
+        sql: 'SELECT consult_topic.*, user.full_name FROM `consult_topic` LEFT JOIN `user` ON user.user_id = consult_topic.user_id ORDER BY is_admin_read, is_admin_reply LIMIT ? OFFSET ?;',
         timeout: timeout, // 40s
         values: [limit, offset],
     };
@@ -79,7 +79,7 @@ const countTopicAll = (done) => {
 
 const getTopicsById = (id, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM `consult_topic` WHERE `consult_id` = ?;',
+        sql: 'SELECT consult_topic.*, user.full_name FROM `consult_topic` LEFT JOIN `user` ON user.user_id = consult_topic.user_id WHERE `consult_id` = ?;',
         timeout: timeout, // 40s
         values: [id],
     };
@@ -139,7 +139,7 @@ const deleteTopic = (id, user_id, done) => {
 
 const getMsgByTopic = (id, done) => {
     var queryOption = {
-        sql: 'SELECT * FROM `consult_msg` WHERE `topic_id` = ?;',
+        sql: 'SELECT consult_msg.*, user.full_name FROM `consult_msg` LEFT JOIN `user` ON user.user_id = consult_msg.user_id WHERE `topic_id` = ?;',
         timeout: timeout, // 40s
         values: [id]
     };
