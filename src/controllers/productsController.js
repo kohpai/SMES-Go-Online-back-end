@@ -811,14 +811,17 @@ router.route('/import').post((req, res, next) => {
 
         }, 90000)
 
+        var queueData = []
+
         csv.fromPath(zip+'/products.csv')
             .on("data", function(data){
 
-                queue.push({ position:i, data: data})
+                queueData.push({ position:i, data: data})
 
                 i++
             })
             .on("end", function(){
+
                 ImportModel.addImport(ts, 2, req.files.file.name, req.user.user_id, (result) => {
                     if(result instanceof Error){
                         send.status = Enum.res_type.FAILURE
@@ -830,6 +833,10 @@ router.route('/import').post((req, res, next) => {
                     send.info = { import_id: ts }
                     return res.json(send)
                 })
+
+                for(var i = 0; i<queueData.length; i++){
+                    queue.push(queueData[i])
+                }
             })
     })
 })
