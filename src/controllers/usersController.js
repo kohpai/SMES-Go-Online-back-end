@@ -705,10 +705,13 @@ router.route('/users/import').post((req, res, next) => {
 
         }, 90000)
 
+        var queueData = []
+
         csv.fromPath(result)
             .on("data", function(data){
 
-                queue.push({ position: i, data })
+                queueData.push({ position: i, data })
+
                 i++
 
             })
@@ -725,6 +728,10 @@ router.route('/users/import').post((req, res, next) => {
                     send.info = { import_id: ts }
                     return res.json(send)
                 })
+
+                for(var i = 0; i<queueData.length; i++){
+                    queue.push(queueData[i])
+                }
 
             })
 
