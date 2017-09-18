@@ -8,7 +8,7 @@ const timeout = 20000;
 
 const getTopics = (user_id, offset, limit, done) => {
     var queryOption = {
-        sql: 'SELECT consult_topic.*, user.full_name FROM `consult_topic` LEFT JOIN `user` ON user.user_id = consult_topic.user_id WHERE `user_id` = ? LIMIT ? OFFSET ?;',
+        sql: 'SELECT consult_topic.*, user.full_name FROM `consult_topic` LEFT JOIN `user` ON user.user_id = consult_topic.user_id WHERE consult_topic.user_id = ? LIMIT ? OFFSET ?;',
         timeout: timeout, // 40s
         values: [user_id, limit, offset],
     };
