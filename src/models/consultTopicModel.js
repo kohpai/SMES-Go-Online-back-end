@@ -25,7 +25,7 @@ const getTopics = (user_id, offset, limit, done) => {
 
 const getTopicsAll = (offset, limit, done) => {
     var queryOption = {
-        sql: 'SELECT consult_topic.*, user.full_name FROM `consult_topic` LEFT JOIN `user` ON user.user_id = consult_topic.user_id ORDER BY is_admin_read, is_admin_reply LIMIT ? OFFSET ?;',
+        sql: 'SELECT consult_topic.*, user.full_name FROM `consult_topic` LEFT JOIN `user` ON user.user_id = consult_topic.user_id ORDER BY is_admin_reply ASC, update_datetime DESC LIMIT ? OFFSET ?;',
         timeout: timeout, // 40s
         values: [limit, offset],
     };
