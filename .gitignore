@@ -70,3 +70,5 @@ dist/
 .gitignore
 
 temp
+
+package-lock.json
