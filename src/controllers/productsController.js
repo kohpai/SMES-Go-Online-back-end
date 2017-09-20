@@ -706,7 +706,7 @@ router.route('/import').post((req, res, next) => {
                                 // subcategory_code: null,
                                 no_of_pieces: data[6],
                                 price: price,
-                                amount: parseInt(data[7]),
+                                amount: parseInt(data[7]) || 0,
                                 barcode: data[8],
                                 description: data[9],
                                 cert_q: data[10],
@@ -734,14 +734,14 @@ router.route('/import').post((req, res, next) => {
                                     if (error) {
 
                                         isError = true
-                                        status_message = title+', '+sku+' : '+result_product+' : '+'fail'
+                                        status_message = title+', '+sku+' : '+error+' : '+'fail'
 
                                         // update import detail
-                                        ImportModel.addImportDetail(ts, position+1, 0, status_message, result_product, (result) => {})
+                                        ImportModel.addImportDetail(ts, position+1, 0, status_message, error, (result) => {})
 
                                     }else{
                                         isError = false
-                                        status_message = title+', '+sku+' : '+result_product+' : '+'success'
+                                        status_message = title+', '+sku+' : '+'success'
 
                                         // update import detail
                                         ImportModel.addImportDetail(ts, position+1, 1, status_message, null, (result) => {})
